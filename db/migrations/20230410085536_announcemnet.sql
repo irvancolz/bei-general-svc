@@ -1,0 +1,25 @@
+-- +goose Up
+-- +goose StatementBegin
+-- SELECT 'up SQL query';
+CREATE TABLE public.announcements (
+	id uuid NOT NULL DEFAULT PRIMARY KEY uuid_generate_v4(),
+	"type" text NULL,
+	role_id text NULL,
+	effective_date timestamptz NULL,
+	regarding text NULL,
+	"status" bool default false,
+	created_by uuid NULL,
+	created_at timestamptz NULL,
+	updated_by uuid NULL,
+	updated_at timestamptz NULL,
+	is_deleted bool NULL,
+	deleted_by uuid NULL,
+	deleted_at timestamptz NULL
+);
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+-- SELECT 'down SQL query';
+DROP TABLE "announcements";
+-- +goose StatementEnd
