@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+    auth-services:
+        container_name: svc-auth
+        build: .    
+        ports:
+            - 9006:9006
+        env_file:
+            - .env
+        environment :
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PSWD}
+            - POSTGRES_DB=${DB_NAME}
+            - DATABASE_HOST=${DB_HOST}
+            - DATABASE_PORT=${DB_PORT}
+        volumes:
+            - "../:/app"
+        restart: always
+        networks:
+            - be-idx
+
+    # Networks to be created to facilitate communication between containers
+networks:
+  be-idx:
+    driver: bridge
