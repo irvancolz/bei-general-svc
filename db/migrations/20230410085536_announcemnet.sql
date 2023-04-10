@@ -1,8 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 -- SELECT 'up SQL query';
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE public.announcements (
-	id uuid NOT NULL DEFAULT PRIMARY KEY uuid_generate_v4(),
+	id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
 	"type" text NULL,
 	role_id text NULL,
 	effective_date timestamptz NULL,
