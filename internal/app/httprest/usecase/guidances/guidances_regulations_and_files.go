@@ -11,6 +11,7 @@ type guidancesUsecase struct {
 type GuidancesRegulationAndFileUsecaseInterface interface {
 	GuidancesUsecaseInterface
 	RegulationUsecaseInterface
+	FilesUsecaseInterface
 }
 
 func NewGuidanceUsecase() GuidancesRegulationAndFileUsecaseInterface {

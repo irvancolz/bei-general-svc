@@ -69,13 +69,12 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 			context.Abort()
 			return
 		}
-
 		context.Set("user_id", jwtPayload.ID)
 		context.Set("email", jwtPayload.Email)
 		context.Set("token", tokenString)
+		context.Set("name_user", jwtPayload.UserName)
 		// context.Set("user_role", jwtPayload.UserRole)
 		// context.Set("user_role_id", jwtPayload.UserRoleID)
-		// context.Set("name_user", jwtPayload.Name)
 		// context.Set("company_name", jwtPayload.CompanyName)
 		// context.Set("company_code", jwtPayload.CompanyCode)
 		// context.Set("company_id", jwtPayload.CompanyId)

@@ -63,9 +63,13 @@ func Routes() *gin.Engine {
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
 		guidancesRoute.POST("/create-new-guidances", guidances.CreateNewGuidance)
-		guidancesRoute.GET("/get-all-guidances-by-type", guidances.GetAllGuidanceBasedOnType)
-		guidancesRoute.DELETE("/delete-guidances", guidances.DeleteGuidances)
 		guidancesRoute.PUT("/update-guidances", guidances.UpdateExistingGuidance)
+		guidancesRoute.POST("/create-new-files", guidances.CreateNewFiles)
+		guidancesRoute.PUT("/update-files", guidances.UpdateExistingFiles)
+		guidancesRoute.POST("/create-new-regulation", guidances.CreateNewRegulation)
+		guidancesRoute.PUT("/update-regulation", guidances.UpdateExistingRegulation)
+		guidancesRoute.GET("/get-all-guidance-file-or-regulation-by-type", guidances.GetAllGuidanceBasedOnType)
+		guidancesRoute.DELETE("/delete-guidance-file-or-regulation", guidances.DeleteGuidances)
 	}
 
 	return r

@@ -28,14 +28,14 @@ type RegulationUsecaseInterface interface {
 }
 
 func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewRegulationsProps) (int64, error) {
-	user_id, _ := c.Get("user_id")
+	name_user, _ := c.Get("name_user")
 
 	createDataArgs := repo.CreateNewDataProps{
 		Category:   "Regulation",
 		Name:       props.Name,
 		Link:       props.Link,
 		Order:      props.Order,
-		Created_by: user_id.(string),
+		Created_by: name_user.(string),
 		Created_at: time.Now(),
 		Version:    1.0, //hardcoded, because no params given
 	}
@@ -46,14 +46,14 @@ func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewR
 	return result, nil
 }
 func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsProps) error {
-	user_id, _ := c.Get("user_id")
+	name_user, _ := c.Get("name_user")
 
 	updateDataArgs := repo.UpdateExistingDataProps{
 		Category:   "Regulation",
 		Name:       props.Name,
 		Link:       props.Link,
 		Order:      props.Order,
-		Updated_by: user_id.(string),
+		Updated_by: name_user.(string),
 		Updated_at: time.Now(),
 		Id:         props.Id,
 	}

@@ -19,7 +19,8 @@ type CreateNewGuidanceProps struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
 	Link        string  `json:"link"`
-	File        string  `json:"file"`
+	File        string  `json:"file" binding:"required"`
+	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
 	Order       int64   `json:"order"`
 }
@@ -28,13 +29,14 @@ type UpdateExsistingGuidances struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
 	Link        string  `json:"link"`
-	File        string  `json:"file"`
+	File        string  `json:"file" binding:"required"`
+	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
 	Order       int64   `json:"order"`
 }
 
 func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateExsistingGuidances) error {
-	creator, _ := c.Get("user_id")
+	name_user, _ := c.Get("name_user")
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
 		Id:          props.Id,
@@ -43,10 +45,11 @@ func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateEx
 		Name:        props.Name,
 		Link:        props.Link,
 		File:        props.File,
+		File_size:   props.File_size,
 		Version:     props.Version,
 		Order:       props.Order,
 		Updated_at:  time.Now(),
-		Updated_by:  creator.(string),
+		Updated_by:  name_user.(string),
 	}
 	error_result := u.Repository.UpdateExistingData(createNewDataArgs)
 	if error_result != nil {
@@ -55,7 +58,7 @@ func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateEx
 	return nil
 }
 func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error) {
-	creator, _ := c.Get("user_id")
+	name_user, _ := c.Get("name_user")
 
 	createNewDataArgs := repo.CreateNewDataProps{
 		Category:    "Guidebook",
@@ -63,10 +66,11 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		Name:        props.Name,
 		Link:        props.Link,
 		File:        props.File,
+		File_size:   props.File_size,
 		Version:     props.Version,
 		Order:       props.Order,
 		Created_at:  time.Now(),
-		Created_by:  creator.(string),
+		Created_by:  name_user.(string),
 	}
 	result, error_result := u.Repository.CreateNewData(createNewDataArgs)
 	if error_result != nil {
@@ -87,7 +91,6 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 			Category:    item.Category,
 			Name:        item.Name,
 			Description: item.Description,
-			File:        item.File,
 			Version:     item.Version,
 			Order:       item.Order,
 			Created_by:  item.Created_by,
@@ -101,7 +104,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 }
 
 func (u *guidancesUsecase) DeleteGuidances(c *gin.Context, id string) error {
-	user_id, _ := c.Get("user_id")
+	user_id, _ := c.Get("name_user")
 	deleteGuidancesArgs := repo.DeleteExistingDataProps{
 		Deleted_at: time.Now(),
 		Deleted_by: user_id.(string),

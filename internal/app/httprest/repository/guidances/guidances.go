@@ -22,6 +22,7 @@ type CreateNewDataProps struct {
 	Name        string
 	Link        string
 	File        string
+	File_size   string
 	Version     float64
 	Order       int64
 	Created_by  string
@@ -34,6 +35,7 @@ type UpdateExistingDataProps struct {
 	Description string
 	Link        string
 	File        string
+	File_size   string
 	Version     float64
 	Order       int64
 	Updated_by  string
@@ -84,11 +86,12 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 		description,
 		link,
 		file,
+		file_size,
 		version,
 		"order",
 		created_by,
 		created_at
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
 
 	insert_res, error_insert := r.DB.Exec(createNewDataQuerry,
 		props.Category,
@@ -96,6 +99,7 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 		props.Description,
 		props.Link,
 		props.File,
+		props.File_size,
 		props.Version,
 		props.Order,
 		props.Created_by,
@@ -127,6 +131,7 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 	description, 
 	link,
 	file,
+	file_size,
 	version,
 	"order",
 	created_by,
@@ -161,6 +166,7 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 			Created_at:  result_set.Created_at,
 		}
 		result.File = result_set.File.String
+		result.File_size = result_set.File_size.String
 		result.Link = result_set.Link.String
 		result.Updated_at = result_set.Updated_at.Time
 		result.Updated_by = result_set.Updated_by.String
@@ -186,8 +192,10 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 	version = $6,
 	"order" = $7,
 	updated_by = $8,
-	updated_at = $9
-	WHERE id = $10`
+	updated_at = $9,
+	file_size = $10
+	WHERE id = $11
+	AND category = $1`
 	updated_rows, error_update := r.DB.Exec(querryUpdate,
 		params.Category,
 		params.Name,
@@ -198,6 +206,7 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 		params.Order,
 		params.Updated_by,
 		params.Updated_at,
+		params.File_size,
 		params.Id)
 	if error_update != nil {
 		log.Println("failed to excecute script to update data : ", error_update)
