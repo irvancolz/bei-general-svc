@@ -15,16 +15,16 @@ var jwtKey = []byte("4Q1S3CR3TK3Y")
 
 type JWTClaim struct {
 	ID              string                `json:"id"`
-	Name            *string               `json:"name"`
-	Email           *string               `json:"email"`
-	UserName        *string               `json:"user_name"`
-	UserRole        *string               `json:"user_role"`
-	UserRoleID      *string               `json:"user_role_id"`
-	UserType        *string               `json:"user_type"`
-	GroupType       *string               `json:"group_type"`
-	CompanyId       *string               `json:"company_id"`
-	CompanyName     *string               `json:"company_name"`
-	CompanyCode     *string               `json:"company_code"`
+	Name            string                `json:"name"`
+	Email           string                `json:"email"`
+	UserName        string                `json:"user_name"`
+	UserRole        string                `json:"user_role"`
+	UserRoleID      string                `json:"user_role_id"`
+	UserType        string                `json:"user_type"`
+	GroupType       string                `json:"group_type"`
+	CompanyId       string                `json:"company_id"`
+	CompanyName     string                `json:"company_name"`
+	CompanyCode     string                `json:"company_code"`
 	FirstLogin      bool                  `json:"first_login"`
 	PasswordExpired *string               `json:"password_expired"`
 	UserFormRole    []*model.UserRoleForm `json:"user_form_role"`
@@ -36,17 +36,17 @@ func GenerateJWT(Auth *model.AuthenticationResponse, expiredLogin int) (tokenStr
 	expirationTime := time.Now().Add(time.Duration(expiredLogin) * time.Minute)
 	claims := &JWTClaim{
 		ID:              Auth.ID,
-		Name:            Auth.Name,
-		Email:           Auth.Email,
-		UserName:        Auth.UserName,
-		CompanyId:       Auth.CompanyId,
-		CompanyName:     Auth.CompanyName,
-		CompanyCode:     Auth.CompanyCode,
+		Name:            *Auth.Name,
+		Email:           *Auth.Email,
+		UserName:        *Auth.UserName,
+		CompanyId:       *Auth.CompanyId,
+		CompanyName:     *Auth.CompanyName,
+		CompanyCode:     *Auth.CompanyCode,
 		FirstLogin:      Auth.FirstLogin,
 		PasswordExpired: Auth.PasswordExpired,
-		GroupType:       Auth.GroupType,
-		UserRoleID:      Auth.UserRoleID,
-		UserRole:        Auth.UserRole,
+		GroupType:       *Auth.GroupType,
+		UserRoleID:      *Auth.UserRoleID,
+		UserRole:        *Auth.UserRole,
 		UserFormRole:    Auth.UserRoleForm,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),

@@ -3,18 +3,26 @@ package global
 import (
 	auth "be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/pkg/database"
-	"database/sql"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
+type GetTokens struct {
+	Token string `json:"token"`
+}
 type Repositorys interface {
 	Authentication(module *string) gin.HandlerFunc
-	CheckPermission(module string) gin.HandlerFunc
 }
 
 type repositorys struct {
@@ -42,19 +50,15 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 			return
 		}
 
-		var jwtTokenCheck string
-
-		query := `SELECT "token" FROM public.users where token=$1 and is_login = true`
-
-		if err := m.DB.QueryRow(query, &tokenString).Scan(
-			&jwtTokenCheck,
-		); err != nil && err != sql.ErrNoRows {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired 1"})
+		jwtTokenCheck, err := GetToken(tokenString)
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired"})
 			context.Abort()
 			return
 		}
-		if jwtTokenCheck == "" {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired 2"})
+
+		if jwtTokenCheck.Token == "" {
+			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired"})
 			context.Abort()
 			return
 		}
@@ -65,62 +69,72 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 			context.Abort()
 			return
 		}
-		log.Println(jwtPayload)
 		context.Set("user_id", jwtPayload.ID)
 		context.Set("email", jwtPayload.Email)
-		context.Set("user_role", jwtPayload.UserRole)
-		context.Set("user_role_id", jwtPayload.UserRoleID)
-		context.Set("name_user", jwtPayload.Name)
 		context.Set("token", tokenString)
+		context.Set("name_user", jwtPayload.UserName)
+		// context.Set("user_role", jwtPayload.UserRole)
+		// context.Set("user_role_id", jwtPayload.UserRoleID)
+		// context.Set("company_name", jwtPayload.CompanyName)
+		// context.Set("company_code", jwtPayload.CompanyCode)
+		// context.Set("company_id", jwtPayload.CompanyId)
+		// context.Set("group_type", jwtPayload.GroupType)
+		// context.Set("name", jwtPayload.Name)
+		// context.Set("user_form_role", jwtPayload.UserFormRole)
 
-		log.Println("module ", module )
-		if module != nil {
-			value, error := auth.CheckPermission(tokenString, module)
-			if !value.Status || error != nil {
-				context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
-				context.Abort()
-				return
-			}
-		}
+		log.Println("module ", module)
+		// if module != nil {
+		// 	value, error := auth.CheckPermission(tokenString, module)
+		// 	if !value.Status || error != nil {
+		// 		context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
+		// 		context.Abort()
+		// 		return
+		// 	}
+		// }
 		context.Next()
 	}
 }
 
-func (m *repositorys) CheckPermission(module string) gin.HandlerFunc {
-	return func(context *gin.Context) {
-		tokenString := context.GetHeader("Authorization")
-		if tokenString == "" {
-			context.JSON(401, gin.H{"error": "request does not contain an access token"})
-			context.Abort()
-			return
-		}
-		jwtPayload, err := auth.ParseJwtToken(tokenString)
-		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{"codes": http.StatusUnauthorized, "messages": http.StatusUnauthorized})
-			context.Abort()
-			return
-		}
-		permission := 0 
-		log.Println("permit ", permission )
-		query := `SELECT count(rp.id) FROM public.route_permissions rp 
-		join modules m on rp.module_id = m.id::text 
-		where m."key"  = $1 and (rp.relation_id = $2 or rp.relation_id = $3)  and rp.deleted_at IS NULL and rp.can_view = true`
+func GetToken(token string) (*GetTokens, error) {
 
-		if err := m.DB.QueryRow(query, module, jwtPayload.ID, jwtPayload.UserRoleID).Scan(
-			&permission,
-		); 
-		err != nil && err != sql.ErrNoRows {
-			context.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "User Don't have Permission"})
-			context.Abort()
-			return
-		}
-		log.Println("permit ", permission)
-		if(permission <= 0 ){
-			context.JSON(http.StatusForbidden, gin.H{"code": 403, "message": "User Don't have Permission"})
-			context.Abort()
-			return
-		}
-	
-		context.Next()
+	err_host := godotenv.Load(".env")
+	if err_host != nil {
+		fmt.Println("err_host ", err_host)
 	}
+	host := os.Getenv("SERVICE_AUTH_HOST")
+	url := host + "/user/get-token?token=" + token
+	var payload string
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		log.Println("payloadBytes ", err)
+	}
+
+	bodyReq := bytes.NewReader(payloadBytes)
+	Request, err := http.NewRequest("GET", url, bodyReq)
+	if err != nil {
+		log.Println("error")
+		log.Println(err)
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(Request)
+	if err != nil {
+		log.Println("[TAP-debug] [err] [PostRequest][Do]", err)
+		log.Println(err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Println("[TAP-debug] [err] [PostRequest][ReadAll]", err)
+		log.Println(err)
+		return nil, err
+	}
+	datas := &GetTokens{}
+	log.Printf(datas.Token)
+	errorUM := json.Unmarshal([]byte(body), datas)
+
+	return datas, errorUM
 }
