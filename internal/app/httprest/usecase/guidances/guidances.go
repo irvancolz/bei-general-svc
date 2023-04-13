@@ -18,7 +18,6 @@ type GuidancesUsecaseInterface interface {
 type CreateNewGuidanceProps struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
-	Link        string  `json:"link"`
 	File        string  `json:"file" binding:"required"`
 	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
@@ -28,7 +27,6 @@ type UpdateExsistingGuidances struct {
 	Id          string  `json:"id" binding:"required"`
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
-	Link        string  `json:"link"`
 	File        string  `json:"file" binding:"required"`
 	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
@@ -43,7 +41,6 @@ func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateEx
 		Category:    "Guidebook",
 		Description: props.Description,
 		Name:        props.Name,
-		Link:        props.Link,
 		File:        props.File,
 		File_size:   props.File_size,
 		Version:     props.Version,
@@ -64,7 +61,6 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		Category:    "Guidebook",
 		Description: props.Description,
 		Name:        props.Name,
-		Link:        props.Link,
 		File:        props.File,
 		File_size:   props.File_size,
 		Version:     props.Version,
