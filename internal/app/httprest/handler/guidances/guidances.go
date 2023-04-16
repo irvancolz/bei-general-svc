@@ -48,7 +48,7 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_params))
 		return
 	}
-	error_result := h.usecase.UpdateExistingGuidance(c, request)
+	error_result := h.usecase.UpdateExistingGuidances(c, request)
 	if error_result != nil {
 		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
 		return

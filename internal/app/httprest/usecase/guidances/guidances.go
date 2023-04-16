@@ -10,7 +10,7 @@ import (
 
 type GuidancesUsecaseInterface interface {
 	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error)
-	UpdateExistingGuidance(c *gin.Context, props UpdateExsistingGuidances) error
+	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error
 	GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error)
 	DeleteGuidances(c *gin.Context, id string) error
 }
@@ -33,7 +33,7 @@ type UpdateExsistingGuidances struct {
 	Order       int64   `json:"order"`
 }
 
-func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateExsistingGuidances) error {
+func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error {
 	name_user, _ := c.Get("name_user")
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
