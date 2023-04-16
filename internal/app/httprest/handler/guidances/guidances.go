@@ -57,11 +57,6 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 }
 func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 	types := c.Query("type")
-	// err_params := helper.Validator().Var(types, "oneof=Guidebook File Regulation")
-	// if err_params != nil {
-	// 	c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err_params))
-	// 	return
-	// }
 
 	switch types {
 	case "Guidebook":
