@@ -10,7 +10,7 @@ import (
 
 type GuidancesUsecaseInterface interface {
 	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error)
-	UpdateExistingGuidance(c *gin.Context, props UpdateExsistingGuidances) error
+	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error
 	GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error)
 	DeleteGuidances(c *gin.Context, id string) error
 }
@@ -18,7 +18,6 @@ type GuidancesUsecaseInterface interface {
 type CreateNewGuidanceProps struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
-	Link        string  `json:"link"`
 	File        string  `json:"file" binding:"required"`
 	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
@@ -28,14 +27,13 @@ type UpdateExsistingGuidances struct {
 	Id          string  `json:"id" binding:"required"`
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
-	Link        string  `json:"link"`
 	File        string  `json:"file" binding:"required"`
 	File_size   string  `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
 	Order       int64   `json:"order"`
 }
 
-func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateExsistingGuidances) error {
+func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error {
 	name_user, _ := c.Get("name_user")
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
@@ -43,7 +41,6 @@ func (u *guidancesUsecase) UpdateExistingGuidance(c *gin.Context, props UpdateEx
 		Category:    "Guidebook",
 		Description: props.Description,
 		Name:        props.Name,
-		Link:        props.Link,
 		File:        props.File,
 		File_size:   props.File_size,
 		Version:     props.Version,
@@ -64,7 +61,6 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		Category:    "Guidebook",
 		Description: props.Description,
 		Name:        props.Name,
-		Link:        props.Link,
 		File:        props.File,
 		File_size:   props.File_size,
 		Version:     props.Version,
