@@ -26,6 +26,7 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*m
 			Category:   item.Category,
 			Name:       item.Name,
 			File_size:  item.File_size,
+			File:       item.File,
 			Created_by: item.Created_by,
 			Created_at: item.Created_at,
 			Updated_by: item.Updated_by,

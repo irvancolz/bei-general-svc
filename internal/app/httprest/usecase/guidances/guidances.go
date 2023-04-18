@@ -89,6 +89,8 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 			Description: item.Description,
 			Version:     item.Version,
 			Order:       item.Order,
+			File:        item.File,
+			File_size:   item.File_size,
 			Created_by:  item.Created_by,
 			Created_at:  item.Created_at,
 			Updated_by:  item.Updated_by,

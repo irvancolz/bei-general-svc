@@ -76,6 +76,8 @@ func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types st
 			Name:       item.Name,
 			Link:       item.Link,
 			Version:    item.Version,
+			File:       item.File,
+			File_size:  item.File_size,
 			Order:      item.Order,
 			Created_by: item.Created_by,
 			Created_at: item.Created_at,
