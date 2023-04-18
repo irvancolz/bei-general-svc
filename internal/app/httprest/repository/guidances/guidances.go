@@ -172,7 +172,6 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 		result.Updated_by = result_set.Updated_by.String
 		results = append(results, &result)
 	}
-
 	return results, nil
 }
 

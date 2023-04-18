@@ -65,6 +65,8 @@ type GuidanceJSONResponse struct {
 	Category    string    `json:"category" binding:"required" validate:"oneof=Guidebook"`
 	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description"`
+	File        string    `json:"file"`
+	File_size   string    `json:"file_size"`
 	Version     float64   `json:"version"`
 	Order       int64     `json:"order"`
 	Created_by  string    `json:"created_by"`
@@ -77,6 +79,7 @@ type RegulationJSONResponse struct {
 	Category   string    `json:"category" binding:"required" validate:"oneof=File"`
 	Name       string    `json:"name" binding:"required"`
 	Link       string    `json:"link"`
+	File       string    `json:"file"`
 	File_size  string    `json:"file_size"`
 	Version    float64   `json:"version"`
 	Order      int64     `json:"order"`
@@ -90,6 +93,7 @@ type GuidanceFilesJSONResponse struct {
 	Id         string    `json:"id"`
 	Category   string    `json:"category" binding:"required" validate:"oneof=Guidebook"`
 	Name       string    `json:"name" binding:"required"`
+	File       string    `json:"file"`
 	File_size  string    `json:"file_size"`
 	Created_by string    `json:"created_by"`
 	Created_at time.Time `json:"created_at"`
