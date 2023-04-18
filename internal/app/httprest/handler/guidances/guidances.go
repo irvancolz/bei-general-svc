@@ -67,7 +67,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -82,7 +82,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -98,7 +98,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
