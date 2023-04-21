@@ -65,3 +65,8 @@ const (
 	PeraturanDanRegulasi         = "buku-petunjuk-regulasi"
 	DaftarBerkas                 = "buku-petunjuk-daftar-berkas"
 )
+
+const (
+	TypeInternal = "Internal"
+	TypeExternal = "External"
+)
