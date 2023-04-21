@@ -1,1 +1,4 @@
 .env
+
+# uploaded files will not be moved
+uploaded/

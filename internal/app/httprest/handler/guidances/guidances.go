@@ -1,9 +1,9 @@
 package guidances
 
 import (
-	"be-idx-tsg/internal/app/helper"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/guidances"
 	"be-idx-tsg/internal/pkg/httpresponse"
+	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,7 +48,7 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_params))
 		return
 	}
-	error_result := h.usecase.UpdateExistingGuidance(c, request)
+	error_result := h.usecase.UpdateExistingGuidances(c, request)
 	if error_result != nil {
 		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
 		return
@@ -57,11 +57,6 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 }
 func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 	types := c.Query("type")
-	err_params := helper.Validator().Var(types, "oneof=Guidebook File Regulation")
-	if err_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err_params))
-		return
-	}
 
 	switch types {
 	case "Guidebook":
@@ -72,7 +67,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -87,7 +82,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -103,12 +98,16 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				return
 			}
 			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.CONTENTNOTFOUND_404, error_result))
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
 
 			break
+		}
+	default:
+		{
+			c.JSON(httpresponse.Format(httpresponse.READFAILED_400, errors.New("type is unexpected. please change your type to Guidebook || File || Regulation")))
 		}
 
 	}

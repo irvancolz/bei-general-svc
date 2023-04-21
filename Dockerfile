@@ -42,8 +42,8 @@ COPY . .
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 RUN go mod tidy
 
-RUN go build -o /svc-auth
+RUN go build -o /svc-general
 
 EXPOSE 8080
 
-ENTRYPOINT ["/svc-auth"]
+ENTRYPOINT ["/svc-general"]
