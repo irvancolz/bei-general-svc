@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"be-idx-tsg/internal/app/httprest/model"
 	"fmt"
 	"math"
 	"net/http"
@@ -16,18 +17,14 @@ import (
 func UploadFile(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		model.GenerateFlowErrorResponse(c, err)
 		return
 	}
 
 	// Validate file extension
 	ext := filepath.Ext(file.Filename)
 	if ext != ".png" && ext != ".jpg" && ext != ".jpeg" && ext != ".pdf" && ext != ".csv" && ext != ".xls" && ext != ".xlsx" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid file type",
-		})
+		model.GenerateFlowErrorFromMessageResponse(c, "invalid file type")
 		return
 	}
 
@@ -35,9 +32,7 @@ func UploadFile(c *gin.Context) {
 	uploadDir := "./uploaded"
 	err = os.MkdirAll(uploadDir, os.ModePerm)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		model.GenerateInternalErrorResponse(c, err)
 		return
 	}
 
@@ -56,9 +51,7 @@ func UploadFile(c *gin.Context) {
 	// Save the file to disk
 	err = c.SaveUploadedFile(file, filepath.Join(uploadDir, newName))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		model.GenerateInternalErrorResponse(c, err)
 		return
 	}
 
@@ -91,23 +84,17 @@ func DeleteFile(c *gin.Context) {
 	if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".pdf" || ext == ".csv" || ext == ".xls" || ext == ".xlsx" {
 		// file does not exist, return error message
 		if _, err := os.Stat("./uploaded/" + filepath.Base(fileName)); os.IsNotExist(err) {
-			c.JSON(404, gin.H{
-				"message": "File not found",
-			})
+			model.GenerateIFileNotFoundErrorResponse(c, err)
 			return
 		}
 		err := os.Remove("./uploaded/" + filepath.Base(fileName))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "gagal menghapus file",
-			})
+			model.GenerateRemoveFileErrorResponse(c, err)
 			return
 		}
 	} else {
 		// unsupported file extension, return error
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "gagal menghapus file",
-		})
+		model.GenerateFlowErrorFromMessageResponse(c, "gagal menghapus file. Unsupported file extension")
 		return
 	}
 

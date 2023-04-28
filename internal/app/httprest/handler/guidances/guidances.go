@@ -1,9 +1,9 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/httprest/model"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/guidances"
 	"be-idx-tsg/internal/pkg/httpresponse"
-	"errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,12 +32,12 @@ func NewGuidanceHandler() GuidanceHandler {
 func (h *guidancehandler) CreateNewGuidance(c *gin.Context) {
 	var request usecase.CreateNewGuidanceProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_params))
+		model.GenerateInvalidJsonResponse(c, error_params)
 		return
 	}
 	result, error_result := h.usecase.CreateNewGuidance(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_result))
+		model.GenerateInsertErrorResponse(c, error_result)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, result))
@@ -45,12 +45,12 @@ func (h *guidancehandler) CreateNewGuidance(c *gin.Context) {
 func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 	var request usecase.UpdateExsistingGuidances
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_params))
+		model.GenerateUpdateErrorResponse(c, error_params)
 		return
 	}
 	error_result := h.usecase.UpdateExistingGuidances(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUpdateErrorResponse(c, error_result)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil))
@@ -63,7 +63,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 		{
 			result, error_result := h.usecase.GetAllGuidanceBasedOnType(c, types)
 			if error_result != nil {
-				c.JSON(httpresponse.Format(httpresponse.READFAILED_400, error_result))
+				model.GenerateFlowErrorResponse(c, error_result)
 				return
 			}
 			if len(result) == 0 {
@@ -78,7 +78,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 		{
 			result, error_result := h.usecase.GetAllFilesOnType(c, types)
 			if error_result != nil {
-				c.JSON(httpresponse.Format(httpresponse.READFAILED_400, error_result))
+				model.GenerateFlowErrorResponse(c, error_result)
 				return
 			}
 			if len(result) == 0 {
@@ -94,7 +94,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 		{
 			result, error_result := h.usecase.GetAllRegulationsBasedOnType(c, types)
 			if error_result != nil {
-				c.JSON(httpresponse.Format(httpresponse.READFAILED_400, error_result))
+				model.GenerateFlowErrorResponse(c, error_result)
 				return
 			}
 			if len(result) == 0 {
@@ -107,7 +107,7 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 		}
 	default:
 		{
-			c.JSON(httpresponse.Format(httpresponse.READFAILED_400, errors.New("type is unexpected. please change your type to Guidebook || File || Regulation")))
+			model.GenerateFlowErrorFromMessageResponse(c, "type is unexpected. please change your type to Guidebook || File || Regulation")
 		}
 
 	}
@@ -115,12 +115,12 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 func (h *guidancehandler) CreateNewFiles(c *gin.Context) {
 	var request usecase.CreateNewGuidanceProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_params))
+		model.GenerateInvalidJsonResponse(c, error_params)
 		return
 	}
 	result, error_result := h.usecase.CreateNewFiles(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_result))
+		model.GenerateInsertErrorResponse(c, error_result)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, result))
@@ -128,12 +128,12 @@ func (h *guidancehandler) CreateNewFiles(c *gin.Context) {
 func (h *guidancehandler) UpdateExistingFiles(c *gin.Context) {
 	var request usecase.UpdateExsistingGuidances
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_params))
+		model.GenerateUpdateErrorResponse(c, error_params)
 		return
 	}
 	error_result := h.usecase.UpdateExistingFiles(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUpdateErrorResponse(c, error_result) 
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil))
@@ -141,12 +141,12 @@ func (h *guidancehandler) UpdateExistingFiles(c *gin.Context) {
 func (h *guidancehandler) CreateNewRegulation(c *gin.Context) {
 	var request usecase.CreateNewRegulationsProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_params))
+		model.GenerateInsertErrorResponse(c, error_params) 
 		return
 	}
 	result, error_result := h.usecase.CreateNewRegulations(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, error_result))
+		model.GenerateInsertErrorResponse(c, error_result) 
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, result))
@@ -154,12 +154,12 @@ func (h *guidancehandler) CreateNewRegulation(c *gin.Context) {
 func (h *guidancehandler) UpdateExistingRegulation(c *gin.Context) {
 	var request usecase.UpdateExistingRegulationsProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_params))
+		model.GenerateUpdateErrorResponse(c, error_params)
 		return
 	}
 	error_result := h.usecase.UpdateExistingRegulations(c, request)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUpdateErrorResponse(c, error_result)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil))
@@ -168,7 +168,7 @@ func (h *guidancehandler) DeleteGuidances(c *gin.Context) {
 	id := c.Query("id")
 	error_result := h.usecase.DeleteGuidances(c, id)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.DELETEFAILED_400, error_result))
+		model.GenerateDeleteErrorResponse(c, error_result) 
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil))

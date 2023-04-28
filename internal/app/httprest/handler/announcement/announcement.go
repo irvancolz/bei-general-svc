@@ -3,6 +3,7 @@ package announcement
 import (
 	// helper "be-idx-tsg/internal/app/helper"
 
+	"be-idx-tsg/internal/app/httprest/model"
 	AnnouncementUsecase "be-idx-tsg/internal/app/httprest/usecase/announcement"
 	"be-idx-tsg/internal/pkg/httpresponse"
 
@@ -27,7 +28,7 @@ func NewHandler() Handler {
 func (m *handler) GetAllAnnouncement(c *gin.Context) {
 	data, err := m.announcement.GetAllAnnouncement()
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
