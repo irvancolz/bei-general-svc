@@ -2,20 +2,23 @@ package announcement
 
 import (
 	// "be-idx-tsg/internal/app/helper"
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
 	"time"
 
 	// "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
 type Repository interface {
-	GetByIDCode(id string) (*model.AnnouncementCode, error)
-	GetAllAnnouncement() ([]*model.Announcement, error)
-	Create(ab model.CreateAnnouncement) (int64, error)
+	GetByID(id string,c *gin.Context) (*model.Announcement, error)
+	GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error)
+	Create(an model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement) (int64, error)
 	Delete(id string, deleted_by string) (int64, error)
 	GetByCode(id string) ([]model.Announcement, error)
@@ -37,7 +40,7 @@ func NewRepository() Repository {
 
 func (m *repository) GetAllANWithSearch(keyword string) ([]*model.Announcement, error) {
 	var querySelect = ` 
-	select z.* from (select an.id, an.code, an.type, an.status, an.license, from announcement an where an.is_deleted = false)  as z
+	select z.* from (select an.id, an.code, an.type, an.status, an.license, from announcements an where an.is_deleted = false)  as z
 	where z.code ilike '%` + keyword + `%' 
 	or z.name ilike '%` + keyword + `%'`
 	var listData = []*model.Announcement{}
@@ -53,7 +56,6 @@ func (m *repository) GetAllANWithSearch(keyword string) ([]*model.Announcement, 
 			&an.Code,
 			&an.Type,
 			&an.Status,
-			&an.License,
 		)
 		if err != nil {
 			return nil, errors.New("not found")
@@ -66,7 +68,7 @@ func (m *repository) GetAllANWithSearch(keyword string) ([]*model.Announcement, 
 
 func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement, error) {
 
-	var querySelect = " select an.id, an.code, an.type, an.status, an.license, an.operational_status  from announcement an where an.is_deleted = false "
+	var querySelect = " select an.id, an.code, an.type, an.status, an.license, an.operational_status  from announcements an where an.is_deleted = false "
 
 	if len(keyword) > 3 {
 		return nil, errors.New("keyword more than three ")
@@ -158,8 +160,6 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 			&an.Code,
 			&an.Type,
 			&an.Status,
-			&an.License,
-			&an.OperationalStatus,
 		)
 		if err != nil {
 			return nil, errors.New("not found")
@@ -169,11 +169,16 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 	return listData, nil
 }
 
-func (m *repository) GetAllAnnouncement() ([]*model.Announcement, error) {
+func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
 	result := []*model.Announcement{}
 	query := `
 	SELECT 
-	id
+	id,
+	type,
+	role_id,
+	effective_date,
+	regarding,
+	status
    FROM announcements;`
 	rows, err := m.DB.Query(query)
 	if err != nil {
@@ -181,12 +186,29 @@ func (m *repository) GetAllAnnouncement() ([]*model.Announcement, error) {
 		return nil, errors.New("list announcement not found")
 	}
 	defer rows.Close()
+
+	roles, errRole := utilities.GetAllRole(c)
+	if errRole != nil {
+		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", errRole)
+	}
 	for rows.Next() {
 		var item model.Announcement
+
 		err := rows.Scan(
 			&item.ID,
+			&item.Type,
+			&item.RoleId,
+			&item.EffectiveDate,
+			&item.Regarding,
+			&item.Status,
 		)
 
+		for _, role := range roles.Data {
+			if role["id"] == item.RoleId {
+				item.Role = role["role"].(string)
+				break
+			}
+		}
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetAllAnnouncement] ", err)
 			return nil, errors.New("failed when retrieving data")
@@ -197,23 +219,42 @@ func (m *repository) GetAllAnnouncement() ([]*model.Announcement, error) {
 	return result, nil
 }
 
-func (m *repository) GetByIDCode(id string) (*model.AnnouncementCode, error) {
+func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, error) {
 	query := `
 		SELECT 
-			code,
-			type
-		FROM announcement
+		id,
+		type,
+		role_id,
+		effective_date,
+		regarding,
+		status
+		FROM announcements
 		WHERE id = $1 AND deleted_by IS NULL`
-	data := &model.AnnouncementCode{}
+	item := &model.Announcement{}
 
 	if err := m.DB.QueryRow(query, id).Scan(
-		&data.Code,
-		&data.Type,
+		&item.ID,
+		&item.Type,
+		&item.RoleId,
+		&item.EffectiveDate,
+		&item.Regarding,
+		&item.Status,
 	); err != nil {
+		log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetByID] ", err)
 		return nil, err
 	}
+	roles, errRole := utilities.GetAllRole(c)
+	if errRole != nil {
+		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", errRole)
+	}
+	for _, role := range roles.Data {
+		if role["id"] == item.RoleId {
+			item.Role = role["role"].(string)
+			break
+		}
+	}
 
-	return data, nil
+	return item, nil
 }
 
 func (m *repository) GetByCode(code string) ([]model.Announcement, error) {
@@ -256,9 +297,9 @@ func (m *repository) GetAllMin() (*[]model.GetAllAnnouncement, error) {
 			id,
 			code,
 			type
-		FROM announcement
+		FROM announcements
 		WHERE is_deleted = false
-		ORDER BY id ASC`
+		ORDER BY effective_date DESC`
 	// log.Println(id)
 	listData := []model.GetAllAnnouncement{}
 	selDB, err := m.DB.Query(query)
@@ -280,36 +321,32 @@ func (m *repository) GetAllMin() (*[]model.GetAllAnnouncement, error) {
 	return &listData, nil
 }
 
-func (m *repository) Create(an model.CreateAnnouncement) (int64, error) {
+func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
+	userId, _ := c.Get("user_id")
+	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
+	CreatedAt := t.Format("2006-01-02 15:04:05")
 	query := `
 	INSERT INTO 
-	announcement (
-		code,
+	announcements (
 		type,
 		role_id,
 		effective_date,
-		regarding
-		status,
-		status,
+		regarding,
 		created_at, 
 		created_by,
 		is_deleted
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9 ,$10, $11, $12, $13, false);`
-	// log.Println(id)
-	// data := &model.Announcement{}
-	createdAt := time.Now().UTC().Format("2006-01-02 15:04:05")
+	VALUES ($1, $2, $3, $4, $5, $6, false);`
+	EffectiveDate := an.EffectiveDate
+	EffectiveDateParse, _ := time.Parse(time.RFC3339, EffectiveDate)
 	selDB, err := m.DB.Exec(
 		query,
-		an.Code,
 		an.Type,
 		an.RoleId,
-		an.EffectiveDate,
+		EffectiveDateParse,
 		an.Regarding,
-		an.Status,
-		an.FileURL,
-		createdAt,
-		an.CreatedBy)
+		CreatedAt,
+		userId)
 	if err != nil {
 		return 0, err
 	}
@@ -369,7 +406,7 @@ func (m *repository) Update(an model.UpdateAnnouncement) (int64, error) {
 func (m *repository) Delete(id string, deleted_by string) (int64, error) {
 	query := `
 	UPDATE
-	announcement SET
+	announcements SET
 		is_deleted = true,
 		deleted_by = $2,
 		deleted_at = $3,
@@ -405,7 +442,7 @@ func (m *repository) GetByIDandType(id string, types string) (*model.Announcemen
 			regarding,
 			status,
 			file_url,
-		FROM announcement
+		FROM announcements
 		WHERE id = $1 AND type = $2 AND is_deleted = false`
 	log.Println(id)
 	data := &model.Announcement{}

@@ -5,7 +5,9 @@ import (
 
 	"be-idx-tsg/internal/app/httprest/model"
 	AnnouncementUsecase "be-idx-tsg/internal/app/httprest/usecase/announcement"
+	// "be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/httpresponse"
+	// "log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +16,7 @@ import (
 
 type Handler interface {
 	GetAllAnnouncement(c *gin.Context)
-	DetailCode(c *gin.Context)
+	GetById(c *gin.Context)
 	Create(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
@@ -58,9 +60,9 @@ func (m *handler) GetAllANWithSearch(c *gin.Context) {
 
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 }
-func (m *handler) DetailCode(c *gin.Context) {
+func (m *handler) GetById(c *gin.Context) {
 	ID := c.Query("id")
-	data, err := m.an.DetailCode(ID)
+	data, err := m.an.Detail(ID, c)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
@@ -70,7 +72,7 @@ func (m *handler) DetailCode(c *gin.Context) {
 }
 
 func (m *handler) GetAllAnnouncement(c *gin.Context) {
-	data, err := m.an.GetAllAnnouncement()
+	data, err := m.an.GetAllAnnouncement(c)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
@@ -80,7 +82,6 @@ func (m *handler) GetAllAnnouncement(c *gin.Context) {
 }
 
 func (m *handler) GetAllMin(c *gin.Context) {
-
 	data, err := m.an.GetAllMin()
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
@@ -122,15 +123,15 @@ func (m *handler) Create(c *gin.Context) {
 		return
 	}
 
-	data, err := m.an.Create(request)
+	data, err := m.an.Create(request, c)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
 	}
 	if data == 1 {
-		c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil))
+		c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, data))
 	} else {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, nil))
+		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, nil, data))
 	}
 }
 func (m *handler) Update(c *gin.Context) {

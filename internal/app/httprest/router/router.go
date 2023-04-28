@@ -56,12 +56,13 @@ func Routes() *gin.Engine {
 	// }
 
 	// announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
-	announcementRoute := v3noauth.Group("")
+	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
-		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement)
+		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
 		announcementRoute.GET("/get-all-an-for-form", announcement.GetAllMin)
 		announcementRoute.GET("/get-an-by-code", announcement.GetByCode)
-		announcementRoute.POST("/create-an", announcement.Create)
+		announcementRoute.POST("/create-announcement", announcement.Create) // used
+		announcementRoute.GET("/get-by-id-announcement", announcement.GetById)// used
 		announcementRoute.POST("/update-an", announcement.Update)
 		announcementRoute.POST("/delete-an", announcement.Delete)
 		announcementRoute.POST("/get-an-by-id-and-type", announcement.GetByIDandType)

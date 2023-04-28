@@ -9,12 +9,12 @@ CREATE TABLE public.announcements (
 	role_id text NULL,
 	effective_date timestamptz NULL,
 	regarding text NULL,
-	"status" bool default false,
+	"status" bool DEFAULT FALSE,
 	created_by uuid NULL,
 	created_at timestamptz NULL,
 	updated_by uuid NULL,
 	updated_at timestamptz NULL,
-	is_deleted bool NULL,
+	is_deleted bool DEFAULT FALSE,
 	deleted_by uuid NULL,
 	deleted_at timestamptz NULL
 );

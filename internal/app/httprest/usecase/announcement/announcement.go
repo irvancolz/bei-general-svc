@@ -3,12 +3,14 @@ package announcement
 import (
 	"be-idx-tsg/internal/app/httprest/model"
 	an "be-idx-tsg/internal/app/httprest/repository/announcement"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Usecase interface {
-	GetAllAnnouncement() ([]*model.Announcement, error)
-	DetailCode(id string) (*model.AnnouncementCode, error)
-	Create(ab model.CreateAnnouncement) (int64, error)
+	GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error)
+	Detail(id string, c *gin.Context) (*model.Announcement, error)
+	Create(ab model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement) (int64, error)
 	Delete(id string, deleted_by string) (int64, error)
 	GetByCode(id string) ([]model.Announcement, error)
@@ -27,18 +29,18 @@ func DetailUseCase() Usecase {
 		an.NewRepository(),
 	}
 }
-func (m *usecase) DetailCode(id string) (*model.AnnouncementCode, error) {
-	return m.anRepo.GetByIDCode(id)
+func (m *usecase) Detail(id string, c *gin.Context) (*model.Announcement, error) {
+	return m.anRepo.GetByID(id, c)
 }
 func (m *usecase) GetByCode(id string) ([]model.Announcement, error) {
 	return m.anRepo.GetByCode(id)
 }
-func (m *usecase) GetAllAnnouncement() ([]*model.Announcement, error) {
-	return m.anRepo.GetAllAnnouncement()
+func (m *usecase) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
+	return m.anRepo.GetAllAnnouncement(c)
 }
-func (m *usecase) Create(an model.CreateAnnouncement) (int64, error) {
+func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
 	// ab := model.CreateAnnouncement
-	return m.anRepo.Create(an)
+	return m.anRepo.Create(an, c)
 }
 func (m *usecase) Update(an model.UpdateAnnouncement) (int64, error) {
 	// ab := model.CreateAnnouncement
