@@ -67,7 +67,7 @@ func Routes() *gin.Engine {
 		// announcementRoute.GET("/get-an-by-code", announcement.GetByCode)
 		// announcementRoute.POST("/get-an-by-id-and-type", announcement.GetByIDandType)
 		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
-		announcementRoute.GET("/get-an-by-search", announcement.GetAllANWithSearch)
+		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
 
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))

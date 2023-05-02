@@ -13,9 +13,6 @@ type Usecase interface {
 	Create(ab model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	// GetByCode(id string) ([]model.Announcement, error)
-	// GetByIDandType(id string, types string) (*model.Announcement, error)
-	// GetAllMin() (*[]model.GetAllAnnouncement, error)
 	GetAllANWithFilter(keyword []string) ([]*model.Announcement, error)
 	GetAllANWithSearch(keyword string, InformationType string, startDate string, endDate string) ([]*model.Announcement, error)
 }
@@ -32,10 +29,6 @@ func DetailUseCase() Usecase {
 func (m *usecase) Detail(id string, c *gin.Context) (*model.Announcement, error) {
 	return m.anRepo.GetByID(id, c)
 }
-
-//	func (m *usecase) GetByCode(id string) ([]model.Announcement, error) {
-//		return m.anRepo.GetByCode(id)
-//	}
 func (m *usecase) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
 	return m.anRepo.GetAllAnnouncement(c)
 }
@@ -50,15 +43,6 @@ func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, er
 func (m *usecase) Delete(id string, c *gin.Context) (int64, error) {
 	return m.anRepo.Delete(id, c)
 }
-
-// Communication Use
-// func (m *usecase) GetByIDandType(id string, types string) (*model.Announcement, error) {
-// 	return m.anRepo.GetByIDandType(id, types)
-// }
-
-//	func (m *usecase) GetAllMin() (*[]model.GetAllAnnouncement, error) {
-//		return m.anRepo.GetAllMin()
-//	}
 func (m *usecase) GetAllANWithFilter(keyword []string) ([]*model.Announcement, error) {
 	return m.anRepo.GetAllANWithFilter(keyword)
 }

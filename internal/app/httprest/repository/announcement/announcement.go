@@ -1,16 +1,12 @@
 package announcement
 
 import (
-	// "be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
-	// "be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
 	"time"
-
-	// "github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
@@ -21,9 +17,6 @@ type Repository interface {
 	Create(an model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	// GetByCode(id string) ([]model.Announcement, error)
-	// GetByIDandType(id string, types string) (*model.Announcement, error)
-	// GetAllMin() (*[]model.GetAllAnnouncement, error)
 	GetAllANWithFilter(keyword []string) ([]*model.Announcement, error)
 	GetAllANWithSearch(InformationType string, keyword string, startDate string, endDate string) ([]*model.Announcement, error)
 }
@@ -201,11 +194,6 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 		return nil, errors.New("list announcement not found")
 	}
 	defer rows.Close()
-
-	// roles, errRole := utilities.GetAllRole(c)
-	// if errRole != nil {
-	// 	log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", errRole)
-	// }
 	for rows.Next() {
 		var item model.Announcement
 
@@ -216,12 +204,6 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 			&item.Regarding,
 		)
 
-		// for _, role := range roles.Data {
-		// 	if role["id"] == item.RoleId {
-		// 		item.Role = role["role"].(string)
-		// 		break
-		// 	}
-		// }
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetAllAnnouncement] ", err)
 			return nil, errors.New("failed when retrieving data")
@@ -259,70 +241,6 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 	return item, nil
 }
 
-// func (m *repository) GetByCode(code string) ([]model.Announcement, error) {
-// 	query := `
-// 		SELECT
-// 			id,
-// 			code,
-// 			type,
-// 			created_at,
-// 			created_by,
-// 			updated_at,
-// 			updated_by,
-// 			is_deleted
-// 		FROM anggota_bursa
-// 		WHERE code  LIKE $1 AND is_deleted = false`
-// 	listData := []model.Announcement{}
-// 	selDB, err := m.DB.Query(query, "%"+code+"%")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	for selDB.Next() {
-// 		an := model.Announcement{}
-// 		err = selDB.Scan(
-// 			&an.ID,
-// 			&an.Code,
-// 			&an.Type,
-// 			&an.Status,
-// 		)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		listData = append(listData, an)
-// 	}
-// 	return listData, nil
-// }
-
-// func (m *repository) GetAllMin() (*[]model.GetAllAnnouncement, error) {
-// 	query := `
-// 		SELECT
-// 			id,
-// 			code,
-// 			type
-// 		FROM announcements
-// 		WHERE is_deleted = false
-// 		ORDER BY effective_date DESC`
-// 	// log.Println(id)
-// 	listData := []model.GetAllAnnouncement{}
-// 	selDB, err := m.DB.Query(query)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	for selDB.Next() {
-// 		an := model.GetAllAnnouncement{}
-// 		err = selDB.Scan(
-// 			&an.ID,
-// 			&an.Code,
-// 			&an.Type,
-// 		)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		listData = append(listData, an)
-// 	}
-// 	return &listData, nil
-// }
-
 func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
 	userId, _ := c.Get("user_id")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
@@ -351,7 +269,6 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		return 0, err
 	}
 
-	// selDB.LastInsertId()
 	LastInsertId, err := selDB.RowsAffected()
 	if err != nil {
 		return 0, err
@@ -371,8 +288,6 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		updated_at = $5, 
 		updated_by = $6
 	WHERE id = $1 AND is_deleted = false;`
-	// log.Println(id)
-	// data := &model.Announcement{}
 	updated_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	selDB, err := m.DB.Exec(
 		query,
@@ -387,7 +302,6 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		return 0, err
 	}
 
-	// selDB.LastInsertId()
 	RowsAffected, err := selDB.RowsAffected()
 	if err != nil {
 		return 0, err
@@ -422,37 +336,6 @@ func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
 
 	return RowsAffected, nil
 }
-
-// func (m *repository) GetByIDandType(id string, types string) (*model.Announcement, error) {
-// 	query := `
-// 		SELECT
-// 			id,
-// 			code,
-// 			type,
-// 			role_id,
-// 			effective_date,
-// 			regarding,
-// 			status,
-// 			file_url,
-// 		FROM announcements
-// 		WHERE id = $1 AND type = $2 AND is_deleted = false`
-// 	log.Println(id)
-// 	data := &model.Announcement{}
-
-// 	if err := m.DB.QueryRow(query, id, types).Scan(
-// 		&data.ID,
-// 		&data.Code,
-// 		&data.Type,
-// 		&data.RoleId,
-// 		&data.EffectiveDate,
-// 		&data.Regarding,
-// 		&data.Status,
-// 	); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return data, nil
-// }
 
 func parseTime(input string) string {
 	// parse input string menjadi time.Time object
