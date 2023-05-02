@@ -59,13 +59,13 @@ func Routes() *gin.Engine {
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
-		announcementRoute.GET("/get-all-an-for-form", announcement.GetAllMin)
-		announcementRoute.GET("/get-an-by-code", announcement.GetByCode)
-		announcementRoute.POST("/create-announcement", announcement.Create) // used
-		announcementRoute.GET("/get-by-id-announcement", announcement.GetById)// used
-		announcementRoute.POST("/update-an", announcement.Update)
-		announcementRoute.POST("/delete-an", announcement.Delete)
-		announcementRoute.POST("/get-an-by-id-and-type", announcement.GetByIDandType)
+		announcementRoute.POST("/create-announcement", announcement.Create)             // used
+		announcementRoute.GET("/get-by-id-announcement", announcement.GetById)          // used
+		announcementRoute.PUT("/update-announcement", announcement.Update)
+		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
+		// announcementRoute.GET("/get-all-an-for-form", announcement.GetAllMin)
+		// announcementRoute.GET("/get-an-by-code", announcement.GetByCode)
+		// announcementRoute.POST("/get-an-by-id-and-type", announcement.GetByIDandType)
 		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
 		announcementRoute.GET("/get-an-by-search", announcement.GetAllANWithSearch)
 

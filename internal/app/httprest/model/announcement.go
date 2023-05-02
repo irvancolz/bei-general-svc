@@ -1,45 +1,32 @@
 package model
 
-type GetAllAnnouncement struct {
-	ID   string `json:"id"`
-	Code string `json:"code"`
-	Type string `json:"type"`
-}
+// type GetAllAnnouncement struct {
+// 	ID   string `json:"id"`
+// 	Code string `json:"code"`
+// 	Type string `json:"type"`
+// }
 
 type Announcement struct {
-	ID                string `json:"id"`
-	Code              string `json:"code"`
-	Type              string `json:"type"`
-	RoleId            string `json:"role_id"`
-	Role              string `json:"role"`
-	EffectiveDate     string `json:"effective_date"`
-	Regarding         string `json:"regarding"`
-	Status            bool   `json:"status"`
+	ID              string `json:"id"`
+	InformationType string `json:"information_type"`
+	EffectiveDate   string `json:"effective_date"`
+	Regarding       string `json:"regarding"`
 }
 
 type CreateAnnouncement struct {
-	Code          string `json:"code"`
-	Type          string `json:"type" binding:"required"`
-	RoleId        string `json:"role_id" binding:"required"`
-	EffectiveDate string `json:"effective_date" binding:"required"`
-	Regarding     string `json:"regarding"`
-	Status        bool   `json:"status"`
-	FileURL       string `json:"file_url"`
+	InformationType string `json:"information_type" binding:"required"`
+	EffectiveDate   string `json:"effective_date" binding:"required"`
+	Regarding       string `json:"regarding" binding:"required"`
 }
 
 type UpdateAnnouncement struct {
-	Id            string `json:"id" binding:"required"`
-	Code          string `json:"code"`
-	Type          string `json:"type" binding:"required"`
-	RoleId        string `json:"role_id" binding:"required"`
-	EffectiveDate string `json:"effective_date" binding:"required"`
-	Regarding     string `json:"regarding"`
-	Status        bool   `json:"status" binding:"required"`
-	FileURL       string `json:"file_url" binding:"required"`
-	UpdatedBy     string `json:"updated_by" binding:"required"`
+	ID              string `json:"id" binding:"required"`
+	InformationType string `json:"information_type" binding:"required"`
+	EffectiveDate   string `json:"effective_date" binding:"required"`
+	Regarding       string `json:"regarding" binding:"required"`
 }
 
-type AnnouncementCode struct {
-	Code string `json:"code"`
-	Type string `json:"type" binding:"required"`
-}
+// type AnnouncementCode struct {
+// 	Code string `json:"code"`
+// 	Type string `json:"type" binding:"required"`
+// }

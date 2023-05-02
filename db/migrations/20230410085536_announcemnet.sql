@@ -6,6 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE public.announcements (
 	id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
 	"type" text NULL,
+	information_type text NULL,
 	role_id text NULL,
 	effective_date timestamptz NULL,
 	regarding text NULL,

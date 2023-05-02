@@ -20,9 +20,9 @@ type Handler interface {
 	Create(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
-	GetByCode(c *gin.Context)
-	GetByIDandType(c *gin.Context)
-	GetAllMin(c *gin.Context)
+	// GetByCode(c *gin.Context)
+	// GetByIDandType(c *gin.Context)
+	// GetAllMin(c *gin.Context)
 	GetAllANWithFilter(c *gin.Context)
 	GetAllANWithSearch(c *gin.Context)
 }
@@ -50,9 +50,21 @@ func (m *handler) GetAllANWithFilter(c *gin.Context) {
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 }
 func (m *handler) GetAllANWithSearch(c *gin.Context) {
-	var query = c.Query("keyword")
+	var (
+		request struct {
+			Keyword         string `json:"keyword"`
+			InformationType string `json:"information_type"`
+			StartDate       string `json:"start_date"`
+			EndDate         string `json:"end_date"`
+		}
+	)
 
-	data, err := m.an.GetAllANWithSearch(query)
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		return
+	}
+
+	data, err := m.an.GetAllANWithSearch(request.Keyword, request.InformationType, request.StartDate, request.EndDate)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
@@ -81,35 +93,35 @@ func (m *handler) GetAllAnnouncement(c *gin.Context) {
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 }
 
-func (m *handler) GetAllMin(c *gin.Context) {
-	data, err := m.an.GetAllMin()
-	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
-		return
-	}
+// func (m *handler) GetAllMin(c *gin.Context) {
+// 	data, err := m.an.GetAllMin()
+// 	if err != nil {
+// 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+// 		return
+// 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
-}
+// 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+// }
 
-func (m *handler) GetByCode(c *gin.Context) {
-	var (
-		request struct {
-			Code string `json:"code" binding:"required"`
-		}
-	)
+// func (m *handler) GetByCode(c *gin.Context) {
+// 	var (
+// 		request struct {
+// 			Code string `json:"code" binding:"required"`
+// 		}
+// 	)
 
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
-		return
-	}
-	data, err := m.an.GetByCode(request.Code)
-	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&request); err != nil {
+// 		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+// 		return
+// 	}
+// 	data, err := m.an.GetByCode(request.Code)
+// 	if err != nil {
+// 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+// 		return
+// 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
-}
+// 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+// }
 
 //
 
@@ -143,7 +155,7 @@ func (m *handler) Update(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
 		return
 	}
-	data, err := m.an.Update(request)
+	data, err := m.an.Update(request, c)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
@@ -156,18 +168,8 @@ func (m *handler) Update(c *gin.Context) {
 }
 
 func (m *handler) Delete(c *gin.Context) {
-	var (
-		request struct {
-			Id        string `json:"id" binding:"required"`
-			DeletedBy string `json:"deleted_by" binding:"required"`
-		}
-	)
-	// Delete(id int) (int64, error)
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
-		return
-	}
-	data, err := m.an.Delete(request.Id, request.DeletedBy)
+	ID := c.Query("id")
+	data, err := m.an.Delete(ID, c)
 	if err != nil {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
@@ -179,23 +181,23 @@ func (m *handler) Delete(c *gin.Context) {
 	}
 }
 
-func (m *handler) GetByIDandType(c *gin.Context) {
-	var (
-		request struct {
-			ID    string `json:"id" binding:"required"`
-			Types string `json:"types" binding:"required"`
-		}
-	)
+// func (m *handler) GetByIDandType(c *gin.Context) {
+// 	var (
+// 		request struct {
+// 			ID    string `json:"id" binding:"required"`
+// 			Types string `json:"types" binding:"required"`
+// 		}
+// 	)
 
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
-		return
-	}
-	data, err := m.an.GetByIDandType(request.ID, request.Types)
-	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
-		return
-	}
+// 	if err := c.ShouldBindJSON(&request); err != nil {
+// 		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+// 		return
+// 	}
+// 	data, err := m.an.GetByIDandType(request.ID, request.Types)
+// 	if err != nil {
+// 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+// 		return
+// 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
-}
+// 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+// }
