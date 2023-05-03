@@ -52,9 +52,9 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 	// TO_TIMESTAMP ($2,'YYYY-MM-DD') AND TO_TIMESTAMP ($3,'YYYY-MM-DD')
 
 	var listData = []*model.Announcement{}
-	log.Println("time ",startDate, endDate)
 	selDB, err := m.DB.Query(querySelect, InformationType, parseTime(startDate), parseTime(endDate))
 	if err != nil {
+		log.Println("time ",startDate, endDate)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllANWithSearch] ", err)
 		return nil, errors.New("not found")
 	}
