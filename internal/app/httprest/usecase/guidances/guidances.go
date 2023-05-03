@@ -3,6 +3,7 @@ package guidances
 import (
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -50,6 +51,7 @@ func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateE
 	}
 	error_result := u.Repository.UpdateExistingData(createNewDataArgs)
 	if error_result != nil {
+		log.Println(error_result)
 		return error_result
 	}
 	return nil
@@ -79,6 +81,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 	var results []*model.GuidanceJSONResponse
 	raw_result, error_result := u.Repository.GetAllDataBasedOnCategory(types)
 	if error_result != nil {
+		log.Println(error_result)
 		return nil, error_result
 	}
 	for _, item := range raw_result {
