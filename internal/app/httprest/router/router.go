@@ -56,9 +56,16 @@ func Routes() *gin.Engine {
 	// }
 
 	// announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
-	announcementRoute := v3noauth.Group("")
+	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
-		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement)
+		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
+		announcementRoute.POST("/create-announcement", announcement.Create)             // used
+		announcementRoute.GET("/get-by-id-announcement", announcement.GetById)          // used
+		announcementRoute.PUT("/update-announcement", announcement.Update)
+		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
+		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
+		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
+
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
