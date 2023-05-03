@@ -1,7 +1,6 @@
 package utilities
 
 import (
-	// "be-idx-tsg/internal/app/httprest/model"
 	"bytes"
 	"encoding/json"
 	"fmt"

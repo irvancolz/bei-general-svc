@@ -37,7 +37,6 @@ func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, er
 	return m.anRepo.Create(an, c)
 }
 func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
-	// ab := model.CreateAnnouncement
 	return m.anRepo.Update(an, c)
 }
 func (m *usecase) Delete(id string, c *gin.Context) (int64, error) {

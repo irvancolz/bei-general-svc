@@ -1,11 +1,4 @@
 package model
-
-// type GetAllAnnouncement struct {
-// 	ID   string `json:"id"`
-// 	Code string `json:"code"`
-// 	Type string `json:"type"`
-// }
-
 type Announcement struct {
 	ID              string `json:"id"`
 	InformationType string `json:"information_type"`
@@ -25,8 +18,3 @@ type UpdateAnnouncement struct {
 	EffectiveDate   string `json:"effective_date" binding:"required"`
 	Regarding       string `json:"regarding" binding:"required"`
 }
-
-// type AnnouncementCode struct {
-// 	Code string `json:"code"`
-// 	Type string `json:"type" binding:"required"`
-// }

@@ -158,7 +158,6 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 		query = querySelect
 	}
 	var listData = []*model.Announcement{}
-	// log.Println(query)
 	selDB, err := m.DB.Query(query)
 	if err != nil {
 		return nil, errors.New("not found")
@@ -328,7 +327,6 @@ func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
 		return 0, err
 	}
 
-	// selDB.LastInsertId()
 	RowsAffected, err := selDB.RowsAffected()
 	if err != nil {
 		return 0, err
