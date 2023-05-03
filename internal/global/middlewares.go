@@ -2,6 +2,7 @@ package global
 
 import (
 	auth "be-idx-tsg/internal/app/helper"
+	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"bytes"
 	"encoding/json"
@@ -39,33 +40,33 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		tokenString := context.GetHeader("Authorization")
 		if tokenString == "" {
-			context.JSON(401, gin.H{"error": "request does not contain an access token"})
+			model.GenerateTokenEmptyResponse(context)
 			context.Abort()
 			return
 		}
 		err := auth.ValidateToken(tokenString)
 		if err != nil {
-			context.JSON(401, gin.H{"error": err.Error()})
+			model.GenerateTokenErrorResponse(context, err)
 			context.Abort()
 			return
 		}
 
 		jwtTokenCheck, err := GetToken(tokenString)
 		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired"})
+			model.GenerateTokenErrorResponse(context, err)
 			context.Abort()
 			return
 		}
 
 		if jwtTokenCheck.Token == "" {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "token is expired"})
+			model.GenerateTokenEmptyResponse(context)
 			context.Abort()
 			return
 		}
 
 		jwtPayload, err := auth.ParseJwtToken(tokenString)
 		if err != nil {
-			context.JSON(http.StatusUnauthorized, gin.H{"codes": http.StatusUnauthorized, "messages": http.StatusUnauthorized})
+			model.GenerateTokenErrorResponse(context, err)
 			context.Abort()
 			return
 		}
