@@ -18,6 +18,8 @@ CREATE TABLE public.guidance_file_and_regulation
     updated_at timestamp with time zone,
     deleted_by text,
     deleted_at timestamp with time zone,
+    file_size integer,
+    
     PRIMARY KEY (id)
 );
 
