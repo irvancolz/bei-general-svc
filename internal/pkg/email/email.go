@@ -58,8 +58,10 @@ func SendEmail(user *model.AuthConfirmPasswordResponse, data *EmailData, emailTe
 		log.Fatal("Could not parse template", err)
 	}
 
-	template.ExecuteTemplate(&body, emailTemp, &data)
-
+	errExecuteTemplate := template.ExecuteTemplate(&body, emailTemp, &data)
+	if errExecuteTemplate != nil{
+		log.Fatal("Could not Excute Template: ", errExecuteTemplate)
+	}
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", from)
@@ -94,8 +96,10 @@ func SendEmail2(email string, data *EmailData, emailTemp string) {
 		log.Fatal("Could not parse template", err)
 	}
 
-	template.ExecuteTemplate(&body, emailTemp, &data)
-
+	errExecuteTemplate := template.ExecuteTemplate(&body, emailTemp, &data)
+	if errExecuteTemplate != nil{
+		log.Fatal("Could not Excute Template: ", errExecuteTemplate)
+	}
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", from)

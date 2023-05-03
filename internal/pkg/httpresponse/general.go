@@ -35,67 +35,51 @@ func Format(message string, err error, data ...interface{}) (statusCode int, b *
 	case DATANOTFOUND_400:
 		code = http.StatusBadRequest
 		msg = DATANOTFOUND_400
-		break
 	case CREATESUCCESS_200:
 		code = http.StatusOK
 		msg = CREATESUCCESS_200
-		break
 	case CREATEFAILED_400:
 		code = http.StatusBadRequest
 		msg = CREATEFAILED_400
-		break
 	case CREATEDUPLICATE_400:
 		code = http.StatusBadRequest
 		msg = CREATEDUPLICATE_400
-		break
 	case READSUCCESS_200:
 		code = http.StatusOK
 		msg = READSUCCESS_200
-		break
 	case CONTENTNOTFOUND_404:
 		code = http.StatusNotFound
 		msg = CONTENTNOTFOUND_404
-		break
 	case READFAILED_400:
 		code = http.StatusBadRequest
 		msg = READFAILED_400
-		break
 	case UPDATESUCCESS_200:
 		code = http.StatusOK
 		msg = UPDATESUCCESS_200
-		break
 	case UPDATEFAILED_400:
 		code = http.StatusBadRequest
 		msg = UPDATEFAILED_400
-		break
 	case DELETESUCCESS_200:
 		code = http.StatusOK
 		msg = DELETESUCCESS_200
-		break
 	case DELETEFAILED_400:
 		code = http.StatusBadRequest
 		msg = DELETEFAILED_400
-		break
 	case UPLOADSUCCESS_200:
 		code = http.StatusOK
 		msg = UPLOADSUCCESS_200
-		break
 	case UPLOADFAILED_400:
 		code = http.StatusBadRequest
 		msg = UPLOADFAILED_400
-		break
 	case DOWNLOADSUCCESS_200:
 		code = http.StatusOK
 		msg = DOWNLOADSUCCESS_200
-		break
 	case DOWNLOADFAILED_400:
 		code = http.StatusBadRequest
 		msg = DOWNLOADFAILED_400
-		break
 	default:
 		code = http.StatusInternalServerError
 		msg = ERR_GENERAL_400
-		break
 	}
 
 	if err != nil {
