@@ -19,7 +19,7 @@ type CreateNewGuidanceProps struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
 	File        string  `json:"file" binding:"required"`
-	File_size   string  `json:"file_size" binding:"required"`
+	File_size   int64   `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
 	Order       int64   `json:"order"`
 }
@@ -28,7 +28,7 @@ type UpdateExsistingGuidances struct {
 	Description string  `json:"description"`
 	Name        string  `json:"name"`
 	File        string  `json:"file" binding:"required"`
-	File_size   string  `json:"file_size" binding:"required"`
+	File_size   int64   `json:"file_size" binding:"required"`
 	Version     float64 `json:"version"`
 	Order       int64   `json:"order"`
 }

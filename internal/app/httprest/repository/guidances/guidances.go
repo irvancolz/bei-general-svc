@@ -22,7 +22,7 @@ type CreateNewDataProps struct {
 	Name        string
 	Link        string
 	File        string
-	File_size   string
+	File_size   int64
 	Version     float64
 	Order       int64
 	Created_by  string
@@ -35,7 +35,7 @@ type UpdateExistingDataProps struct {
 	Description string
 	Link        string
 	File        string
-	File_size   string
+	File_size   int64
 	Version     float64
 	Order       int64
 	Updated_by  string

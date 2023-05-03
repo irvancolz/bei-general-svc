@@ -1,13 +1,11 @@
 package announcement
 
 import (
-	// "be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
 
-	// "github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
