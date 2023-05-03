@@ -90,3 +90,8 @@ func GenerateTokenErrorResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_token, err.Error(), http.StatusUnauthorized)
 }
 
+func GenerateTokeExpirednErrorResponse(c *gin.Context, err error) {
+	generateErrorResponse(c, error_type_token, err.Error(), http.StatusUnauthorized)
+}
+
+
