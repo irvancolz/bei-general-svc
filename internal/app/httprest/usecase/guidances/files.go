@@ -22,15 +22,18 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*m
 	}
 	for _, item := range raw_result {
 		result := model.GuidanceFilesJSONResponse{
-			Id:         item.Id,
-			Category:   item.Category,
-			Name:       item.Name,
-			File_size:  item.File_size,
-			File:       item.File,
-			Created_by: item.Created_by,
-			Created_at: item.Created_at,
-			Updated_by: item.Updated_by,
-			Updated_at: item.Updated_at,
+			Id:          item.Id,
+			Category:    item.Category,
+			Name:        item.Name,
+			Description: item.Description,
+			Version:     item.Version,
+			Order:       item.Order,
+			File_size:   item.File_size,
+			File:        item.File,
+			Created_by:  item.Created_by,
+			Created_at:  item.Created_at,
+			Updated_by:  item.Updated_by,
+			Updated_at:  item.Updated_at,
 		}
 		results = append(results, &result)
 	}

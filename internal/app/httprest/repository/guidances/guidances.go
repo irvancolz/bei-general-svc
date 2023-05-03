@@ -4,7 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
-	"database/sql"
 	"errors"
 	"log"
 	"time"
@@ -45,19 +44,6 @@ type DeleteExistingDataProps struct {
 	Id         string
 	Deleted_by string
 	Deleted_at time.Time
-}
-
-func GenerateResponseFromNullString(props sql.NullString) string {
-	if !props.Valid {
-		return ""
-	}
-	return props.String
-}
-func GenerateResponseFromNullTime(props sql.NullTime) time.Time {
-	if !props.Valid {
-		return props.Time
-	}
-	return props.Time
 }
 
 type GuidancesRepoInterface interface {
