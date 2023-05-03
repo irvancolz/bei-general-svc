@@ -152,7 +152,7 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 			Created_at:  result_set.Created_at,
 		}
 		result.File = result_set.File.String
-		result.File_size = result_set.File_size.String
+		result.File_size = result_set.File_size.Int64
 		result.Link = result_set.Link.String
 		result.Updated_at = result_set.Updated_at.Time
 		result.Updated_by = result_set.Updated_by.String

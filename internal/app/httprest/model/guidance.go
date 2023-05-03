@@ -13,7 +13,7 @@ type GuidanceFileAndRegulationsDBStructure struct {
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
 	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	File_size   int64     `json:"file_size"`
 	Version     int64     `json:"version"`
 	Order       bool      `json:"order"`
 	Created_by  string    `json:"created_by"`
@@ -32,7 +32,7 @@ type GuidanceFileAndRegulationsJSONResponse struct {
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
 	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	File_size   int64     `json:"file_size"`
 	Version     float64   `json:"version"`
 	Order       int64     `json:"order"`
 	Created_by  string    `json:"created_by"`
@@ -49,7 +49,7 @@ type GuidanceFileAndRegulationsResultSetResponse struct {
 	Description string         `json:"description"`
 	Link        sql.NullString `json:"link"`
 	File        sql.NullString `json:"file"`
-	File_size   sql.NullString `json:"file_size"`
+	File_size   sql.NullInt64  `json:"file_size"`
 	Version     float64        `json:"version"`
 	Order       int64          `json:"order"`
 	Created_by  string         `json:"created_by"`
@@ -66,7 +66,7 @@ type GuidanceJSONResponse struct {
 	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description"`
 	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	File_size   int64     `json:"file_size"`
 	Version     float64   `json:"version"`
 	Order       int64     `json:"order"`
 	Created_by  string    `json:"created_by"`
@@ -94,7 +94,7 @@ type GuidanceFilesJSONResponse struct {
 	Version     float64   `json:"version"`
 	Order       int64     `json:"order"`
 	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	File_size   int64     `json:"file_size"`
 	Created_by  string    `json:"created_by"`
 	Created_at  time.Time `json:"created_at"`
 	Updated_by  string    `json:"updated_by"`
