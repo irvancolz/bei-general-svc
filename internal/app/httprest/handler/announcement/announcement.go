@@ -52,12 +52,12 @@ func (m *handler) GetAllANWithSearch(c *gin.Context) {
 		}
 	)
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		model.GenerateInvalidJsonResponse(c, err)
 		return
 	}
 	data, err := m.an.GetAllANWithSearch(request.Keyword, request.InformationType, request.StartDate, request.EndDate)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
@@ -75,7 +75,7 @@ func (m *handler) GetById(c *gin.Context) {
 func (m *handler) GetAllAnnouncement(c *gin.Context) {
 	data, err := m.an.GetAllAnnouncement(c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
@@ -87,19 +87,19 @@ func (m *handler) Create(c *gin.Context) {
 	)
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		model.GenerateInvalidJsonResponse(c, err)
 		return
 	}
 
 	data, err := m.an.Create(request, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 	if data == 1 {
 		c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, data))
 	} else {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, nil, data))
+		model.GenerateInsertErrorResponse(c, err)
 	}
 }
 func (m *handler) Update(c *gin.Context) {
@@ -107,18 +107,18 @@ func (m *handler) Update(c *gin.Context) {
 		request model.UpdateAnnouncement
 	)
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		model.GenerateInvalidJsonResponse(c, err) 
 		return
 	}
 	data, err := m.an.Update(request, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 	if data == 1 {
 		c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil))
 	} else {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, nil))
+		model.GenerateUpdateErrorResponse(c, err)
 	}
 }
 
@@ -126,12 +126,12 @@ func (m *handler) Delete(c *gin.Context) {
 	ID := c.Query("id")
 	data, err := m.an.Delete(ID, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 	if data == 1 {
 		c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil))
 	} else {
-		c.JSON(httpresponse.Format(httpresponse.DELETEFAILED_400, nil))
+		model.GenerateDeleteErrorResponse(c, err)
 	}
 }
