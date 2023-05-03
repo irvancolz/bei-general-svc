@@ -1,16 +1,14 @@
 package announcement
 
 import (
-<<<<<<< HEAD
-=======
 	"be-idx-tsg/internal/app/helper"
->>>>>>> 41ec695e84b07a7f36032666bfa2184ab8daf3d4
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
 
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
@@ -58,7 +56,7 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 	var listData = []*model.Announcement{}
 	selDB, err := m.DB.Query(querySelect, InformationType, parseTime(startDate), parseTime(endDate))
 	if err != nil {
-		log.Println("time ",startDate, endDate)
+		log.Println("time ", startDate, endDate)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllANWithSearch] ", err)
 		return nil, errors.New("not found")
 	}
