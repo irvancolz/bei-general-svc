@@ -6,7 +6,9 @@ import (
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
+
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
@@ -54,7 +56,7 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 	var listData = []*model.Announcement{}
 	selDB, err := m.DB.Query(querySelect, InformationType, parseTime(startDate), parseTime(endDate))
 	if err != nil {
-		log.Println("time ",startDate, endDate)
+		log.Println("time ", startDate, endDate)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllANWithSearch] ", err)
 		return nil, errors.New("not found")
 	}

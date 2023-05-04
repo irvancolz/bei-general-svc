@@ -10,14 +10,18 @@ CREATE TABLE public.guidance_file_and_regulation
     "description" text,
     link text,
     "file" text,
+    file_size integer,
     "version" numeric,
-    "order" integer,
+    file_group text,
+    "owner" text,
+    is_visible boolean,
     created_by text,
     created_at timestamp with time zone,
     updated_by text,
     updated_at timestamp with time zone,
     deleted_by text,
     deleted_at timestamp with time zone,
+    
     PRIMARY KEY (id)
 );
 
