@@ -1,11 +1,8 @@
 package router
 
 import (
-	"be-idx-tsg/internal/app/helper"
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
-
-	middlewares "be-idx-tsg/internal/global"
 	"os"
 
 	global "be-idx-tsg/internal/global"
@@ -36,19 +33,16 @@ func Routes() *gin.Engine {
 			"http_port": os.Getenv("HTTP_PORT"),
 		})
 	})
-	globalRepo := middlewares.NewRepositorys()
+	globalRepo := global.NewRepositorys()
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
 
-	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
-	{
-		UploadFile.POST("/upload-file", helper.UploadFile)
-		UploadFile.DELETE("/delete-file", helper.DeleteFile)
-		UploadFile.GET("/uploaded/:filename", helper.GetFile)
-	}
+	// UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
+	// {
+	// }
 
 	// WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication())
 	// {
@@ -69,6 +63,7 @@ func Routes() *gin.Engine {
 		guidancesRoute.POST("/create-new-regulation", guidances.CreateNewRegulation)
 		guidancesRoute.PUT("/update-regulation", guidances.UpdateExistingRegulation)
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation-by-type", guidances.GetAllGuidanceBasedOnType)
+		guidancesRoute.GET("/get-all-guidance-file-or-regulation", guidances.GetAllData)
 		guidancesRoute.DELETE("/delete-guidance-file-or-regulation", guidances.DeleteGuidances)
 	}
 

@@ -22,8 +22,10 @@ type CreateNewDataProps struct {
 	Link        string
 	File        string
 	File_size   int64
+	File_Group  string
+	File_Owner  string
+	Is_Visible  bool
 	Version     float64
-	Order       int64
 	Created_by  string
 	Created_at  time.Time
 }
@@ -35,8 +37,10 @@ type UpdateExistingDataProps struct {
 	Link        string
 	File        string
 	File_size   int64
+	File_Group  string
+	File_Owner  string
+	Is_Visible  bool
 	Version     float64
-	Order       int64
 	Updated_by  string
 	Updated_at  time.Time
 }
@@ -48,7 +52,7 @@ type DeleteExistingDataProps struct {
 
 type GuidancesRepoInterface interface {
 	CreateNewData(props CreateNewDataProps) (int64, error)
-	GetAllDataBasedOnCategory(category_type string) ([]*model.GuidanceFileAndRegulationsJSONResponse, error)
+	GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error)
 	UpdateExistingData(params UpdateExistingDataProps) error
 	DeleteExistingData(params DeleteExistingDataProps) error
 }
@@ -73,11 +77,13 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 		link,
 		file,
 		file_size,
+		file_group,
+		owner,
+		is_visible,
 		version,
-		"order",
 		created_by,
 		created_at
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`
 
 	insert_res, error_insert := r.DB.Exec(createNewDataQuerry,
 		props.Category,
@@ -86,8 +92,10 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 		props.Link,
 		props.File,
 		props.File_size,
+		props.File_Group,
+		props.File_Owner,
+		props.Is_Visible,
 		props.Version,
-		props.Order,
 		props.Created_by,
 		props.Created_at)
 
@@ -108,7 +116,7 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 	return results, nil
 }
 
-func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([]*model.GuidanceFileAndRegulationsJSONResponse, error) {
+func (r *guidancesRepository) GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error) {
 	var results []*model.GuidanceFileAndRegulationsJSONResponse
 	getAllDataQuerry := `SELECT 
 	id, 
@@ -117,18 +125,20 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 	description, 
 	link,
 	file,
+	owner as file_owner,
 	file_size,
+	file_group,
+	is_visible,
 	version,
-	"order",
 	created_by,
 	created_at,
 	updated_by,
 	updated_at
 	FROM public.guidance_file_and_regulation
-	WHERE category = $1
+	WHERE deleted_at IS NULL
 	AND deleted_by IS NUll`
 
-	result_rows, error_rows := r.DB.Queryx(getAllDataQuerry, category_type)
+	result_rows, error_rows := r.DB.Queryx(getAllDataQuerry)
 	if error_rows != nil {
 		log.Println("failed to excecute script : ", error_rows)
 		return nil, error_rows
@@ -141,21 +151,26 @@ func (r *guidancesRepository) GetAllDataBasedOnCategory(category_type string) ([
 			log.Println("failed to convert result set to struct : ", error_scan)
 			return nil, error_scan
 		}
+
 		result := model.GuidanceFileAndRegulationsJSONResponse{
-			Id:          result_set.Id,
-			Category:    result_set.Category,
-			Name:        result_set.Name,
-			Description: result_set.Description,
-			Version:     result_set.Version,
-			Order:       result_set.Order,
-			Created_by:  result_set.Created_by,
-			Created_at:  result_set.Created_at,
+			Id:         result_set.Id,
+			Category:   result_set.Category,
+			Name:       result_set.Name,
+			File:       result_set.File,
+			File_size:  result_set.File_size,
+			Created_by: result_set.Created_by,
+			Created_at: result_set.Created_at,
 		}
-		result.File = result_set.File.String
-		result.File_size = result_set.File_size.Int64
+
+		result.Description = result_set.Description.String
 		result.Link = result_set.Link.String
-		result.Updated_at = result_set.Updated_at.Time
+		result.File_Group = result_set.File_Group.String
+		result.File_Owner = result_set.File_Owner.String
+		result.Is_Visible = result_set.Is_Visible.Bool
+		result.Version = result_set.Version.Float64
 		result.Updated_by = result_set.Updated_by.String
+		result.Updated_at = result_set.Updated_at.Time
+
 		results = append(results, &result)
 	}
 	return results, nil
@@ -169,30 +184,34 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 	}
 
 	querryUpdate := `UPDATE public.guidance_file_and_regulation 
-	SET category  = $1,
-	name = $2,
-	description = $3,
-	link = $4,
-	file = $5,
-	version = $6,
-	"order" = $7,
+	SET category  = $2,
+	name = $3,
+	description = $4,
+	link = $5,
+	file = $6,
+	version = $7,
 	updated_by = $8,
 	updated_at = $9,
-	file_size = $10
-	WHERE id = $11
-	AND category = $1`
+	file_size = $10,
+	file_group = $11,
+	owner = $12,
+	is_visible = $13,
+	WHERE id = $1
+	AND category = $2`
 	updated_rows, error_update := r.DB.Exec(querryUpdate,
+		params.Id,
 		params.Category,
 		params.Name,
 		params.Description,
 		params.Link,
 		params.File,
 		params.Version,
-		params.Order,
 		params.Updated_by,
 		params.Updated_at,
 		params.File_size,
-		params.Id)
+		params.File_Group,
+		params.File_Owner,
+		params.Is_Visible)
 	if error_update != nil {
 		log.Println("failed to excecute script to update data : ", error_update)
 		return error_update
