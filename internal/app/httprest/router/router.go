@@ -49,7 +49,6 @@ func Routes() *gin.Engine {
 
 	// }
 
-	// announcementRoute := v3noauth.Group("")
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
