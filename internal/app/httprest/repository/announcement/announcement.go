@@ -6,6 +6,7 @@ import (
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
+	"strings"
 
 	"time"
 
@@ -42,7 +43,8 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 		select a.id, 
 		a.information_type, 
 		a.effective_date, 
-		a.regarding 
+		a.regarding,
+		a.type 
 		from 
 		announcements a 
 		where 
@@ -67,6 +69,7 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 			&an.InformationType,
 			&an.EffectiveDate,
 			&an.Regarding,
+			&an.Type,
 		)
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllANWithSearch] ", err)
@@ -181,14 +184,35 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 }
 
 func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
+	userType, _ := c.Get("type")
+	ExternalType, _ := c.Get("external_type")
+	filterQuery := ""
+	if strings.ToLower(userType.(string)) == "internal" {
+		filterQuery = ""
+	} else {
+		str, _ := ExternalType.(*string)
+		if strings.ToLower(*str) == "ab" {
+			filterQuery = "where information_type in ('SEMUA','AB') "
+		} else if strings.ToLower(*str) == "participant" {
+			filterQuery = "where information_type in ('SEMUA','PARTICIPANT') "
+		} else if strings.ToLower(*str) == "pjsppa" {
+			filterQuery = "where information_type in ('SEMUA','PJSPPA') "
+		} else {
+			filterQuery = "where information_type in ('SEMUA') "
+
+		}
+	}
+
 	result := []*model.Announcement{}
 	query := `
 	SELECT 
 	id,
 	information_type,
 	effective_date,
-	regarding
-   FROM announcements;`
+	regarding,
+	type
+   FROM announcements
+	` + filterQuery + `;`
 	rows, err := m.DB.Query(query)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", err)
@@ -203,6 +227,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 			&item.InformationType,
 			&item.EffectiveDate,
 			&item.Regarding,
+			&item.Type,
 		)
 
 		if err != nil {
@@ -254,9 +279,10 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		regarding,
 		created_at, 
 		created_by,
-		is_deleted
+		is_deleted,
+		type
 	)
-	VALUES ($1, $2, $3, $4, $5, false);`
+	VALUES ($1, $2, $3, $4, $5, false, $6);`
 	EffectiveDate := an.EffectiveDate
 	EffectiveDateParse, _ := time.Parse(time.RFC3339, EffectiveDate)
 	selDB, err := m.DB.Exec(
@@ -265,7 +291,8 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		EffectiveDateParse,
 		an.Regarding,
 		CreatedAt,
-		userId)
+		userId,
+		an.Type)
 	if err != nil {
 		return 0, err
 	}
@@ -287,7 +314,8 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		effective_date = $3,
 		regarding = $4,
 		updated_at = $5, 
-		updated_by = $6
+		updated_by = $6,
+		type = $7
 	WHERE id = $1 AND is_deleted = false;`
 	updated_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	selDB, err := m.DB.Exec(
@@ -298,6 +326,7 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		an.Regarding,
 		updated_at,
 		userId,
+		an.Type,
 	)
 	if err != nil {
 		return 0, err
