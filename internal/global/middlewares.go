@@ -84,14 +84,14 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 		// context.Set("user_form_role", jwtPayload.UserFormRole)
 
 		log.Println("module ", module)
-		// if module != nil {
-		// 	value, error := auth.CheckPermission(tokenString, module)
-		// 	if !value.Status || error != nil {
-		// 		context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
-		// 		context.Abort()
-		// 		return
-		// 	}
-		// }
+		if module != nil {
+			value, error := auth.CheckPermission(tokenString, module)
+			if !value.Status || error != nil {
+				context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
+				context.Abort()
+				return
+			}
+		}
 		context.Next()
 	}
 }
