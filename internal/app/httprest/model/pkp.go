@@ -11,7 +11,7 @@ type PKuser struct {
 	Question     string    `json:"question"`
 	Answers      string    `json:"answers"`
 	AnswersBy    string    `json:"answers_by"`
-	AnswersAt    time.Time `json:"answers_at`
+	AnswersAt    time.Time `json:"answers_at"`
 	Topic        string    `json:"topic"`
 	FileName     string    `json:"file_name"`
 	FilePath     string    `json:"file_path"`
@@ -27,12 +27,12 @@ type CreatePKuser struct {
 	Stakeholders string    `json:"stakeholders"`
 	Code         string    `json:"code" validate:"required"`
 	Name         string    `json:"name" validate:"required"`
-	QuestionDate time.Time `json:"question_date"" validate:"required"`
+	QuestionDate time.Time `json:"question_date"`
 	Question     string    `json:"question"`
 	Answers      string    `json:"answers"`
 	AnswersBy    string    `json:"answers_by"`
-	AnswersAt    string    `json:"answers_at`
-	Topic        string    `json:"topic" validate:"required"`
+	AnswersAt    time.Time `json:"answers_at"`
+	Topic        string    `json:"topic"`
 	FileName     string    `json:"file_name"`
 	FilePath     string    `json:"file_path"`
 }
@@ -46,7 +46,7 @@ type UpdatePKuser struct {
 	Question     string    `json:"question"`
 	Answers      string    `json:"answers"`
 	AnswersBy    string    `json:"answers_by"`
-	AnswersAt    string    `json:"answers_at`
+	AnswersAt    time.Time `json:"answers_at"`
 	Topic        string    `json:"topic"`
 	FileName     string    `json:"file_name"`
 	FilePath     string    `json:"file_path"`
@@ -57,12 +57,12 @@ type UpdatePKuser struct {
 }
 
 type EditRequest struct {
-	ID           string `json:"id"`
-	Stakeholders string `json:"stakeholders"`
-	Code         string `json:"code"`
-	Name         string `json:"name"`
-	AnswersAt    string `json:"answers_at`
-	Topic        string `json:"topic"`
-	FileName     string `json:"file_name"`
-	FilePath     string `json:"file_path"`
+	ID           string    `json:"id"`
+	Stakeholders string    `json:"stakeholders"`
+	Code         string    `json:"code"`
+	Name         string    `json:"name"`
+	AnswersAt    time.Time `json:"answers_at"`
+	Topic        string    `json:"topic"`
+	FileName     string    `json:"file_name"`
+	FilePath     string    `json:"file_path"`
 }
