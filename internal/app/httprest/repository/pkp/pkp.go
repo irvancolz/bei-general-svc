@@ -361,19 +361,23 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 		UpdatedAt,
 	)
 	if err != nil {
-		log.Println("[AQI-debug] [err] [repository] [PKP] [updateData] ", err)
+		log.Println("[AQI-debug] [err] [repository] [PKP] [updateData] failed to update PKP data: ", err)
 		return 0, err
 	}
 
 	rowsAffected, err := selDB.RowsAffected()
 	if err != nil {
+		log.Println("[AQI-debug] [err] [repository] [PKP] [updateData] failed to retrieve rows affected: ", err)
 		return 0, err
 	}
 
 	if rowsAffected == 0 {
-		return 0, errors.New("the pkp failed to updated, please check the id and try again")
+		err = errors.New("pkp failed to updated, please check the id and try again")
+		log.Println("[AQI-debug] [err] [repository] [PKP] [updateData] ", err)
+		return 0, err
 	}
 
+	log.Printf("[AQI-debug] [info] [repository] [PKP] [updateData] %d rows affected\n", rowsAffected)
 	return rowsAffected, nil
 }
 
@@ -391,17 +395,22 @@ func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
 		AND deleted_at IS NULL;`
 	selDB, err := m.DB.Exec(query, id, userId, deleted_at)
 	if err != nil {
+		log.Println("[AQI-debug] [err] [repository] [PKP] [Delete] ", err)
 		return 0, err
 	}
 
-	RowsAffected, err := selDB.RowsAffected()
+	rowsAffected, err := selDB.RowsAffected()
 	if err != nil {
+		log.Println("[AQI-debug] [err] [repository] [PKP] [Delete] ", err)
 		return 0, err
 	}
 
-	if RowsAffected == 0 {
-		return 0, errors.New("failed to delete pkp, please specify the id and try again")
+	if rowsAffected == 0 {
+		err = errors.New("failed to delete pkp, please specify the id and try again")
+		log.Println("[AQI-debug] [warn] [repository] [PKP] [Delete] ", err)
+		return 0, err
 	}
 
-	return RowsAffected, nil
+	log.Println("[AQI-debug] [info] [repository] [PKP] [Delete] PKP deleted successfully")
+	return rowsAffected, nil
 }

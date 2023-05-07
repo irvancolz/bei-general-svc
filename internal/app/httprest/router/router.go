@@ -61,7 +61,6 @@ func Routes() *gin.Engine {
 		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
 		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
 		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
-
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
@@ -77,13 +76,12 @@ func Routes() *gin.Engine {
 	}
 	pkpRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
-		pkpRoute.GET("/get-all-pkp", pkp.GetAllPKuser) // used
-		pkpRoute.POST("/create-pkp", pkp.CreatePKuser) // used
+		pkpRoute.GET("/get-all-pkp", pkp.GetAllPKuser)
+		pkpRoute.POST("/create-pkp", pkp.CreatePKuser)
 		pkpRoute.PUT("/update-pkp", pkp.UpdatePKuser)
 		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
 		pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
 		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
-
 	}
 
 	return r
