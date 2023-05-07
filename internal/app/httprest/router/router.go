@@ -1,11 +1,9 @@
 package router
 
 import (
-	"be-idx-tsg/internal/app/helper"
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
-
-	middlewares "be-idx-tsg/internal/global"
+	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 	"os"
 
 	global "be-idx-tsg/internal/global"
@@ -36,18 +34,24 @@ func Routes() *gin.Engine {
 			"http_port": os.Getenv("HTTP_PORT"),
 		})
 	})
-	globalRepo := middlewares.NewRepositorys()
+	globalRepo := global.NewRepositorys()
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
+	upload := UploadFiles.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
 
 	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
-		UploadFile.POST("/upload-file", helper.UploadFile)
-		UploadFile.DELETE("/delete-file", helper.DeleteFile)
-		UploadFile.GET("/uploaded/:filename", helper.GetFile)
+		UploadFile.POST("/upload-form-file", upload.UploadForm)
+		UploadFile.POST("/upload-admin-file", upload.UploadAdmin)
+		UploadFile.POST("/upload-user-file", upload.UploadUser)
+		UploadFile.POST("/upload-pkp-file", upload.UploadPkp)
+		UploadFile.POST("/upload-report-file", upload.UploadReport)
+		UploadFile.POST("/upload-guidances-files-regulation-file", upload.UploadGuidebook)
+		UploadFile.GET("/download-file", upload.Download)
+		UploadFile.DELETE("/delete-file", upload.Remove)
 	}
 
 	// WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication())
