@@ -4,6 +4,7 @@ import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
+	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
 	"os"
 
@@ -38,14 +39,23 @@ func Routes() *gin.Engine {
 	globalRepo := global.NewRepositorys()
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
+	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
 
-	// UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
-	// {
-	// }
+	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
+	{
+		UploadFile.POST("/upload-form-file", upload.UploadForm)
+		UploadFile.POST("/upload-admin-file", upload.UploadAdmin)
+		UploadFile.POST("/upload-user-file", upload.UploadUser)
+		UploadFile.POST("/upload-pkp-file", upload.UploadPkp)
+		UploadFile.POST("/upload-report-file", upload.UploadReport)
+		UploadFile.POST("/upload-guidances-files-regulation-file", upload.UploadGuidebook)
+		UploadFile.GET("/download-file", upload.Download)
+		UploadFile.DELETE("/delete-file", upload.Remove)
+	}
 
 	// WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication())
 	// {
