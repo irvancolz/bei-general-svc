@@ -111,11 +111,9 @@ func (m *handler) UpdatePKuser(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
 	}
-	if data == 1 {
-		c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil))
-	} else {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, nil))
-	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, data))
+
 }
 
 func (m *handler) Delete(c *gin.Context) {
@@ -125,9 +123,7 @@ func (m *handler) Delete(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
 		return
 	}
-	if data == 1 {
-		c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil))
-	} else {
-		c.JSON(httpresponse.Format(httpresponse.DELETEFAILED_400, nil))
-	}
+
+	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, data))
+
 }

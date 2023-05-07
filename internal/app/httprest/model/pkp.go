@@ -25,8 +25,8 @@ type PKuser struct {
 
 type CreatePKuser struct {
 	Stakeholders string    `json:"stakeholders"`
-	Code         string    `json:"code" validate:"required"`
-	Name         string    `json:"name" validate:"required"`
+	Code         string    `json:"code" binding:"required"`
+	Name         string    `json:"name" binding:"required"`
 	QuestionDate time.Time `json:"question_date"`
 	Question     string    `json:"question"`
 	Answers      string    `json:"answers"`
@@ -38,7 +38,7 @@ type CreatePKuser struct {
 }
 
 type UpdatePKuser struct {
-	ID           string    `json:"id"`
+	ID           string    `json:"id" binding:"required"`
 	Stakeholders string    `json:"stakeholders"`
 	Code         string    `json:"code"`
 	Name         string    `json:"name"`
@@ -50,8 +50,6 @@ type UpdatePKuser struct {
 	Topic        string    `json:"topic"`
 	FileName     string    `json:"file_name"`
 	FilePath     string    `json:"file_path"`
-	CreateBy     string    `json:"create_by"`
-	CreatedAt    time.Time `json:"created_at"`
 	UpdatedBy    string    `json:"update_by"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
