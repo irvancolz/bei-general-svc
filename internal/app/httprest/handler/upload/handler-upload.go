@@ -37,7 +37,7 @@ func (h *handler) UploadForm(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (h *handler) UploadUser(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *handler) UploadReport(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
@@ -79,7 +79,7 @@ func (h *handler) UploadAdmin(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *handler) UploadPkp(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
-		c.JSON(httpresponse.Format(httpresponse.UPDATEFAILED_400, error_result))
+		model.GenerateUploadErrorResponse(c, error_result)
 		return
 	}
 
