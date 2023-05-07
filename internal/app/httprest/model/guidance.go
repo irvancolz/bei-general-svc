@@ -12,10 +12,12 @@ type GuidanceFileAndRegulationsDBStructure struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
-	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
 	Version     int64     `json:"version"`
-	Order       bool      `json:"order"`
+	File        string    `json:"file"`
+	File_size   int64     `json:"file_size"`
+	File_Group  string    `json:"file_group"`
+	File_Owner  string    `json:"file_owner"`
+	Is_Visible  string    `json:"is_visible"`
 	Created_by  string    `json:"created_by"`
 	Created_at  time.Time `json:"created_at"`
 	Updated_by  string    `json:"updated_by"`
@@ -32,9 +34,11 @@ type GuidanceFileAndRegulationsJSONResponse struct {
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
 	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	File_size   int64     `json:"file_size"`
 	Version     float64   `json:"version"`
-	Order       int64     `json:"order"`
+	File_Group  string    `json:"file_group"`
+	File_Owner  string    `json:"file_owner"`
+	Is_Visible  bool      `json:"is_visible"`
 	Created_by  string    `json:"created_by"`
 	Created_at  time.Time `json:"created_at"`
 	Updated_by  string    `json:"updated_by"`
@@ -43,32 +47,37 @@ type GuidanceFileAndRegulationsJSONResponse struct {
 
 // struct to handling null result set from database
 type GuidanceFileAndRegulationsResultSetResponse struct {
-	Id          string         `json:"id"`
-	Category    string         `json:"category" binding:"required" validate:"oneof=Guidebook File Regulation"`
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description"`
-	Link        sql.NullString `json:"link"`
-	File        sql.NullString `json:"file"`
-	File_size   sql.NullString `json:"file_size"`
-	Version     float64        `json:"version"`
-	Order       int64          `json:"order"`
-	Created_by  string         `json:"created_by"`
-	Created_at  time.Time      `json:"created_at"`
-	Updated_by  sql.NullString `json:"updated_by"`
-	Updated_at  sql.NullTime   `json:"updated_at"`
+	Id          string          `json:"id"`
+	Category    string          `json:"category" binding:"required" validate:"oneof=Guidebook File Regulation"`
+	Name        string          `json:"name" binding:"required"`
+	Description sql.NullString  `json:"description"`
+	Link        sql.NullString  `json:"link"`
+	File        string          `json:"file"`
+	File_size   int64           `json:"file_size"`
+	File_Group  sql.NullString  `json:"file_group"`
+	File_Owner  sql.NullString  `json:"file_owner"`
+	Is_Visible  sql.NullBool    `json:"is_visible"`
+	Version     sql.NullFloat64 `json:"version"`
+	Created_by  string          `json:"created_by"`
+	Created_at  time.Time       `json:"created_at"`
+	Updated_by  sql.NullString  `json:"updated_by"`
+	Updated_at  sql.NullTime    `json:"updated_at"`
 }
 
 // actual result data structure given to user
 
 type GuidanceJSONResponse struct {
 	Id          string    `json:"id"`
-	Category    string    `json:"category" binding:"required" validate:"oneof=Guidebook"`
-	Name        string    `json:"name" binding:"required"`
+	Category    string    `json:"category"`
+	File_Group  string    `json:"file_group"`
 	Description string    `json:"description"`
-	File        string    `json:"file"`
-	File_size   string    `json:"file_size"`
+	Name        string    `json:"name" binding:"required"`
+	File_size   int64     `json:"file_size"`
 	Version     float64   `json:"version"`
-	Order       int64     `json:"order"`
+	Owner       string    `json:"owner"`
+	File        string    `json:"file"`
+	Link        string    `json:"link"`
+	Is_Visible  bool      `json:"is_visible"`
 	Created_by  string    `json:"created_by"`
 	Created_at  time.Time `json:"created_at"`
 	Updated_by  string    `json:"updated_by"`
@@ -76,13 +85,11 @@ type GuidanceJSONResponse struct {
 }
 type RegulationJSONResponse struct {
 	Id         string    `json:"id"`
-	Category   string    `json:"category" binding:"required" validate:"oneof=File"`
 	Name       string    `json:"name" binding:"required"`
-	Link       string    `json:"link"`
+	Category   string    `json:"category"`
 	File       string    `json:"file"`
-	File_size  string    `json:"file_size"`
+	File_size  int64     `json:"file_size"`
 	Version    float64   `json:"version"`
-	Order      int64     `json:"order"`
 	Created_by string    `json:"created_by"`
 	Created_at time.Time `json:"created_at"`
 	Updated_by string    `json:"updated_by"`
@@ -91,10 +98,10 @@ type RegulationJSONResponse struct {
 
 type GuidanceFilesJSONResponse struct {
 	Id         string    `json:"id"`
-	Category   string    `json:"category" binding:"required" validate:"oneof=Guidebook"`
+	Category   string    `json:"category"`
 	Name       string    `json:"name" binding:"required"`
 	File       string    `json:"file"`
-	File_size  string    `json:"file_size"`
+	File_size  int64     `json:"file_size"`
 	Created_by string    `json:"created_by"`
 	Created_at time.Time `json:"created_at"`
 	Updated_by string    `json:"updated_by"`

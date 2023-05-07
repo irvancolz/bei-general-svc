@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Println(err)

@@ -28,6 +28,7 @@ type JWTClaim struct {
 	FirstLogin      bool                  `json:"first_login"`
 	PasswordExpired *string               `json:"password_expired"`
 	UserFormRole    []*model.UserRoleForm `json:"user_form_role"`
+	ExternalType    *string               `json:"external_type"`
 	jwt.StandardClaims
 }
 
@@ -48,6 +49,7 @@ func GenerateJWT(Auth *model.AuthenticationResponse, expiredLogin int) (tokenStr
 		UserRoleID:      *Auth.UserRoleID,
 		UserRole:        *Auth.UserRole,
 		UserFormRole:    Auth.UserRoleForm,
+		ExternalType:    Auth.ExternalType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},

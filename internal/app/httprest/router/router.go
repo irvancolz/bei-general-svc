@@ -3,7 +3,9 @@ package router
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
+	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
+
 	"os"
 
 	global "be-idx-tsg/internal/global"
@@ -38,6 +40,7 @@ func Routes() *gin.Engine {
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
 	upload := UploadFiles.NewHandler()
+	pkp := Pkp.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -59,10 +62,15 @@ func Routes() *gin.Engine {
 
 	// }
 
-	// announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
-	announcementRoute := v3noauth.Group("")
+	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
-		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement)
+		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
+		announcementRoute.POST("/create-announcement", announcement.Create)             // used
+		announcementRoute.GET("/get-by-id-announcement", announcement.GetById)          // used
+		announcementRoute.PUT("/update-announcement", announcement.Update)
+		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
+		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
+		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
@@ -73,7 +81,17 @@ func Routes() *gin.Engine {
 		guidancesRoute.POST("/create-new-regulation", guidances.CreateNewRegulation)
 		guidancesRoute.PUT("/update-regulation", guidances.UpdateExistingRegulation)
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation-by-type", guidances.GetAllGuidanceBasedOnType)
+		guidancesRoute.GET("/get-all-guidance-file-or-regulation", guidances.GetAllData)
 		guidancesRoute.DELETE("/delete-guidance-file-or-regulation", guidances.DeleteGuidances)
+	}
+	pkpRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		pkpRoute.GET("/get-all-pkp", pkp.GetAllPKuser)
+		pkpRoute.POST("/create-pkp", pkp.CreatePKuser)
+		pkpRoute.PUT("/update-pkp", pkp.UpdatePKuser)
+		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
+		pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
+		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
 	}
 
 	return r

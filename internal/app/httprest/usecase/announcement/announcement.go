@@ -2,22 +2,49 @@ package announcement
 
 import (
 	"be-idx-tsg/internal/app/httprest/model"
-	announcement "be-idx-tsg/internal/app/httprest/repository/announcement"
+	an "be-idx-tsg/internal/app/httprest/repository/announcement"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Usecase interface {
-	GetAllAnnouncement() ([]*model.Announcement, error)
+	GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error)
+	Detail(id string, c *gin.Context) (*model.Announcement, error)
+	Create(ab model.CreateAnnouncement, c *gin.Context) (int64, error)
+	Update(ab model.UpdateAnnouncement, c *gin.Context) (int64, error)
+	Delete(id string, c *gin.Context) (int64, error)
+	GetAllANWithFilter(keyword []string) ([]*model.Announcement, error)
+	GetAllANWithSearch(keyword string, InformationType string, startDate string, endDate string) ([]*model.Announcement, error)
 }
 
 type usecase struct {
-	announcementRepo announcement.Repository
+	anRepo an.Repository
 }
 
-func NewUsecase() Usecase {
+func DetailUseCase() Usecase {
 	return &usecase{
-		announcement.NewRepository(),
+		an.NewRepository(),
 	}
 }
-func (m *usecase) GetAllAnnouncement() ([]*model.Announcement, error) {
-	return m.announcementRepo.GetAllAnnouncement()
+func (m *usecase) Detail(id string, c *gin.Context) (*model.Announcement, error) {
+	return m.anRepo.GetByID(id, c)
+}
+func (m *usecase) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
+	return m.anRepo.GetAllAnnouncement(c)
+}
+func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
+	// ab := model.CreateAnnouncement
+	return m.anRepo.Create(an, c)
+}
+func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
+	return m.anRepo.Update(an, c)
+}
+func (m *usecase) Delete(id string, c *gin.Context) (int64, error) {
+	return m.anRepo.Delete(id, c)
+}
+func (m *usecase) GetAllANWithFilter(keyword []string) ([]*model.Announcement, error) {
+	return m.anRepo.GetAllANWithFilter(keyword)
+}
+func (m *usecase) GetAllANWithSearch(keyword string, InformationType string, startDate string, endDate string) ([]*model.Announcement, error) {
+	return m.anRepo.GetAllANWithSearch(InformationType, keyword, startDate, endDate)
 }
