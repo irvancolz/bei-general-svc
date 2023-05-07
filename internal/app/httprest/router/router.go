@@ -3,6 +3,8 @@ package router
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
+	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
+
 	"os"
 
 	global "be-idx-tsg/internal/global"
@@ -36,6 +38,7 @@ func Routes() *gin.Engine {
 	globalRepo := global.NewRepositorys()
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
+	pkp := Pkp.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -58,7 +61,6 @@ func Routes() *gin.Engine {
 		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
 		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
 		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
-
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
@@ -71,6 +73,15 @@ func Routes() *gin.Engine {
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation-by-type", guidances.GetAllGuidanceBasedOnType)
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation", guidances.GetAllData)
 		guidancesRoute.DELETE("/delete-guidance-file-or-regulation", guidances.DeleteGuidances)
+	}
+	pkpRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		pkpRoute.GET("/get-all-pkp", pkp.GetAllPKuser)
+		pkpRoute.POST("/create-pkp", pkp.CreatePKuser)
+		pkpRoute.PUT("/update-pkp", pkp.UpdatePKuser)
+		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
+		pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
+		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
 	}
 
 	return r
