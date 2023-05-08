@@ -196,7 +196,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 		} else if strings.ToLower(*str) == "participant" {
 			filterQuery = "where information_type in ('SEMUA','PARTICIPANT') and deleted_by IS NULL "
 		} else if strings.ToLower(*str) == "pjsppa" {
-			filterQuery = "where information_type in ('SEMUA','PJSPPA')and deleted_by IS NULL "
+			filterQuery = "where information_type in ('SEMUA','PJSPPA') and deleted_by IS NULL "
 		} else {
 			filterQuery = "where information_type in ('SEMUA') and deleted_by IS NULL "
 
