@@ -53,8 +53,8 @@ func Routes() *gin.Engine {
 		UploadFile.POST("/upload-pkp-file", upload.UploadPkp)
 		UploadFile.POST("/upload-report-file", upload.UploadReport)
 		UploadFile.POST("/upload-guidances-files-regulation-file", upload.UploadGuidebook)
-		UploadFile.GET("/download-file", upload.Download)
-		UploadFile.DELETE("/delete-file", upload.Remove)
+		UploadFile.GET("/download-existing-file", upload.Download)
+		UploadFile.DELETE("/delete-existing-file", upload.Remove)
 	}
 
 	// WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication())
