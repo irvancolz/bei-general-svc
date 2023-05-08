@@ -17,7 +17,7 @@ type CreateAnnouncement struct {
 
 type UpdateAnnouncement struct {
 	ID              string `json:"id" binding:"required"`
-	InformationType string `json:"information_type" binding:"required,oneof='Internal Bursa' 'Anggota Bursa' 'Participant' 'PJSPPA' 'Semua' "`
+	InformationType string `json:"information_type" binding:"required,oneof='INTERNAL BURSA' 'AB' 'PARTICIPANT' 'PJSPPA' 'SEMUA' "`
 	EffectiveDate   string `json:"effective_date" binding:"required"`
 	Regarding       string `json:"regarding" binding:"required"`
 	Type           *string `json:"type" binding:"required"`
