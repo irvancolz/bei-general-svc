@@ -23,7 +23,7 @@ const (
 	error_type_flow_read            = "flow_read"
 	error_type_file_not_found       = "file_not_found"
 	error_type_file_related         = "file_related"
-error_type_token                 = "token"
+	error_type_token                = "token"
 )
 
 type BaseErrorResponse struct {
@@ -56,6 +56,9 @@ func GenerateFlowErrorFromMessageResponse(c *gin.Context, message string) {
 
 func GenerateInsertErrorResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_flow_create, httpresponse.CREATEFAILED_400+". "+err.Error(), http.StatusBadRequest)
+}
+func GenerateUploadErrorResponse(c *gin.Context, err error) {
+	generateErrorResponse(c, error_type_flow_create, httpresponse.UPLOADFAILED_400+". "+err.Error(), http.StatusBadRequest)
 }
 
 func GenerateUpdateErrorResponse(c *gin.Context, err error) {
@@ -93,5 +96,3 @@ func GenerateTokenErrorResponse(c *gin.Context, err error) {
 func GenerateTokeExpirednErrorResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_token, err.Error(), http.StatusUnauthorized)
 }
-
-

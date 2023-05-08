@@ -25,8 +25,6 @@ CREATE TABLE public.guidance_file_and_regulation
     PRIMARY KEY (id)
 );
 
-ALTER TABLE IF EXISTS public.guidance_file_and_regulation
-    OWNER to devaqi;
 -- +goose StatementEnd
 
 -- +goose Down
