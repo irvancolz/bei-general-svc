@@ -22,7 +22,7 @@ type CreateNewGuidanceProps struct {
 	Description string `json:"description" binding:"required"`
 	File        string `json:"file" binding:"required"`
 	File_size   int64  `json:"file_size" binding:"required"`
-	File_path   string
+	File_path   string `json:"file_path" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
 	Is_visible  bool   `json:"visible" binding:"required"`
 	Link        string `json:"link" binding:"required"`
@@ -33,7 +33,7 @@ type UpdateExsistingGuidances struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	File        string `json:"file" binding:"required"`
-	File_path   string
+	File_path   string `json:"file_path" binding:"required"`
 	File_size   int64  `json:"file_size" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
 	Is_visible  bool   `json:"visible" binding:"required"`
