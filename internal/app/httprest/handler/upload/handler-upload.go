@@ -18,6 +18,7 @@ type UploadFileHandlreInterface interface {
 	UploadGuidebook(c *gin.Context)
 	Download(c *gin.Context)
 	Remove(c *gin.Context)
+	UploadParameterAdmin(c *gin.Context)
 }
 
 type handler struct {
@@ -104,6 +105,19 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:      os.Getenv("DIR_HOST"),
 		Directory: "guidebook",
+	}
+	result, error_result := h.Usecase.Upload(c, config)
+	if error_result != nil {
+		model.GenerateUploadErrorResponse(c, error_result)
+		return
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPLOADSUCCESS_200, nil, result))
+}
+func (h *handler) UploadParameterAdmin(c *gin.Context) {
+	config := usecase.UploadFileConfig{
+		Host:      os.Getenv("DIR_HOST"),
+		Directory: "ParameterAdmin",
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
