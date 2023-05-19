@@ -15,9 +15,13 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
-require github.com/go-playground/validator/v10 v10.9.0
+require (
+	github.com/go-playground/validator/v10 v10.9.0
+	github.com/shohiebsense/gojsontoxml v1.0.0
+)
 
 require (
+	github.com/beevik/etree v1.2.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

@@ -3,6 +3,7 @@ package router
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
+	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
@@ -41,6 +42,7 @@ func Routes() *gin.Engine {
 	guidances := Guidances.NewGuidanceHandler()
 	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
+	jsonToXml := JsonToXml.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -92,6 +94,11 @@ func Routes() *gin.Engine {
 		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
 		pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
 		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
+	}
+
+	jsonToXmlRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
 	}
 
 	return r
