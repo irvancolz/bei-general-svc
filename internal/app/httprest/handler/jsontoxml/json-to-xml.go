@@ -23,7 +23,6 @@ func NewHandler() Handler {
 }
 
 func (jsonToXmlHandler *handler) ToXml(c *gin.Context) {
-
 	var data map[string]interface{}
 
 	err := c.ShouldBindJSON(&data)
@@ -31,12 +30,14 @@ func (jsonToXmlHandler *handler) ToXml(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		model.GenerateInvalidJsonResponse(c, err)
+		return
 	}
 
 	dataBytes, err := jsonToXmlHandler.jsonToXmlUseCase.ToXml(data)
 
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
+		return
 	}
 
 	c.Writer.Header().Set("Content-Type", "application/xml")
@@ -45,5 +46,4 @@ func (jsonToXmlHandler *handler) ToXml(c *gin.Context) {
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 	}
-	
 }
