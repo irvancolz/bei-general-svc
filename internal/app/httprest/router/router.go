@@ -46,6 +46,7 @@ func Routes() *gin.Engine {
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
+	ParameterAdmin := global.ParameterAdmin
 
 	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{
@@ -55,14 +56,14 @@ func Routes() *gin.Engine {
 		UploadFile.POST("/upload-pkp-file", upload.UploadPkp)
 		UploadFile.POST("/upload-report-file", upload.UploadReport)
 		UploadFile.POST("/upload-guidances-files-regulation-file", upload.UploadGuidebook)
-		UploadFile.GET("/download-existing-file", upload.Download)
-		UploadFile.DELETE("/delete-existing-file", upload.Remove)
+
 	}
 
-	// WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication())
-	// {
-
-	// }
+	WithoutCheckPermission := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
+		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
+	}
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
@@ -96,6 +97,10 @@ func Routes() *gin.Engine {
 		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
 	}
 
+	parameterAdminRoute := v3noauth.Group("").Use(globalRepo.Authentication(&ParameterAdmin))
+	{
+		parameterAdminRoute.POST("/upload-parameter-admin-file", upload.UploadParameterAdmin)
+	}
 	jsonToXmlRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
