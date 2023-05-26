@@ -159,7 +159,6 @@ func (h *handler) Download(c *gin.Context) {
 		model.GenerateIFileNotFoundErrorResponse(c, errorResult)
 		return
 	}
-	c.JSON(httpresponse.Format(httpresponse.DOWNLOADSUCCESS_200, nil, "file berhasil diunduh"))
 }
 
 func (h *handler) Remove(c *gin.Context) {
