@@ -64,7 +64,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 	}
-
+	
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
@@ -99,12 +99,17 @@ func Routes() *gin.Engine {
 
 	parameterAdminRoute := v3noauth.Group("").Use(globalRepo.Authentication(&ParameterAdmin))
 	{
-		parameterAdminRoute.POST("/upload-parameter-admin-file", upload.UploadParameterAdmin)
+		parameterAdminRoute.POST("/upload-parameter-admin-file", upload.UploadParameterAdminFile)
+		parameterAdminRoute.POST("/upload-parameter-admin-image", upload.UploadParameterAdminImage)
 	}
 	jsonToXmlRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
 	}
 
+	WithoutToken := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		WithoutToken.GET("/download-existing-file-without-token", upload.Download)
+	}
 	return r
 }
