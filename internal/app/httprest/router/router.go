@@ -5,6 +5,7 @@ import (
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
+	Unggahberkas "be-idx-tsg/internal/app/httprest/handler/unggah-berkas"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
 	"os"
@@ -43,6 +44,7 @@ func Routes() *gin.Engine {
 	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
 	jsonToXml := JsonToXml.NewHandler()
+	UnggahBerkasHandler := Unggahberkas.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -104,6 +106,12 @@ func Routes() *gin.Engine {
 	jsonToXmlRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
+	}
+	unggahberkasRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		unggahberkasRoute.POST("/unggah-berkas-baru", UnggahBerkasHandler.UploadNew)
+		unggahberkasRoute.GET("/get-unggah-berkas", UnggahBerkasHandler.GetUploadedFiles)
+		unggahberkasRoute.DELETE("/delete-unggah-berkas", UnggahBerkasHandler.DeleteUploadedFiles)
 	}
 
 	return r
