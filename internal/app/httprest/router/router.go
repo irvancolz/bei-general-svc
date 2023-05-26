@@ -107,7 +107,7 @@ func Routes() *gin.Engine {
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
 	}
 
-	WithoutToken := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	WithoutToken := v3noauth.Group("")
 	{
 		WithoutToken.GET("/download-existing-file-without-token", upload.Download)
 	}
