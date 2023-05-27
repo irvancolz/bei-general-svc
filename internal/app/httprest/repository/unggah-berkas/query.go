@@ -17,7 +17,7 @@ const (
 	getUploadedFilesQuery = `
 	SELECT 
 		id,
-		report_type,
+		report_type AS type,
         report_code,
         report_name,
         is_uploaded,
@@ -31,7 +31,7 @@ const (
 	FROM uploaded_files
 	WHERE deleted_at IS NULL
 		AND deleted_by IS NUll
-		AND is_uploaded = false`
+		AND is_uploaded = true`
 	deleteUploadedFilesQuery = `
 	UPDATE uploaded_files
 	SET deleted_at  = $3,

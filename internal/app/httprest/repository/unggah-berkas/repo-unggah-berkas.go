@@ -89,13 +89,27 @@ func (r *repository) GetUploadedFiles() ([]model.UploadedFilesMenuResponse, erro
 	defer rowResults.Close()
 
 	for rowResults.Next() {
-		var result model.UploadedFilesMenuResponse
-		errorScan := rowResults.StructScan(&result)
+		var mock model.UploadedFilesMenuResultSet
+		errorScan := rowResults.StructScan(&mock)
 		if errorScan != nil {
 			log.Println("failed when try to parsing data from database :", errorScan)
 			return nil, errorScan
 		}
+		result := model.UploadedFilesMenuResponse{
+			Id:          mock.Id,
+			Type:        mock.Type,
+			Report_Code: mock.Report_Code,
+			Report_Name: mock.Report_Name,
+			Is_Uploaded: mock.Is_Uploaded,
+			Created_By:  mock.Created_By,
+			Created_At:  mock.Created_At,
 
+			Updated_By: mock.Updated_By.String,
+			Updated_At: mock.Updated_At.Int64,
+			File_Size:  mock.File_Size.Int64,
+			File_Path:  mock.File_Path.String,
+			File_Name:  mock.File_Name.String,
+		}
 		results = append(results, result)
 	}
 

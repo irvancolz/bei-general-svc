@@ -1,10 +1,11 @@
 package unggahberkas
 
 import (
-	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/unggah-berkas"
 	"errors"
-	"strings"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 
 type UnggahBerkasUsecaseInterface interface {
 	UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, error)
-	GetUploadedFiles(c *gin.Context, filetypes string) ([]model.UploadedFilesMenuResponse, error)
+	GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, error)
 	DeleteUploadedFiles(c *gin.Context, id string) error
 }
 
@@ -21,13 +22,12 @@ type usecase struct {
 }
 
 type UploadNewFilesProps struct {
-	Id          string
-	Type        string `validate:"oneof:catatan kunjungan bulanan pjsppa"`
-	Report_Code string
-	Report_Name string
-	File_Name   string
-	File_Path   string
-	File_Size   int64
+	Type        string `json:"type" binding:"oneof=catatan kunjungan bulanan pjsppa,required"`
+	Report_Code string `json:"report_code"`
+	Report_Name string `json:"report_name"`
+	File_Name   string `json:"file_name"`
+	File_Path   string `json:"file_path"`
+	File_Size   int64  `json:"file_size"`
 }
 
 func NewUsecase() UnggahBerkasUsecaseInterface {
@@ -57,22 +57,56 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 	return u.Repo.UploadNew(createNewArgs)
 }
 
-func (u *usecase) GetUploadedFiles(c *gin.Context, filetypes string) ([]model.UploadedFilesMenuResponse, error) {
+func (u *usecase) GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, error) {
+	querries := c.Request.URL.Query()
+	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageLimit, _ := strconv.Atoi(c.DefaultQuery("limit", "1"))
+	showedDatafrom := (pageCount - 1) * pageLimit
 
-	results, errorResults := u.Repo.GetUploadedFiles()
-	if errorResults != nil {
-		return nil, errorResults
+	dataStruct, errorData := u.Repo.GetUploadedFiles()
+	if errorData != nil {
+		return nil, errorData
 	}
 
-	if filetypes != "" {
-		var resultByType []model.UploadedFilesMenuResponse
-		for _, item := range results {
-			if strings.EqualFold(filetypes, item.Report_Type) {
-				resultByType = append(resultByType, item)
-			}
-		}
+	var dataToConverted []interface{}
 
-		return resultByType, nil
+	for _, item := range dataStruct {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	results := helper.ConvertToMap(dataToConverted)
+
+	if len(querries) <= 0 {
+		return results, nil
+	}
+
+	// check for filter params
+	for _, maps := range results {
+		mapKeys := helper.GetMapKeys(maps)
+		var isMatched []bool
+		for key := range querries {
+			if !helper.IsContains(mapKeys, key) {
+				isMatched = append(isMatched, true)
+			}
+
+			isMatched = append(isMatched, helper.IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
+
+		}
+		if !helper.IsContains(isMatched, false) {
+			results = append(results, maps)
+		}
+	}
+
+	if showedDatafrom >= 0 && showedDatafrom < len(results) {
+		showedDataEnd := showedDatafrom + pageLimit
+		if showedDataEnd > len(results) {
+			showedDataEnd = len(results)
+		}
+		return results[showedDatafrom:showedDataEnd], nil
+	}
+
+	if showedDatafrom > len(results) {
+		return make([]map[string]interface{}, 0), nil
 	}
 
 	return results, nil

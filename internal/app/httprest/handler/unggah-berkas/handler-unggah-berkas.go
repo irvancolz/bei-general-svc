@@ -41,8 +41,7 @@ func (h *handler) UploadNew(c *gin.Context) {
 
 }
 func (h *handler) GetUploadedFiles(c *gin.Context) {
-	types := c.Query("type")
-	results, errorResults := h.Usecase.GetUploadedFiles(c, types)
+	results, errorResults := h.Usecase.GetUploadedFiles(c)
 	if errorResults != nil {
 		model.GenerateReadErrorResponse(c, errorResults)
 		return
