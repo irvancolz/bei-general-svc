@@ -3,6 +3,8 @@ package upload
 import (
 	"be-idx-tsg/internal/app/httprest/model"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/upload"
+	// "be-idx-tsg/internal/app/utilities"
+	// "errors"
 	"be-idx-tsg/internal/pkg/httpresponse"
 	"os"
 
@@ -18,7 +20,8 @@ type UploadFileHandlreInterface interface {
 	UploadGuidebook(c *gin.Context)
 	Download(c *gin.Context)
 	Remove(c *gin.Context)
-	UploadParameterAdmin(c *gin.Context)
+	UploadParameterAdminFile(c *gin.Context)
+	UploadParameterAdminImage(c *gin.Context)
 }
 
 type handler struct {
@@ -114,7 +117,28 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 
 	c.JSON(httpresponse.Format(httpresponse.UPLOADSUCCESS_200, nil, result))
 }
-func (h *handler) UploadParameterAdmin(c *gin.Context) {
+func (h *handler) UploadParameterAdminImage(c *gin.Context) {
+	// _, err := utilities.GetParameterAdminImageExtension(c)
+	// if err != nil {
+	// 	model.GenerateReadErrorResponse(c, errors.New("Fail to Get Data"))
+	// 	return
+	// }
+
+	// ext := datas.Data["value"]
+	config := usecase.UploadFileConfig{
+		Host:      os.Getenv("DIR_HOST"),
+		Directory: "ParameterAdmin",
+	}
+	result, error_result := h.Usecase.Upload(c, config)
+	if error_result != nil {
+		model.GenerateUploadErrorResponse(c, error_result)
+		return
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPLOADSUCCESS_200, nil, result))
+}
+
+func (h *handler) UploadParameterAdminFile(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:      os.Getenv("DIR_HOST"),
 		Directory: "ParameterAdmin",
@@ -135,7 +159,6 @@ func (h *handler) Download(c *gin.Context) {
 		model.GenerateIFileNotFoundErrorResponse(c, errorResult)
 		return
 	}
-	c.JSON(httpresponse.Format(httpresponse.DOWNLOADSUCCESS_200, nil, "file berhasil diunduh"))
 }
 
 func (h *handler) Remove(c *gin.Context) {
