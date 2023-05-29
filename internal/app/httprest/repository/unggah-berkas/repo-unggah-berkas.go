@@ -6,12 +6,13 @@ import (
 	"errors"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
 type UnggahBerkasRepoInterface interface {
 	UploadNew(props UploadNewFilesProps) (int64, error)
-	GetUploadedFiles() ([]model.UploadedFilesMenuResponse, error)
+	GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenuResponse, error)
 	DeleteUploadedFiles(props DeleteUploadedFilesProps) error
 	CheckFileAvaliability(id string) bool
 }
@@ -79,7 +80,7 @@ func (r *repository) UploadNew(props UploadNewFilesProps) (int64, error) {
 	return result, nil
 }
 
-func (r *repository) GetUploadedFiles() ([]model.UploadedFilesMenuResponse, error) {
+func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenuResponse, error) {
 	var results []model.UploadedFilesMenuResponse
 	rowResults, errorRows := r.DB.Queryx(getUploadedFilesQuery)
 	if errorRows != nil {

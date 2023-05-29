@@ -14,9 +14,9 @@ CREATE TABLE public.uploaded_files (
     created_by text,
     created_at integer,
     updated_by text,
-    updated_at integer,
+    updated_at bigint,
     deleted_by text,
-    deleted_at integer
+    deleted_at bigint
 );
 -- +goose StatementEnd
 -- +goose Down

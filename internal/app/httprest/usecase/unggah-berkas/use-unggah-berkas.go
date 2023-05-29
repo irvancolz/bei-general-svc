@@ -63,11 +63,12 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, er
 	pageLimit, _ := strconv.Atoi(c.DefaultQuery("limit", "1"))
 	showedDatafrom := (pageCount - 1) * pageLimit
 
-	dataStruct, errorData := u.Repo.GetUploadedFiles()
+	dataStruct, errorData := u.Repo.GetUploadedFiles(c)
 	if errorData != nil {
 		return nil, errorData
 	}
 
+	// filter goes here
 	var dataToConverted []interface{}
 
 	for _, item := range dataStruct {
@@ -80,7 +81,6 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, er
 		return results, nil
 	}
 
-	// check for filter params
 	for _, maps := range results {
 		mapKeys := helper.GetMapKeys(maps)
 		var isMatched []bool
@@ -97,6 +97,7 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, er
 		}
 	}
 
+	// pagination goes here
 	if showedDatafrom >= 0 && showedDatafrom < len(results) {
 		showedDataEnd := showedDatafrom + pageLimit
 		if showedDataEnd > len(results) {
