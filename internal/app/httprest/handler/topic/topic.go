@@ -33,14 +33,19 @@ func (m *handler) GetAll(c *gin.Context) {
 	var keyword = c.Query("keyword")
 	var page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
 	var limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
+	var status = c.Query("status")
+	var name = c.Query("name")
+	var company_name = c.Query("company_name")
+	var start_date = c.Query("start_date")
+	var end_date = c.Query("end_date")
 
-	data, err := m.tp.GetAll(keyword, page, limit)
+	data, err := m.tp.GetAll(keyword, status, name, company_name, start_date, end_date, page, limit)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
-	totalData, totalPage, err := m.tp.GetTotal(keyword, page, limit)
+	totalData, totalPage, err := m.tp.GetTotal(keyword, status, name, company_name, start_date, end_date, page, limit)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return

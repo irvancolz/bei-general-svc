@@ -16,8 +16,8 @@ import (
 )
 
 type Repository interface {
-	GetAll(keyword string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword string, page, limit int) (int, int, error)
+	GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
@@ -36,7 +36,7 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(keyword string, page, limit int) ([]*model.Topic, error) {
+func (m *repository) GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error) {
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
@@ -51,6 +51,27 @@ func (m *repository) GetAll(keyword string, page, limit int) ([]*model.Topic, er
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
 		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
 		OR t.created_at::text ILIKE '%` + keyword + `%')`
+	}
+
+	log.Println(status)
+
+	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" {
+		query += ` AND t.status = '` + status + `'`
+	}
+
+	if name != "" {
+		query += ` AND tp.user_full_name = '` + name + `'`
+	}
+
+	if company_name != "" {
+		query += ` AND tp.company_name = '` + company_name + `'`
+	}
+
+	if start_date != "" && end_date != "" {
+		start_date = parseTime(start_date)
+		end_date = parseTime(end_date)
+
+		query += ` AND (tp.created_at BETWEEN '` + start_date + `' AND '` + end_date + `')`
 	}
 
 	query += ` ORDER BY created_at DESC`
@@ -79,7 +100,7 @@ func (m *repository) GetAll(keyword string, page, limit int) ([]*model.Topic, er
 	return listData, nil
 }
 
-func (m *repository) GetTotal(keyword string, page, limit int) (int, int, error) {
+func (m *repository) GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error) {
 	var totalData int
 
 	query := `SELECT COUNT(t.id)
@@ -92,6 +113,25 @@ func (m *repository) GetTotal(keyword string, page, limit int) (int, int, error)
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
 		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
 		OR t.created_at::text ILIKE '%` + keyword + `%')`
+	}
+
+	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" {
+		query += ` AND t.status = '` + status + `'`
+	}
+
+	if name != "" {
+		query += ` AND tp.user_full_name = '` + name + `'`
+	}
+
+	if company_name != "" {
+		query += ` AND tp.company_name = '` + company_name + `'`
+	}
+
+	if start_date != "" && end_date != "" {
+		start_date = parseTime(start_date)
+		end_date = parseTime(end_date)
+
+		query += ` AND (tp.created_at BETWEEN '` + start_date + `' AND '` + end_date + `')`
 	}
 
 	err := m.DB.Get(&totalData, query)
@@ -355,4 +395,28 @@ func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.
 	rowsAffected, _ := result.RowsAffected()
 
 	return rowsAffected, nil
+}
+
+func parseTime(input string) string {
+	// parse input string menjadi time.Time object
+	t, err := time.Parse(time.RFC3339Nano, input)
+	if err != nil {
+		log.Println("error parsing time:", err)
+		return ""
+	}
+
+	// set timezone yang diinginkan
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		log.Println("error loading location:", err)
+		return ""
+	}
+
+	// konversi time.Time object ke timezone yang diinginkan
+	t = t.In(location)
+
+	// format output string
+	output := t.Format("2006-01-02 15:04:05.999 -0700")
+
+	return output
 }

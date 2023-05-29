@@ -8,8 +8,8 @@ import (
 )
 
 type Usecase interface {
-	GetAll(keyword string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword string, page, limit int) (int, int, error)
+	GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
@@ -28,12 +28,12 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(keyword string, page, limit int) ([]*model.Topic, error) {
-	return m.tpRepo.GetAll(keyword, page, limit)
+func (m *usecase) GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error) {
+	return m.tpRepo.GetAll(keyword, status, name, company_name, start_date, end_date, page, limit)
 }
 
-func (m *usecase) GetTotal(keyword string, page, limit int) (int, int, error) {
-	return m.tpRepo.GetTotal(keyword, page, limit)
+func (m *usecase) GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error) {
+	return m.tpRepo.GetTotal(keyword, status, name, company_name, start_date, end_date, page, limit)
 }
 
 func (m *usecase) GetByID(topicID, keyword string) (*model.Topic, error) {

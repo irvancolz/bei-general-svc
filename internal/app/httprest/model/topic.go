@@ -5,8 +5,8 @@ import "time"
 type Status string
 
 const (
-	NotAnswered Status = "NOT ANSWERED"
-	Answered    Status = "ANSWERED"
+	NotAnswered Status = "BELUM TERJAWAB"
+	Answered    Status = "SUDAH TERJAWAB"
 )
 
 type Topic struct {
