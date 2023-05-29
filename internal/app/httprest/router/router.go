@@ -5,6 +5,7 @@ import (
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
+	Topic "be-idx-tsg/internal/app/httprest/handler/topic"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
 	"os"
@@ -43,6 +44,7 @@ func Routes() *gin.Engine {
 	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
 	jsonToXml := JsonToXml.NewHandler()
+	topic := Topic.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -64,7 +66,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 	}
-	
+
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
@@ -111,5 +113,17 @@ func Routes() *gin.Engine {
 	{
 		WithoutToken.GET("/download-existing-file-without-token", upload.Download)
 	}
+
+	topicRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		topicRoute.GET("/get-all-topic", topic.GetAll)
+		topicRoute.GET("/get-by-id-topic", topic.GetById)
+		topicRoute.POST("/create-topic", topic.CreateTopicWithMessage)
+		topicRoute.PUT("/update-handler", topic.UpdateHandler)
+		topicRoute.POST("/create-message", topic.CreateMessage)
+		topicRoute.DELETE("/delete-topic", topic.DeleteTopic)
+		topicRoute.POST("/archive-topic", topic.ArchiveTopicToFAQ)
+	}
+
 	return r
 }
