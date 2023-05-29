@@ -78,10 +78,10 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 		context.Set("external_type", jwtPayload.ExternalType)
 		// context.Set("user_role", jwtPayload.UserRole)
 		// context.Set("user_role_id", jwtPayload.UserRoleID)
-		// context.Set("company_name", jwtPayload.CompanyName)
+		context.Set("company_name", jwtPayload.CompanyName)
 		// context.Set("company_code", jwtPayload.CompanyCode)
-		// context.Set("company_id", jwtPayload.CompanyId)
-		// context.Set("name", jwtPayload.Name)
+		context.Set("company_id", jwtPayload.CompanyId)
+		context.Set("name", jwtPayload.Name)
 		// context.Set("user_form_role", jwtPayload.UserFormRole)
 
 		log.Println("module ", module)
