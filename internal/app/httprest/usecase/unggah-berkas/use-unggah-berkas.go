@@ -4,8 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/unggah-berkas"
 	"errors"
-	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +11,7 @@ import (
 
 type UnggahBerkasUsecaseInterface interface {
 	UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, error)
-	GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, error)
+	GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, error)
 	DeleteUploadedFiles(c *gin.Context, id string) error
 }
 
@@ -57,60 +55,21 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 	return u.Repo.UploadNew(createNewArgs)
 }
 
-func (u *usecase) GetUploadedFiles(c *gin.Context) ([]map[string]interface{}, error) {
-	querries := c.Request.URL.Query()
-	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageLimit, _ := strconv.Atoi(c.DefaultQuery("limit", "1"))
-	showedDatafrom := (pageCount - 1) * pageLimit
+func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, error) {
 
 	dataStruct, errorData := u.Repo.GetUploadedFiles(c)
 	if errorData != nil {
 		return nil, errorData
 	}
 
-	// filter goes here
 	var dataToConverted []interface{}
-
 	for _, item := range dataStruct {
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	results := helper.ConvertToMap(dataToConverted)
-
-	if len(querries) <= 0 {
-		return results, nil
-	}
-
-	for _, maps := range results {
-		mapKeys := helper.GetMapKeys(maps)
-		var isMatched []bool
-		for key := range querries {
-			if !helper.IsContains(mapKeys, key) {
-				isMatched = append(isMatched, true)
-			}
-
-			isMatched = append(isMatched, helper.IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
-
-		}
-		if !helper.IsContains(isMatched, false) {
-			results = append(results, maps)
-		}
-	}
-
-	// pagination goes here
-	if showedDatafrom >= 0 && showedDatafrom < len(results) {
-		showedDataEnd := showedDatafrom + pageLimit
-		if showedDataEnd > len(results) {
-			showedDataEnd = len(results)
-		}
-		return results[showedDatafrom:showedDataEnd], nil
-	}
-
-	if showedDatafrom > len(results) {
-		return make([]map[string]interface{}, 0), nil
-	}
-
-	return results, nil
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
 }
 
 func (u *usecase) DeleteUploadedFiles(c *gin.Context, id string) error {

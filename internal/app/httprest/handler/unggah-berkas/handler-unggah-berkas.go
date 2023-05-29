@@ -47,11 +47,6 @@ func (h *handler) GetUploadedFiles(c *gin.Context) {
 		return
 	}
 
-	if len(results) == 0 {
-		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]map[string]interface{}, 0)))
-		return
-	}
-
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, results))
 }
 func (h *handler) DeleteUploadedFiles(c *gin.Context) {

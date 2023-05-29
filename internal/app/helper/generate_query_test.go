@@ -53,8 +53,8 @@ func TestTimeConverter(t *testing.T) {
 	t2 := time.Date(2023, time.May, 26, 23, 59, 0, 0, time.Local)
 	unixTimeEnd := t2.Unix()
 
-	timeStart := time.Unix(int64(unixTimeStart), 0).Format("2006-01-02")
-	timeEnd := time.Unix(int64(unixTimeEnd), 0).Format("2006-01-02")
+	timeStart := ConvertUnixToDateString(unixTimeStart, "")
+	timeEnd := ConvertUnixToDateString(unixTimeEnd, "")
 
 	if timeStart != timeEnd {
 		t.Error("the time results is not same")
