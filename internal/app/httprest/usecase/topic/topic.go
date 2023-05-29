@@ -8,7 +8,8 @@ import (
 )
 
 type Usecase interface {
-	GetAll(keyword string) ([]*model.Topic, error)
+	GetAll(keyword string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
@@ -27,8 +28,12 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(keyword string) ([]*model.Topic, error) {
-	return m.tpRepo.GetAll(keyword)
+func (m *usecase) GetAll(keyword string, page, limit int) ([]*model.Topic, error) {
+	return m.tpRepo.GetAll(keyword, page, limit)
+}
+
+func (m *usecase) GetTotal(keyword string, page, limit int) (int, int, error) {
+	return m.tpRepo.GetTotal(keyword, page, limit)
 }
 
 func (m *usecase) GetByID(topicID, keyword string) (*model.Topic, error) {

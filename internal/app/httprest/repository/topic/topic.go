@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +16,8 @@ import (
 )
 
 type Repository interface {
-	GetAll(keyword string) ([]*model.Topic, error)
+	GetAll(keyword string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
@@ -33,7 +36,7 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(keyword string) ([]*model.Topic, error) {
+func (m *repository) GetAll(keyword string, page, limit int) ([]*model.Topic, error) {
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
@@ -52,6 +55,12 @@ func (m *repository) GetAll(keyword string) ([]*model.Topic, error) {
 
 	query += ` ORDER BY created_at DESC`
 
+	if page > 0 && limit > 0 {
+		offset := (page - 1) * limit
+
+		query += ` OFFSET ` + strconv.Itoa(offset) + ` LIMIT ` + strconv.Itoa(limit)
+	}
+
 	err := m.DB.Select(&listData, query)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [GetAll] ", err)
@@ -68,6 +77,31 @@ func (m *repository) GetAll(keyword string) ([]*model.Topic, error) {
 	}
 
 	return listData, nil
+}
+
+func (m *repository) GetTotal(keyword string, page, limit int) (int, int, error) {
+	var totalData int
+
+	query := `SELECT COUNT(t.id)
+	FROM topics t
+	INNER JOIN topic_messages tp ON tp.id = (
+		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
+	) WHERE t.is_deleted = false`
+
+	if keyword != "" {
+		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
+		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
+		OR t.created_at::text ILIKE '%` + keyword + `%')`
+	}
+
+	err := m.DB.Get(&totalData, query)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	totalPage := int(math.Ceil(float64(totalData) / float64(limit)))
+
+	return totalData, totalPage, nil
 }
 
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {

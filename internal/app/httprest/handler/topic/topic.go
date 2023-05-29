@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/usecase/topic"
 	"be-idx-tsg/internal/pkg/httpresponse"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,14 +31,24 @@ func NewHandler() Handler {
 
 func (m *handler) GetAll(c *gin.Context) {
 	var keyword = c.Query("keyword")
+	var page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
+	var limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	data, err := m.tp.GetAll(keyword)
+	data, err := m.tp.GetAll(keyword, page, limit)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+	totalData, totalPage, err := m.tp.GetTotal(keyword, page, limit)
+	if err != nil {
+		model.GenerateReadErrorResponse(c, err)
+		return
+	}
+
+	var pagination = []any{data, totalData, page, limit, len(data), totalPage}
+
+	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, pagination...))
 }
 
 func (m *handler) GetById(c *gin.Context) {
