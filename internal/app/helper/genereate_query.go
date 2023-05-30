@@ -66,12 +66,9 @@ func (m *SearchQueryGenerator) GenerateSearchQuery(valueExpected []string, const
 }
 
 func (s *SearchQueryGenerator) GenerateGetAllDataQuerry(c *gin.Context, baseQuery string) string {
-	queryParams := c.Request.URL.Query()
-
-	for key, values := range queryParams {
-		if key == "search" {
-			return baseQuery + s.GenerateSearchQuery(values, "")
-		}
+	queryParams := c.QueryArray("search")
+	if len(queryParams) > 0 {
+		return baseQuery + s.GenerateSearchQuery(queryParams, "")
 	}
 	return baseQuery
 }

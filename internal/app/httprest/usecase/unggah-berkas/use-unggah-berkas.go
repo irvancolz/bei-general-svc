@@ -61,12 +61,10 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 	if errorData != nil {
 		return nil, errorData
 	}
-
 	var dataToConverted []interface{}
 	for _, item := range dataStruct {
 		dataToConverted = append(dataToConverted, item)
 	}
-
 	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
 	paginatedData := helper.HandleDataPagination(c, filteredData)
 	return &paginatedData, nil

@@ -36,6 +36,7 @@ func ConvertUnixToDateString(unix int64, format string) string {
 // the time field used specially if we want to search data created/updated on a single day
 func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string) []map[string]interface{} {
 	querries := c.Request.URL.Query()
+	reservedQueries := []string{"page", "limit", "search"}
 	results := ConvertToMap(data)
 	if len(querries) <= 0 {
 		return results
@@ -44,19 +45,19 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 	var filteredResults []map[string]interface{}
 	for _, maps := range results {
 		mapKeys := GetMapKeys(maps)
-		isMatched := make([]bool, len(querries))
+		var isMatched []bool
 		for key := range querries {
-			if !IsContains(mapKeys, key) {
+			if !IsContains(mapKeys, key) || IsContains(reservedQueries, key) {
 				isMatched = append(isMatched, true)
-			} else if !IsContains(timeField, key) {
-				isMatched = append(isMatched, IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
-			} else {
+			} else if IsContains(timeField, key) {
 				isMatched = append(isMatched, ConvertUnixStrToDateString(querries[key][0], "") == ConvertUnixToDateString(maps[key].(int64), ""))
+			} else {
+				isMatched = append(isMatched, IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
 			}
-
 		}
+
 		if !IsContains(isMatched, false) {
-			filteredResults = append(results, maps)
+			filteredResults = append(filteredResults, maps)
 		}
 	}
 	return filteredResults
@@ -73,7 +74,6 @@ type PaginationResponse struct {
 
 func HandleDataPagination(c *gin.Context, data []map[string]interface{}) PaginationResponse {
 	var result PaginationResponse
-
 	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if pageCount == 0 {
 		pageCount = 1

@@ -1,6 +1,7 @@
 package unggahberkas
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
@@ -82,7 +83,20 @@ func (r *repository) UploadNew(props UploadNewFilesProps) (int64, error) {
 
 func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenuResponse, error) {
 	var results []model.UploadedFilesMenuResponse
-	rowResults, errorRows := r.DB.Queryx(getUploadedFilesQuery)
+	serchQueryConfig := helper.SearchQueryGenerator{
+		TableName: "uploaded_files",
+		ColumnScanned: []string{
+			"report_code",
+			"report_name",
+			"file_name",
+		},
+	}
+
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getUploadedFilesQuery)
+
+	// rowResults, errorRows := r.DB.Queryx(getUploadedFilesQuery)
+	// log.Println(query)
+	rowResults, errorRows := r.DB.Queryx(query)
 	if errorRows != nil {
 		log.Println("failed to get uploaded files from databases :", errorRows)
 		return nil, errorRows
