@@ -13,7 +13,7 @@ func TestIsArray(t *testing.T) {
 	}
 }
 
-func TestIsArray2(t *testing.T) {
+func TestIsNotAnArray(t *testing.T) {
 	char := "a"
 	result := isArray(char)
 	if result {
@@ -21,7 +21,7 @@ func TestIsArray2(t *testing.T) {
 	}
 }
 
-type dummyStruct struct {
+type convertToMapMockStruct struct {
 	Id       int64
 	Name     string
 	Is_owned bool
@@ -58,7 +58,7 @@ func TestConvertToMap(t *testing.T) {
 	var datas []interface{}
 	count := 3
 	for i := 0; i < count; i++ {
-		data := dummyStruct{
+		data := convertToMapMockStruct{
 			Is_owned: true,
 			Id:       int64(i) + 1,
 			Name:     "data ke : " + strconv.Itoa(i+1),
