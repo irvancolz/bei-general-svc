@@ -22,4 +22,5 @@ CREATE TABLE public.uploaded_files (
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
-DROP TABLE uploaded_files -- +goose StatementEnd
+DROP TABLE uploaded_files;
+-- +goose StatementEnd
