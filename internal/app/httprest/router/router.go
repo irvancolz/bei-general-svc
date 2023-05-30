@@ -7,6 +7,7 @@ import (
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
 	Topic "be-idx-tsg/internal/app/httprest/handler/topic"
+	Unggahberkas "be-idx-tsg/internal/app/httprest/handler/unggah-berkas"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
 	"os"
@@ -45,6 +46,7 @@ func Routes() *gin.Engine {
 	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
 	jsonToXml := JsonToXml.NewHandler()
+	UnggahBerkasHandler := Unggahberkas.NewHandler()
 	topic := Topic.NewHandler()
 	faq := FAQ.NewHandler()
 
@@ -109,6 +111,12 @@ func Routes() *gin.Engine {
 	jsonToXmlRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
+	}
+	unggahberkasRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		unggahberkasRoute.POST("/post-uploaded-files-to-unggah-berkas", UnggahBerkasHandler.UploadNew)
+		unggahberkasRoute.GET("/get-all-posted-files-from-unggah-berkas", UnggahBerkasHandler.GetUploadedFiles)
+		unggahberkasRoute.DELETE("/delete-posted-files-from-unggah-berkas", UnggahBerkasHandler.DeleteUploadedFiles)
 	}
 
 	WithoutToken := v3noauth.Group("")

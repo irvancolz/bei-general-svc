@@ -167,7 +167,7 @@ func (h *handler) Remove(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "test",
-		Extensions: []string{".pdf"},
+		Extensions: []string{},
 	}
 	errorResult := h.Usecase.DeleteFile(c, config, slug)
 	if errorResult != nil {
