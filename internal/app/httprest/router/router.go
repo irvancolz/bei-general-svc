@@ -114,9 +114,9 @@ func Routes() *gin.Engine {
 	}
 	unggahberkasRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
-		unggahberkasRoute.POST("/unggah-berkas-baru", UnggahBerkasHandler.UploadNew)
-		unggahberkasRoute.GET("/get-unggah-berkas", UnggahBerkasHandler.GetUploadedFiles)
-		unggahberkasRoute.DELETE("/delete-unggah-berkas", UnggahBerkasHandler.DeleteUploadedFiles)
+		unggahberkasRoute.POST("/post-uploaded-files-to-unggah-berkas", UnggahBerkasHandler.UploadNew)
+		unggahberkasRoute.GET("/get-all-posted-files-from-unggah-berkas", UnggahBerkasHandler.GetUploadedFiles)
+		unggahberkasRoute.DELETE("/delete-posted-files-from-unggah-berkas", UnggahBerkasHandler.DeleteUploadedFiles)
 	}
 
 	WithoutToken := v3noauth.Group("")

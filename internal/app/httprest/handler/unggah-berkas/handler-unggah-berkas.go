@@ -54,6 +54,7 @@ func (h *handler) DeleteUploadedFiles(c *gin.Context) {
 	errorResults := h.Usecase.DeleteUploadedFiles(c, id)
 	if errorResults != nil {
 		model.GenerateDeleteErrorResponse(c, errorResults)
+		return
 	}
 
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, nil))

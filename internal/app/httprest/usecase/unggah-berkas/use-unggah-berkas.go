@@ -3,6 +3,7 @@ package unggahberkas
 import (
 	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/unggah-berkas"
+	"be-idx-tsg/internal/app/httprest/usecase/upload"
 	"errors"
 	"time"
 
@@ -76,6 +77,16 @@ func (u *usecase) DeleteUploadedFiles(c *gin.Context, id string) error {
 	isFileAvaliable := u.Repo.CheckFileAvaliability(id)
 	if !isFileAvaliable {
 		return errors.New("failed to delete files, files cannot found in database")
+	}
+
+	filePath, errorPath := u.Repo.GetUploadedFilesPath(c, id)
+	if errorPath != nil {
+		return errorPath
+	}
+	removeFileFromDiskArgs := upload.UploadFileConfig{}
+	removeFileFromDiskErr := upload.NewUsecase().DeleteFile(c, removeFileFromDiskArgs, filePath)
+	if removeFileFromDiskErr != nil {
+		return removeFileFromDiskErr
 	}
 
 	deleteFileArgs := repo.DeleteUploadedFilesProps{

@@ -36,7 +36,7 @@ const (
 	UPDATE uploaded_files
 	SET deleted_at  = $3,
 	deleted_by = $2
-	WHERE id = $1,
+	WHERE id = $1
 	AND deleted_by IS NULL
 	AND deleted_at IS NULL`
 	checkDataAvaliabilityQuery = `
@@ -45,4 +45,12 @@ const (
 	WHERE id = $1
 	AND deleted_by IS NULL
 	AND deleted_at IS NULL`
+	getUploadedFilesPathQuery = `
+	SELECT 
+	file_path
+	FROM uploaded_files
+	WHERE id = $1
+	AND deleted_by IS NULL
+	AND deleted_at IS NULL
+	`
 )

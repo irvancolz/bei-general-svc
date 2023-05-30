@@ -14,6 +14,7 @@ import (
 type UnggahBerkasRepoInterface interface {
 	UploadNew(props UploadNewFilesProps) (int64, error)
 	GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenuResponse, error)
+	GetUploadedFilesPath(c *gin.Context, id string) (string, error)
 	DeleteUploadedFiles(props DeleteUploadedFilesProps) error
 	CheckFileAvaliability(id string) bool
 }
@@ -30,7 +31,7 @@ func NewRepository() UnggahBerkasRepoInterface {
 
 func (r *repository) CheckFileAvaliability(id string) bool {
 	var total int64
-	result := r.DB.QueryRow(deleteUploadedFilesQuery, id)
+	result := r.DB.QueryRow(checkDataAvaliabilityQuery, id)
 	errorScan := result.Scan(&total)
 	if errorScan != nil {
 		log.Println("failed to get file avaliability from database :", errorScan)
@@ -152,4 +153,16 @@ func (r *repository) DeleteUploadedFiles(props DeleteUploadedFilesProps) error {
 	}
 
 	return nil
+}
+
+func (r *repository) GetUploadedFilesPath(c *gin.Context, id string) (string, error) {
+	var result string
+	rowResults := r.DB.QueryRowx(getUploadedFilesPathQuery, id)
+	errorScan := rowResults.Scan(&result)
+	if errorScan != nil {
+		log.Println("failed to scan file path from database :", errorScan)
+		return "", errorScan
+	}
+
+	return result, nil
 }
