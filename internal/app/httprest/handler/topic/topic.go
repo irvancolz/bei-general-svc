@@ -14,6 +14,7 @@ type Handler interface {
 	GetById(c *gin.Context)
 	CreateTopicWithMessage(c *gin.Context)
 	UpdateHandler(c *gin.Context)
+	UpdateStatus(c *gin.Context)
 	CreateMessage(c *gin.Context)
 	DeleteTopic(c *gin.Context)
 	ArchiveTopicToFAQ(c *gin.Context)
@@ -30,22 +31,23 @@ func NewHandler() Handler {
 }
 
 func (m *handler) GetAll(c *gin.Context) {
-	var keyword = c.Query("keyword")
-	var page, _ = strconv.Atoi(c.DefaultQuery("page", "1"))
-	var limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
-	var status = c.Query("status")
-	var name = c.Query("name")
-	var company_name = c.Query("company_name")
-	var start_date = c.Query("start_date")
-	var end_date = c.Query("end_date")
+	keyword := c.Query("keyword")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	status := c.Query("status")
+	name := c.Query("name")
+	company_name := c.Query("company_name")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+	userId, _ := c.Get("user_id")
 
-	data, err := m.tp.GetAll(keyword, status, name, company_name, start_date, end_date, page, limit)
+	data, err := m.tp.GetAll(keyword, status, name, company_name, startDate, endDate, userId.(string), page, limit)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
-	totalData, totalPage, err := m.tp.GetTotal(keyword, status, name, company_name, start_date, end_date, page, limit)
+	totalData, totalPage, err := m.tp.GetTotal(keyword, status, name, company_name, startDate, endDate, userId.(string), page, limit)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
@@ -72,6 +74,7 @@ func (m *handler) GetById(c *gin.Context) {
 func (m *handler) CreateTopicWithMessage(c *gin.Context) {
 	var (
 		request model.CreateTopicWithMessage
+		isDraft bool
 	)
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -79,7 +82,9 @@ func (m *handler) CreateTopicWithMessage(c *gin.Context) {
 		return
 	}
 
-	data, err := m.tp.CreateTopicWithMessage(request, c)
+	isDraft, _ = strconv.ParseBool(c.DefaultQuery("draft", "0"))
+
+	data, err := m.tp.CreateTopicWithMessage(request, c, isDraft)
 	if err != nil {
 		model.GenerateInsertErrorResponse(c, err)
 		return
@@ -103,6 +108,29 @@ func (m *handler) UpdateHandler(c *gin.Context) {
 	}
 
 	data, err := m.tp.UpdateHandler(request, c)
+	if err != nil {
+		model.GenerateUpdateErrorResponse(c, err)
+		return
+	}
+
+	if data != 1 {
+		model.GenerateUpdateErrorResponse(c, err)
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, data))
+}
+
+func (m *handler) UpdateStatus(c *gin.Context) {
+	var (
+		request model.UpdateTopicStatus
+	)
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		model.GenerateInvalidJsonResponse(c, err)
+		return
+	}
+
+	data, err := m.tp.UpdateStatus(request, c)
 	if err != nil {
 		model.GenerateUpdateErrorResponse(c, err)
 		return

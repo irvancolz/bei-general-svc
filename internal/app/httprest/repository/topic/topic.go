@@ -16,11 +16,12 @@ import (
 )
 
 type Repository interface {
-	GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error)
+	GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
-	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
+	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
+	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error)
 	CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error)
 	DeleteTopic(topicID string, c *gin.Context) (int64, error)
 	ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.Context) (int64, error)
@@ -36,7 +37,7 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error) {
+func (m *repository) GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
@@ -45,15 +46,13 @@ func (m *repository) GetAll(keyword, status, name, company_name, start_date, end
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false`
+	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId + `'))`
 
 	if keyword != "" {
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
 		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
 		OR t.created_at::text ILIKE '%` + keyword + `%')`
 	}
-
-	log.Println(status)
 
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" {
 		query += ` AND t.status = '` + status + `'`
@@ -67,15 +66,16 @@ func (m *repository) GetAll(keyword, status, name, company_name, start_date, end
 		query += ` AND tp.company_name = '` + company_name + `'`
 	}
 
-	if start_date != "" && end_date != "" {
-		start_date = parseTime(start_date)
-		end_date = parseTime(end_date)
+	if startDate != "" && endDate != "" {
+		startDate = parseTime(startDate)
+		endDate = parseTime(endDate)
 
-		query += ` AND (tp.created_at BETWEEN '` + start_date + `' AND '` + end_date + `')`
+		query += ` AND (tp.created_at BETWEEN '` + startDate + `' AND '` + endDate + `')`
 	}
 
 	query += ` ORDER BY created_at DESC`
 
+	log.Println(query)
 	if page > 0 && limit > 0 {
 		offset := (page - 1) * limit
 
@@ -100,14 +100,14 @@ func (m *repository) GetAll(keyword, status, name, company_name, start_date, end
 	return listData, nil
 }
 
-func (m *repository) GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error) {
+func (m *repository) GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error) {
 	var totalData int
 
 	query := `SELECT COUNT(t.id)
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false`
+	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId + `'))`
 
 	if keyword != "" {
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
@@ -127,11 +127,11 @@ func (m *repository) GetTotal(keyword, status, name, company_name, start_date, e
 		query += ` AND tp.company_name = '` + company_name + `'`
 	}
 
-	if start_date != "" && end_date != "" {
-		start_date = parseTime(start_date)
-		end_date = parseTime(end_date)
+	if startDate != "" && endDate != "" {
+		startDate = parseTime(startDate)
+		endDate = parseTime(endDate)
 
-		query += ` AND (tp.created_at BETWEEN '` + start_date + `' AND '` + end_date + `')`
+		query += ` AND (tp.created_at BETWEEN '` + startDate + `' AND '` + endDate + `')`
 	}
 
 	err := m.DB.Get(&totalData, query)
@@ -213,8 +213,34 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 	return rowsAffected, nil
 }
 
-func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error) {
+func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error) {
+	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
+	topic.UpdatedAt = t.Format("2006-01-02 15:04:05")
+
+	userId, _ := c.Get("user_id")
+	topic.UpdatedBy = userId.(string)
+
 	topic.Status = model.NotAnswered
+
+	query := `UPDATE topics SET status = :status, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
+
+	result, err := m.DB.NamedExec(query, &topic)
+
+	if err != nil {
+		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [UpdateHandler] ", err)
+		return 0, err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+
+	return rowsAffected, nil
+}
+
+func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error) {
+	topic.Status = model.NotAnswered
+	if isDraft {
+		topic.Status = model.Draft
+	}
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topic.CreatedAt = t.Format("2006-01-02 15:04:05")
@@ -230,6 +256,10 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 
 	name, _ := c.Get("name")
 	topic.UserFullName = name.(string)
+
+	if topic.CompanyID == "" {
+		topic.CompanyID = "00000000-0000-0000-0000-000000000000"
+	}
 
 	query := `INSERT INTO topics (status, created_by, created_at) VALUES (:status, :created_by, :created_at) RETURNING id AS topic_id`
 	row, err := m.DB.NamedQuery(query, topic)

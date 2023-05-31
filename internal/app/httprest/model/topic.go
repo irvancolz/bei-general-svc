@@ -7,6 +7,7 @@ type Status string
 const (
 	NotAnswered Status = "BELUM TERJAWAB"
 	Answered    Status = "SUDAH TERJAWAB"
+	Draft       Status = "DRAFT"
 )
 
 type Topic struct {
@@ -47,6 +48,13 @@ type CreateTopicWithMessage struct {
 type UpdateTopicHandler struct {
 	TopicID   string `db:"topic_id" json:"topic_id"`
 	HandlerID string `db:"handler_id"`
+	UpdatedBy string `db:"updated_by"`
+	UpdatedAt string `db:"updated_at"`
+}
+
+type UpdateTopicStatus struct {
+	TopicID   string `db:"topic_id" json:"topic_id"`
+	Status    Status `db:"status"`
 	UpdatedBy string `db:"updated_by"`
 	UpdatedAt string `db:"updated_at"`
 }
