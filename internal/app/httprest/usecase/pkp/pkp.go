@@ -14,7 +14,7 @@ type Usecase interface {
 	CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error)
 	UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
+	GetAllWithFilter(keyword []string) ([]model.PKuser, error)
 	GetAllWithSearch(Code string, Name string, QuestionDate time.Time, Question string, Answers string, answered_by string, AnsweredAt time.Time) ([]*model.PKuser, error)
 }
 
@@ -56,7 +56,7 @@ func (uc *usecase) Delete(id string, c *gin.Context) (int64, error) {
 	return uc.pkpRepo.Delete(id, c)
 }
 
-func (uc *usecase) GetAllWithFilter(keyword []string) ([]*model.PKuser, error) {
+func (uc *usecase) GetAllWithFilter(keyword []string) ([]model.PKuser, error) {
 	return uc.pkpRepo.GetAllWithFilter(keyword)
 }
 
