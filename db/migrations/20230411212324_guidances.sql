@@ -16,11 +16,11 @@ CREATE TABLE public.guidance_file_and_regulation (
     "owner" text,
     is_visible boolean,
     created_by text,
-    created_at bigint,
+    created_at timestamp with time zone,
     updated_by text,
-    updated_at bigint,
+    updated_at timestamp with time zone,
     deleted_by text,
-    deleted_at bigint,
+    deleted_at timestamp with time zone,
     PRIMARY KEY (id)
 );
 -- +goose StatementEnd
