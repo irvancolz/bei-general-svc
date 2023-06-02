@@ -1,8 +1,10 @@
 package guidances
 
 import (
-	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+
+	"github.com/gin-gonic/gin"
 )
 
 type guidancesUsecase struct {
@@ -13,7 +15,7 @@ type GuidancesRegulationAndFileUsecaseInterface interface {
 	GuidancesUsecaseInterface
 	RegulationUsecaseInterface
 	FilesUsecaseInterface
-	GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error)
+	GetAllData(c *gin.Context) (*helper.PaginationResponse, error)
 }
 
 func NewGuidanceUsecase() GuidancesRegulationAndFileUsecaseInterface {
@@ -21,6 +23,20 @@ func NewGuidanceUsecase() GuidancesRegulationAndFileUsecaseInterface {
 		Repository: repo.NewGuidancesRepository(),
 	}
 }
-func (u *guidancesUsecase) GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error) {
-	return u.Repository.GetAllData()
+
+func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationResponse, error) {
+	databaseResult, errorResult := u.Repository.GetAllData()
+	if errorResult != nil {
+		return nil, errorResult
+	}
+
+	var dataToConverted []interface{}
+	for _, item := range databaseResult {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
+
 }

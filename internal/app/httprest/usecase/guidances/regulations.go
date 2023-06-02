@@ -1,6 +1,7 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"time"
@@ -26,7 +27,7 @@ type UpdateExistingRegulationsAndFileProps struct {
 type RegulationUsecaseInterface interface {
 	CreateNewRegulations(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error)
 	UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error
-	GetAllRegulationsBasedOnType(c *gin.Context, types string) ([]*model.RegulationJSONResponse, error)
+	GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 }
 
 func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error) {
@@ -66,7 +67,7 @@ func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props Updat
 	}
 	return nil
 }
-func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types string) ([]*model.RegulationJSONResponse, error) {
+func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []*model.RegulationJSONResponse
 	raw_result, error_result := r.Repository.GetAllData()
 	if error_result != nil {
@@ -90,5 +91,13 @@ func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types st
 			results = append(results, &result)
 		}
 	}
-	return results, nil
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
 }
