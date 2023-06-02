@@ -2,3 +2,5 @@
 
 # uploaded files will not be moved
 uploaded/
+
+__debug_bin.exe

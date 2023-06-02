@@ -1,6 +1,7 @@
 package pkp
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	pkp "be-idx-tsg/internal/app/httprest/repository/pkp"
 	"time"
@@ -9,7 +10,7 @@ import (
 )
 
 type Usecase interface {
-	GetAllPKuser(c *gin.Context) ([]*model.PKuser, error)
+	GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, error)
 	CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error)
 	UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
@@ -27,8 +28,20 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (uc *usecase) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
-	return uc.pkpRepo.GetAllPKuser(c)
+func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, error) {
+	results, errorResults := uc.pkpRepo.GetAllPKuser(c)
+	if errorResults != nil {
+		return nil, errorResults
+	}
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
 }
 
 func (uc *usecase) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error) {

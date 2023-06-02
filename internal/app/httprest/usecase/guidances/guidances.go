@@ -1,6 +1,7 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"log"
@@ -12,7 +13,7 @@ import (
 type GuidancesUsecaseInterface interface {
 	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error)
 	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error
-	GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error)
+	GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 	DeleteGuidances(c *gin.Context, id string) error
 }
 
@@ -89,7 +90,7 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 	return result, nil
 }
 
-func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error) {
+func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []*model.GuidanceJSONResponse
 	raw_result, error_result := u.Repository.GetAllData()
 	if error_result != nil {
@@ -119,7 +120,15 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 			results = append(results, &result)
 		}
 	}
-	return results, nil
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
 }
 
 func (u *guidancesUsecase) DeleteGuidances(c *gin.Context, id string) error {

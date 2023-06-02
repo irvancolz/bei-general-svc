@@ -69,10 +69,6 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				model.GenerateFlowErrorResponse(c, error_result)
 				return
 			}
-			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
-				return
-			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
 
 			break
@@ -82,10 +78,6 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 			result, error_result := h.usecase.GetAllFilesOnType(c, types)
 			if error_result != nil {
 				model.GenerateFlowErrorResponse(c, error_result)
-				return
-			}
-			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -98,10 +90,6 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 			result, error_result := h.usecase.GetAllRegulationsBasedOnType(c, types)
 			if error_result != nil {
 				model.GenerateFlowErrorResponse(c, error_result)
-				return
-			}
-			if len(result) == 0 {
-				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
 				return
 			}
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
@@ -117,15 +105,12 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 }
 
 func (h *guidancehandler) GetAllData(c *gin.Context) {
-	result, errorResult := h.usecase.GetAllData()
+	result, errorResult := h.usecase.GetAllData(c)
 	if errorResult != nil {
 		model.GenerateFlowErrorResponse(c, errorResult)
 		return
 	}
-	if len(result) == 0 {
-		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]string, 0)))
-		return
-	}
+
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
 }
 

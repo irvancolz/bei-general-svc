@@ -65,6 +65,7 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 
 type PaginationResponse struct {
 	TotalPage   int                      `json:"total_page"`
+	TotalData   int                      `json:"total_data"`
 	Data        []map[string]interface{} `json:"data"`
 	Next        bool                     `json:"next"`
 	Previous    bool                     `json:"previous"`
@@ -90,6 +91,7 @@ func HandleDataPagination(c *gin.Context, data []map[string]interface{}) Paginat
 	result.CurrentPage = pageCount
 	result.Next = true
 	result.Previous = true
+	result.TotalData = len(data)
 
 	if pageCount <= 1 {
 		result.Previous = false

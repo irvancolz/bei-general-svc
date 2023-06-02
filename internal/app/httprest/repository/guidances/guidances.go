@@ -54,7 +54,7 @@ type DeleteExistingDataProps struct {
 
 type GuidancesRepoInterface interface {
 	CreateNewData(props CreateNewDataProps) (int64, error)
-	GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error)
+	GetAllData() ([]model.GuidanceFileAndRegulationsJSONResponse, error)
 	UpdateExistingData(params UpdateExistingDataProps) error
 	DeleteExistingData(params DeleteExistingDataProps) error
 }
@@ -104,8 +104,8 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 	return results, nil
 }
 
-func (r *guidancesRepository) GetAllData() ([]*model.GuidanceFileAndRegulationsJSONResponse, error) {
-	var results []*model.GuidanceFileAndRegulationsJSONResponse
+func (r *guidancesRepository) GetAllData() ([]model.GuidanceFileAndRegulationsJSONResponse, error) {
+	var results []model.GuidanceFileAndRegulationsJSONResponse
 
 	result_rows, error_rows := r.DB.Queryx(getAllDataQuerry)
 	if error_rows != nil {
@@ -128,7 +128,7 @@ func (r *guidancesRepository) GetAllData() ([]*model.GuidanceFileAndRegulationsJ
 			File:       result_set.File,
 			File_size:  result_set.File_size,
 			Created_by: result_set.Created_by,
-			Created_at: result_set.Created_at,
+			Created_at: result_set.Created_at.Unix(),
 			File_path:  result_set.File_path,
 
 			Description: result_set.Description.String,
@@ -138,10 +138,13 @@ func (r *guidancesRepository) GetAllData() ([]*model.GuidanceFileAndRegulationsJ
 			Is_Visible:  result_set.Is_Visible.Bool,
 			Version:     result_set.Version.String,
 			Updated_by:  result_set.Updated_by.String,
-			Updated_at:  result_set.Updated_at.Time,
+			Updated_at:  result_set.Updated_at.Time.Unix(),
+		}
+		if !result_set.Updated_at.Valid {
+			result.Updated_at = 0
 		}
 
-		results = append(results, &result)
+		results = append(results, result)
 	}
 	return results, nil
 }
@@ -188,7 +191,7 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 
 func (r *guidancesRepository) DeleteExistingData(params DeleteExistingDataProps) error {
 	updated_rows, error_update := r.DB.Exec(querryDelete,
-		time.Now(),
+		params.Deleted_at,
 		params.Deleted_by,
 		params.Id)
 	if error_update != nil {
