@@ -93,8 +93,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 			listData[i].HandlerID = ""
 		}
 
-		t, _ := helper.TimeIn(listData[i].CreatedAt, "Asia/Jakarta")
-		listData[i].FormattedCreatedAt = t.Format("2006-01-02 15:04")
+		listData[i].FormattedCreatedAt = listData[i].CreatedAt.Format("2006-01-02 15:04")
 	}
 
 	return listData, nil
@@ -147,14 +146,13 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, handler_id FROM topics WHERE id = %s AND is_deleted = false`, topicID)
+	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, handler_id FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err := m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
 	}
 
-	t, _ := helper.TimeIn(data.CreatedAt, "Asia/Jakarta")
-	data.FormattedCreatedAt = t.Format("2006-01-02 15:04")
+	data.FormattedCreatedAt = data.CreatedAt.Format("2006-01-02 15:04")
 
 	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = %s`, topicID)
 
@@ -175,8 +173,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 			data.Messages[i].CompanyID = ""
 		}
 
-		t, _ := helper.TimeIn(data.Messages[i].CreatedAt, "Asia/Jakarta")
-		data.Messages[i].FormattedCreatedAt = t.Format("2006-01-02 15:04")
+		data.Messages[i].FormattedCreatedAt = data.Messages[i].CreatedAt.Format("2006-01-02 15:04")
 	}
 
 	return &data, nil
@@ -192,7 +189,7 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 
 	var count int
 
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM topics WHERE id = %s AND handler_id != NULL`, topic.TopicID)
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM topics WHERE id = '%s' AND handler_id != NULL`, topic.TopicID)
 
 	err := m.DB.Get(&count, query)
 	if err != nil || count != 0 {
@@ -289,7 +286,7 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = %s`, message.TopicID)
+	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, message.TopicID)
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
@@ -336,11 +333,11 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = %s`, topicID)
+	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topicID)
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
-		return 0, errors.New("not found")
+		return 0, err
 	}
 
 	userId, _ := c.Get("user_id")
@@ -381,7 +378,7 @@ func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) 
 func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.Context) (int64, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = %s`, topicFAQ.ID)
+	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topicFAQ.ID)
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
