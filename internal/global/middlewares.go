@@ -76,23 +76,23 @@ func (m *repositorys) Authentication(module *string) gin.HandlerFunc {
 		context.Set("name_user", jwtPayload.UserName)
 		context.Set("type", jwtPayload.GroupType)
 		context.Set("external_type", jwtPayload.ExternalType)
-		// context.Set("user_role", jwtPayload.UserRole)
-		// context.Set("user_role_id", jwtPayload.UserRoleID)
+		context.Set("user_role", jwtPayload.UserRole)
+		context.Set("user_role_id", jwtPayload.UserRoleID)
 		context.Set("company_name", jwtPayload.CompanyName)
-		// context.Set("company_code", jwtPayload.CompanyCode)
+		context.Set("company_code", jwtPayload.CompanyCode)
 		context.Set("company_id", jwtPayload.CompanyId)
 		context.Set("name", jwtPayload.Name)
-		// context.Set("user_form_role", jwtPayload.UserFormRole)
+		context.Set("user_form_role", jwtPayload.UserFormRole)
 
 		log.Println("module ", module)
-		// if module != nil {
-		// 	value, error := auth.CheckPermission(tokenString, module)
-		// 	if !value.Status || error != nil {
-		// 		context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
-		// 		context.Abort()
-		// 		return
-		// 	}
-		// }
+		if module != nil {
+			value, error := auth.CheckPermission(tokenString, module)
+			if !value.Status || error != nil {
+				context.JSON(value.Code, gin.H{"codes": value.Code, "messages": value.Message, "status": value.Status})
+				context.Abort()
+				return
+			}
+		}
 		context.Next()
 	}
 }

@@ -4,8 +4,9 @@ const (
 	uploadNewFilesQuery = `
 	INSERT INTO uploaded_files (
         report_type,
-        report_code,
-        report_name,
+        company_code,
+        company_name,
+		company_id,
         is_uploaded,
         file_name,
         file_path,
@@ -13,13 +14,14 @@ const (
         created_by,
         created_at
     )
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	getUploadedFilesQuery = `
 	SELECT 
 		id,
 		report_type AS type,
-        report_code,
-        report_name,
+        company_code,
+        company_name,
+		company_id,
         is_uploaded,
         file_name,
         file_path,
