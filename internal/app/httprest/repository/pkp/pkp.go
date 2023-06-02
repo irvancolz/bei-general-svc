@@ -13,11 +13,11 @@ import (
 )
 
 type Repository interface {
-	GetAllPKuser(c *gin.Context) ([]*model.PKuser, error)
+	GetAllPKuser(c *gin.Context) ([]model.PKuser, error)
 	CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error)
 	UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
+	GetAllWithFilter(keyword []string) ([]model.PKuser, error)
 	GetAllWithSearch(Code string, Name string, QuestionDate time.Time, Question string, Answers string, answered_by string, AnsweredAt time.Time) ([]*model.PKuser, error)
 }
 
@@ -91,7 +91,7 @@ func (m *repository) GetAllWithSearch(Code string, Name string, QuestionDate tim
 	return listData, nil
 }
 
-func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error) {
+func (m *repository) GetAllWithFilter(keyword []string) ([]model.PKuser, error) {
 
 	var querySelect = `select 
 	id, 
@@ -184,7 +184,7 @@ func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
 	} else {
 		query = querySelect
 	}
-	var listData = []*model.PKuser{}
+	var listData = []model.PKuser{}
 	selDB, err := m.DB.Query(query)
 	if err != nil {
 		log.Println("failed to get data from databases : ", err)
@@ -214,13 +214,13 @@ func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
 			log.Println("failed to copy data from database into struct : ", err)
 			return nil, err
 		}
-		listData = append(listData, &pkp)
+		listData = append(listData, pkp)
 	}
 	return listData, nil
 }
 
-func (m *repository) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
-	result := []*model.PKuser{}
+func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
+	result := []model.PKuser{}
 	query := `
 	SELECT 
 		id,
@@ -288,7 +288,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
 			data.UpdatedAt = 0
 		}
 
-		result = append(result, &data)
+		result = append(result, data)
 	}
 
 	return result, nil
