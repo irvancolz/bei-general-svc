@@ -21,12 +21,10 @@ type usecase struct {
 }
 
 type UploadNewFilesProps struct {
-	Type        string `json:"type" binding:"oneof=catatan kunjungan bulanan pjsppa,required"`
-	Report_Code string `json:"report_code"`
-	Report_Name string `json:"report_name"`
-	File_Name   string `json:"file_name"`
-	File_Path   string `json:"file_path"`
-	File_Size   int64  `json:"file_size"`
+	Type      string `json:"type" binding:"oneof=catatan kunjungan bulanan pjsppa,required"`
+	File_Name string `json:"file_name"`
+	File_Path string `json:"file_path"`
+	File_Size int64  `json:"file_size"`
 }
 
 func NewUsecase() UnggahBerkasUsecaseInterface {
@@ -37,16 +35,21 @@ func NewUsecase() UnggahBerkasUsecaseInterface {
 
 func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, error) {
 	userName, _ := c.Get("name_user")
+	companyName, _ := c.Get("company_name")
+	companyCode, _ := c.Get("company_code")
+	companyId, _ := c.Get("company_id")
+
 	createNewArgs := repo.UploadNewFilesProps{
-		Type:        props.Type,
-		Report_Code: props.Report_Code,
-		Report_Name: props.Report_Name,
-		File_Name:   props.File_Name,
-		File_Path:   props.File_Path,
-		File_Size:   props.File_Size,
-		Is_Uploaded: true,
-		Created_by:  userName.(string),
-		Created_at:  time.Now().Unix(),
+		Type:         props.Type,
+		Company_code: companyCode.(string),
+		Company_name: companyName.(string),
+		Company_id:   companyId.(string),
+		File_Name:    props.File_Name,
+		File_Path:    props.File_Path,
+		File_Size:    props.File_Size,
+		Is_Uploaded:  true,
+		Created_by:   userName.(string),
+		Created_at:   time.Now().Unix(),
 	}
 
 	if props.File_Size <= 0 || props.File_Path == "" {
