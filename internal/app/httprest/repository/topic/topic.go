@@ -146,10 +146,14 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, handler_id FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err := m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
+	}
+
+	if data.HandlerID == "00000000-0000-0000-0000-000000000000" {
+		data.HandlerID = ""
 	}
 
 	data.FormattedCreatedAt = data.CreatedAt.Format("2006-01-02 15:04")
