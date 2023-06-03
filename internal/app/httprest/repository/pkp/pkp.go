@@ -13,11 +13,11 @@ import (
 )
 
 type Repository interface {
-	GetAllPKuser(c *gin.Context) ([]*model.PKuser, error)
+	GetAllPKuser(c *gin.Context) ([]model.PKuser, error)
 	CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error)
 	UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
+	GetAllWithFilter(keyword []string) ([]model.PKuser, error)
 	GetAllWithSearch(Code string, Name string, QuestionDate time.Time, Question string, Answers string, answered_by string, AnsweredAt time.Time) ([]*model.PKuser, error)
 }
 
@@ -91,7 +91,7 @@ func (m *repository) GetAllWithSearch(Code string, Name string, QuestionDate tim
 	return listData, nil
 }
 
-func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error) {
+func (m *repository) GetAllWithFilter(keyword []string) ([]model.PKuser, error) {
 
 	var querySelect = `select 
 	id, 
@@ -184,7 +184,7 @@ func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
 	} else {
 		query = querySelect
 	}
-	var listData = []*model.PKuser{}
+	var listData = []model.PKuser{}
 	selDB, err := m.DB.Query(query)
 	if err != nil {
 		log.Println("failed to get data from databases : ", err)
@@ -214,13 +214,13 @@ func (m *repository) GetAllWithFilter(keyword []string) ([]*model.PKuser, error)
 			log.Println("failed to copy data from database into struct : ", err)
 			return nil, err
 		}
-		listData = append(listData, &pkp)
+		listData = append(listData, pkp)
 	}
 	return listData, nil
 }
 
-func (m *repository) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
-	result := []*model.PKuser{}
+func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
+	result := []model.PKuser{}
 	query := `
 	SELECT 
 		id,
@@ -247,7 +247,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var item model.PKuser
+		var item model.PKuserResultSet
 
 		err := rows.StructScan(
 			&item,
@@ -257,7 +257,38 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]*model.PKuser, error) {
 			log.Println("[AQI-debug] [err] [repository] [pkp] [getQueryData] [GetAllComplaints] ", err)
 			return nil, err
 		}
-		result = append(result, &item)
+
+		data := model.PKuser{
+			ID:           item.ID,
+			Stakeholders: item.Stakeholders,
+			Code:         item.Code,
+			Name:         item.Name,
+			QuestionDate: item.QuestionDate.Unix(),
+			Question:     item.Question,
+			Answers:      item.Answers,
+			AnswersBy:    item.AnswersBy,
+			AnswersAt:    item.AnswersAt.Unix(),
+			Topic:        item.Topic,
+			FileName:     item.FileName,
+			FilePath:     item.FilePath,
+			CreateBy:     item.CreateBy,
+			CreatedAt:    item.CreatedAt.Unix(),
+
+			UpdatedAt: item.UpdatedAt.Time.Unix(),
+			UpdatedBy: item.UpdatedBy.String,
+			DeletedBy: item.DeletedBy.String,
+			DeletedAt: item.DeletedAt.Time.Unix(),
+		}
+
+		if !item.DeletedAt.Valid {
+			data.DeletedAt = 0
+		}
+
+		if !item.UpdatedAt.Valid {
+			data.UpdatedAt = 0
+		}
+
+		result = append(result, data)
 	}
 
 	return result, nil
@@ -393,7 +424,7 @@ func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
 		id = $1 
 		AND deleted_by IS NULL
 		AND deleted_at IS NULL;`
-	selDB, err := m.DB.Exec(query, id, userId, deleted_at)
+	selDB, err := m.DB.Exec(query, id, userId.(string), deleted_at)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [PKP] [Delete] ", err)
 		return 0, err

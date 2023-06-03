@@ -1,6 +1,7 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"time"
@@ -9,12 +10,12 @@ import (
 )
 
 type FilesUsecaseInterface interface {
-	GetAllFilesOnType(c *gin.Context, types string) ([]*model.GuidanceFilesJSONResponse, error)
+	GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 	UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error
 	CreateNewFiles(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error)
 }
 
-func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*model.GuidanceFilesJSONResponse, error) {
+func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []*model.GuidanceFilesJSONResponse
 	raw_result, error_result := u.Repository.GetAllData()
 	if error_result != nil {
@@ -37,7 +38,16 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*m
 			results = append(results, &result)
 		}
 	}
-	return results, nil
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
+
 }
 
 func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error {

@@ -15,6 +15,8 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
+require github.com/go-playground/validator/v10 v10.9.0
+
 require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/shohiebsense/gojsontoxml v1.0.0

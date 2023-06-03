@@ -2,9 +2,12 @@ package router
 
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
+	FAQ "be-idx-tsg/internal/app/httprest/handler/faq"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
+	Topic "be-idx-tsg/internal/app/httprest/handler/topic"
+	Unggahberkas "be-idx-tsg/internal/app/httprest/handler/unggah-berkas"
 	UploadFiles "be-idx-tsg/internal/app/httprest/handler/upload"
 
 	"os"
@@ -43,6 +46,9 @@ func Routes() *gin.Engine {
 	upload := UploadFiles.NewHandler()
 	pkp := Pkp.NewHandler()
 	jsonToXml := JsonToXml.NewHandler()
+	UnggahBerkasHandler := Unggahberkas.NewHandler()
+	topic := Topic.NewHandler()
+	faq := FAQ.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -64,7 +70,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 	}
-	
+
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used
@@ -106,10 +112,35 @@ func Routes() *gin.Engine {
 	{
 		jsonToXmlRoute.POST("/to-xml", jsonToXml.ToXml)
 	}
+	unggahberkasRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		unggahberkasRoute.POST("/post-uploaded-files-to-unggah-berkas", UnggahBerkasHandler.UploadNew)
+		unggahberkasRoute.GET("/get-all-posted-files-from-unggah-berkas", UnggahBerkasHandler.GetUploadedFiles)
+		unggahberkasRoute.DELETE("/delete-posted-files-from-unggah-berkas", UnggahBerkasHandler.DeleteUploadedFiles)
+	}
 
 	WithoutToken := v3noauth.Group("")
 	{
 		WithoutToken.GET("/download-existing-file-without-token", upload.Download)
 	}
+
+	topicRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		topicRoute.GET("/get-all-topic", topic.GetAll)
+		topicRoute.GET("/get-by-id-topic", topic.GetById)
+		topicRoute.POST("/create-topic", topic.CreateTopicWithMessage)
+		topicRoute.PUT("/update-handler", topic.UpdateHandler)
+		topicRoute.POST("/create-message", topic.CreateMessage)
+		topicRoute.DELETE("/delete-topic", topic.DeleteTopic)
+		topicRoute.POST("/archive-topic", topic.ArchiveTopicToFAQ)
+	}
+
+	faqRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		faqRoute.GET("/get-all-faq", faq.GetAll)
+		faqRoute.POST("/create-faq", faq.CreateFAQ)
+		faqRoute.DELETE("/delete-faq", faq.DeleteFAQ)
+	}
+
 	return r
 }
