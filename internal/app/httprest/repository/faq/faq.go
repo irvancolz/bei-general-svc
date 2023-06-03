@@ -45,8 +45,7 @@ func (m *repository) GetAll(keyword string) ([]*model.FAQ, error) {
 	}
 
 	for i := range listData {
-		t, _ := helper.TimeIn(listData[i].CreatedAt, "Asia/Jakarta")
-		listData[i].FormattedCreatedAt = t.Format("2006-01-02 15:04")
+		listData[i].FormattedCreatedAt = listData[i].CreatedAt.Format("2006-01-02 15:04")
 	}
 
 	return listData, nil
