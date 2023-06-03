@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -54,7 +55,7 @@ type DeleteExistingDataProps struct {
 
 type GuidancesRepoInterface interface {
 	CreateNewData(props CreateNewDataProps) (int64, error)
-	GetAllData() ([]model.GuidanceFileAndRegulationsJSONResponse, error)
+	GetAllData(c *gin.Context) ([]model.GuidanceFileAndRegulationsJSONResponse, error)
 	UpdateExistingData(params UpdateExistingDataProps) error
 	DeleteExistingData(params DeleteExistingDataProps) error
 }
@@ -104,11 +105,25 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 	return results, nil
 }
 
-func (r *guidancesRepository) GetAllData() ([]model.GuidanceFileAndRegulationsJSONResponse, error) {
+func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAndRegulationsJSONResponse, error) {
 	var results []model.GuidanceFileAndRegulationsJSONResponse
 
-	result_rows, error_rows := r.DB.Queryx(getAllDataQuerry)
+	serchQueryConfig := helper.SearchQueryGenerator{
+		TableName: "public.guidance_file_and_regulation",
+		ColumnScanned: []string{
+			"category",
+			"name",
+			"description",
+			"link",
+			"file",
+			"file_group",
+		},
+	}
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
+
+	result_rows, error_rows := r.DB.Queryx(query)
 	if error_rows != nil {
+		log.Println(query)
 		log.Println("failed to excecute script : ", error_rows)
 		return nil, error_rows
 	}

@@ -69,7 +69,7 @@ func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props Updat
 }
 func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []*model.RegulationJSONResponse
-	raw_result, error_result := r.Repository.GetAllData()
+	raw_result, error_result := r.Repository.GetAllData(c)
 	if error_result != nil {
 		return nil, error_result
 	}
