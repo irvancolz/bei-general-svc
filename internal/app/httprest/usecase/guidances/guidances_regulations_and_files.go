@@ -25,7 +25,7 @@ func NewGuidanceUsecase() GuidancesRegulationAndFileUsecaseInterface {
 }
 
 func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationResponse, error) {
-	databaseResult, errorResult := u.Repository.GetAllData()
+	databaseResult, errorResult := u.Repository.GetAllData(c)
 	if errorResult != nil {
 		return nil, errorResult
 	}
