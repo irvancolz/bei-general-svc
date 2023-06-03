@@ -8,11 +8,12 @@ import (
 )
 
 type Usecase interface {
-	GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error)
+	GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
-	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error)
+	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
+	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error)
 	CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error)
 	DeleteTopic(topicID string, c *gin.Context) (int64, error)
 	ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Context) (int64, error)
@@ -28,12 +29,12 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(keyword, status, name, company_name, start_date, end_date string, page, limit int) ([]*model.Topic, error) {
-	return m.tpRepo.GetAll(keyword, status, name, company_name, start_date, end_date, page, limit)
+func (m *usecase) GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
+	return m.tpRepo.GetAll(keyword, status, name, company_name, startDate, endDate, userId, page, limit)
 }
 
-func (m *usecase) GetTotal(keyword, status, name, company_name, start_date, end_date string, page, limit int) (int, int, error) {
-	return m.tpRepo.GetTotal(keyword, status, name, company_name, start_date, end_date, page, limit)
+func (m *usecase) GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error) {
+	return m.tpRepo.GetTotal(keyword, status, name, company_name, startDate, endDate, userId, page, limit)
 }
 
 func (m *usecase) GetByID(topicID, keyword string) (*model.Topic, error) {
@@ -44,8 +45,12 @@ func (m *usecase) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) 
 	return m.tpRepo.UpdateHandler(topic, c)
 }
 
-func (m *usecase) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context) (int64, error) {
-	return m.tpRepo.CreateTopicWithMessage(topic, c)
+func (m *usecase) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error) {
+	return m.tpRepo.UpdateStatus(topic, c)
+}
+
+func (m *usecase) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error) {
+	return m.tpRepo.CreateTopicWithMessage(topic, c, isDraft)
 }
 
 func (m *usecase) CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error) {
