@@ -152,6 +152,10 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		return &data, errors.New("not found")
 	}
 
+	if data.HandlerID == "00000000-0000-0000-0000-000000000000" {
+		data.HandlerID = ""
+	}
+
 	data.FormattedCreatedAt = data.CreatedAt.Format("2006-01-02 15:04")
 
 	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = '%s'`, topicID)
