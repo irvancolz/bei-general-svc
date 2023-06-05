@@ -39,6 +39,19 @@ func TimeIn(t time.Time, name string) (time.Time, error) {
 	return t, err
 }
 
+func ConvertListInterfaceToListString(list []interface{})([]string){
+	stringList := make([]string, len(list))
+
+	for i, v := range list {
+		if str, ok := v.(string); ok {
+			stringList[i] = str
+		} else {
+			stringList[i] = ""
+		}
+	}
+	return stringList
+}
+
 func isArray(arg interface{}) bool {
 	argType := reflect.TypeOf(arg)
 	return argType.Kind() == reflect.Array || argType.Kind() == reflect.Slice

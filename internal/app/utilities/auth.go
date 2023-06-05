@@ -78,7 +78,6 @@ func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, err
 	}
 	bodyReq := bytes.NewReader(payloadBytes)
 	token := tokens.(string)
-	{}
 	Request, err := http.NewRequest("GET", url,bodyReq)	
 	Request.Header.Add("authorization",token )
 	Request.Header.Set("Content-Type", "application/json")
