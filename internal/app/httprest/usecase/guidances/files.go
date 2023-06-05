@@ -16,7 +16,7 @@ type FilesUsecaseInterface interface {
 }
 
 func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
-	var results []*model.GuidanceFilesJSONResponse
+	var results []model.GuidanceFilesJSONResponse
 	raw_result, error_result := u.Repository.GetAllData(c)
 	if error_result != nil {
 		return nil, error_result
@@ -35,7 +35,7 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*hel
 				Updated_by: item.Updated_by,
 				Updated_at: item.Updated_at,
 			}
-			results = append(results, &result)
+			results = append(results, result)
 		}
 	}
 
