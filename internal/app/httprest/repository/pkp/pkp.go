@@ -239,8 +239,22 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		created_at AS CreatedAt
 	FROM pkp 
 	WHERE deleted_by IS NULL
-	AND deleted_at IS NULL;`
-	rows, err := m.DB.Queryx(query)
+	AND deleted_at IS NULL`
+
+	searchQueryConfig := helper.SearchQueryGenerator{
+		ColumnScanned: []string{
+			"name",
+			"code",
+			"question",
+			"answers_by",
+			"topic",
+		},
+		TableName: "pkp",
+	}
+
+	getAllQuery := searchQueryConfig.GenerateGetAllDataQuerry(c, query)
+
+	rows, err := m.DB.Queryx(getAllQuery)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [PKuser] [sqlQuery] [GetAllPKuser] ", err)
 		return nil, err

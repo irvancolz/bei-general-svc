@@ -39,7 +39,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"createdat", "updatedat", "questiondate", "answersat", "deletedat"})
 	paginatedData := helper.HandleDataPagination(c, filteredData)
 	return &paginatedData, nil
 }

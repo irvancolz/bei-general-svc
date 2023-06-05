@@ -41,22 +41,24 @@ func (r *repository) CheckFileAvaliability(id string) bool {
 }
 
 type UploadNewFilesProps struct {
-	Type        string `validate:"oneof:catatan kunjungan bulanan pjsppa"`
-	Report_Code string
-	Report_Name string
-	Is_Uploaded bool
-	File_Name   string
-	File_Path   string
-	File_Size   int64
-	Created_by  string
-	Created_at  int64
+	Type         string `validate:"oneof:catatan kunjungan bulanan pjsppa"`
+	Company_code string
+	Company_name string
+	Company_id   string
+	Is_Uploaded  bool
+	File_Name    string
+	File_Path    string
+	File_Size    int64
+	Created_by   string
+	Created_at   int64
 }
 
 func (r *repository) UploadNew(props UploadNewFilesProps) (int64, error) {
 	execResult, errorExec := r.DB.Exec(uploadNewFilesQuery,
 		props.Type,
-		props.Report_Code,
-		props.Report_Name,
+		props.Company_code,
+		props.Company_name,
+		props.Company_id,
 		props.Is_Uploaded,
 		props.File_Name,
 		props.File_Path,
@@ -87,8 +89,8 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 	serchQueryConfig := helper.SearchQueryGenerator{
 		TableName: "uploaded_files",
 		ColumnScanned: []string{
-			"report_code",
-			"report_name",
+			"company_code",
+			"company_name",
 			"file_name",
 		},
 	}
@@ -109,13 +111,14 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 			return nil, errorScan
 		}
 		result := model.UploadedFilesMenuResponse{
-			Id:          mock.Id,
-			Type:        mock.Type,
-			Report_Code: mock.Report_Code,
-			Report_Name: mock.Report_Name,
-			Is_Uploaded: mock.Is_Uploaded,
-			Created_By:  mock.Created_By,
-			Created_At:  mock.Created_At,
+			Id:           mock.Id,
+			Type:         mock.Type,
+			Company_code: mock.Company_code,
+			Company_name: mock.Company_name,
+			Company_id:   mock.Company_id,
+			Is_Uploaded:  mock.Is_Uploaded,
+			Created_By:   mock.Created_By,
+			Created_At:   mock.Created_At,
 
 			Updated_By: mock.Updated_By.String,
 			Updated_At: mock.Updated_At.Int64,

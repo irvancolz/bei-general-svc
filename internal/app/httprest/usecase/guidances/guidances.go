@@ -91,8 +91,8 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 }
 
 func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
-	var results []*model.GuidanceJSONResponse
-	raw_result, error_result := u.Repository.GetAllData()
+	var results []model.GuidanceJSONResponse
+	raw_result, error_result := u.Repository.GetAllData(c)
 	if error_result != nil {
 		log.Println(error_result)
 		return nil, error_result
@@ -117,7 +117,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 				Updated_by:  item.Updated_by,
 				Updated_at:  item.Updated_at,
 			}
-			results = append(results, &result)
+			results = append(results, result)
 		}
 	}
 

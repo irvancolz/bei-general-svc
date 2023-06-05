@@ -5,8 +5,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE public.uploaded_files (
     id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
     report_type text,
-    report_code text,
-    report_name text,
+    company_code text,
+    company_name text,
+    company_id text,
     is_uploaded bool,
     file_name text,
     file_path text,
