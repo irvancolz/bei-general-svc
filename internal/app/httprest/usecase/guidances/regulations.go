@@ -68,7 +68,7 @@ func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props Updat
 	return nil
 }
 func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
-	var results []*model.RegulationJSONResponse
+	var results []model.RegulationJSONResponse
 	raw_result, error_result := r.Repository.GetAllData(c)
 	if error_result != nil {
 		return nil, error_result
@@ -88,7 +88,7 @@ func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types st
 				Updated_by: item.Updated_by,
 				Updated_at: item.Updated_at,
 			}
-			results = append(results, &result)
+			results = append(results, result)
 		}
 	}
 
