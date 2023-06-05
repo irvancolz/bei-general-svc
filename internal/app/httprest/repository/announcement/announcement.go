@@ -188,7 +188,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 	ExternalType, _ := c.Get("external_type")
 	filterQuery := ""
 	if strings.ToLower(userType.(string)) == "internal" {
-		filterQuery = ""
+		filterQuery = "where deleted_by IS NULL"
 	} else {
 		str, _ := ExternalType.(*string)
 		if strings.ToLower(*str) == "ab" {
