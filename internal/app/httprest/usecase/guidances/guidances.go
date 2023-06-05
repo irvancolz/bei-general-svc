@@ -1,6 +1,7 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"log"
@@ -12,30 +13,32 @@ import (
 type GuidancesUsecaseInterface interface {
 	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error)
 	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error
-	GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error)
+	GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 	DeleteGuidances(c *gin.Context, id string) error
 }
 
 type CreateNewGuidanceProps struct {
-	Owner       string  `json:"owner" binding:"required"`
-	Name        string  `json:"name" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	File        string  `json:"file" binding:"required"`
-	File_size   int64   `json:"file_size" binding:"required"`
-	Version     float64 `json:"version" binding:"required"`
-	Is_visible  bool    `json:"visible" binding:"required"`
-	Link        string  `json:"link" binding:"required"`
+	Owner       string `json:"owner" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	File        string `json:"file" binding:"required"`
+	File_size   int64  `json:"file_size" binding:"required"`
+	File_path   string `json:"file_path" binding:"required"`
+	Version     string `json:"version" binding:"required,numeric"`
+	Is_visible  bool   `json:"visible" binding:"required"`
+	Link        string `json:"link" binding:"required"`
 }
 type UpdateExsistingGuidances struct {
-	Id          string  `json:"id" binding:"required"`
-	Owner       string  `json:"owner" binding:"required"`
-	Name        string  `json:"name" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	File        string  `json:"file" binding:"required"`
-	File_size   int64   `json:"file_size" binding:"required"`
-	Version     float64 `json:"version" binding:"required"`
-	Is_visible  bool    `json:"visible" binding:"required"`
-	Link        string  `json:"link" binding:"required"`
+	Id          string `json:"id" binding:"required"`
+	Owner       string `json:"owner" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	File        string `json:"file" binding:"required"`
+	File_path   string `json:"file_path" binding:"required"`
+	File_size   int64  `json:"file_size" binding:"required"`
+	Version     string `json:"version" binding:"required,numeric"`
+	Is_visible  bool   `json:"visible" binding:"required"`
+	Link        string `json:"link" binding:"required"`
 }
 
 func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error {
@@ -49,6 +52,7 @@ func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateE
 		Description: props.Description,
 		File:        props.File,
 		File_size:   props.File_size,
+		File_path:   props.File_path,
 		Version:     props.Version,
 		Is_Visible:  props.Is_visible,
 		Link:        props.Link,
@@ -74,6 +78,7 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		File_size:   props.File_size,
 		Version:     props.Version,
 		Is_Visible:  props.Is_visible,
+		File_path:   props.File_path,
 		Link:        props.Link,
 		Created_at:  time.Now(),
 		Created_by:  name_user.(string),
@@ -85,9 +90,9 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 	return result, nil
 }
 
-func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types string) ([]*model.GuidanceJSONResponse, error) {
-	var results []*model.GuidanceJSONResponse
-	raw_result, error_result := u.Repository.GetAllData()
+func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
+	var results []model.GuidanceJSONResponse
+	raw_result, error_result := u.Repository.GetAllData(c)
 	if error_result != nil {
 		log.Println(error_result)
 		return nil, error_result
@@ -102,6 +107,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 				Version:     item.Version,
 				File:        item.File,
 				File_size:   item.File_size,
+				File_path:   item.File_path,
 				File_Group:  item.File_Group,
 				Owner:       item.File_Owner,
 				Link:        item.Link,
@@ -111,10 +117,18 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 				Updated_by:  item.Updated_by,
 				Updated_at:  item.Updated_at,
 			}
-			results = append(results, &result)
+			results = append(results, result)
 		}
 	}
-	return results, nil
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
 }
 
 func (u *guidancesUsecase) DeleteGuidances(c *gin.Context, id string) error {

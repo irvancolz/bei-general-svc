@@ -45,7 +45,3 @@ func TestGetFilePath(t *testing.T) {
 		t.Error("the resulted string does not as expected")
 	}
 }
-
-func TestCheckFileExist(t *testing.T) {
-
-}

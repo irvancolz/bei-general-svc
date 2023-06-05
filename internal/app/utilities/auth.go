@@ -62,3 +62,50 @@ func GetAllRole(c *gin.Context) (*APIResponse, error) {
 
 	return datas, errorUM
 }
+
+func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, error) {
+	err_host := godotenv.Load(".env")
+	if err_host != nil {
+		fmt.Println(err_host)
+	}
+	host := os.Getenv("SERVICE_AUTH_HOST")
+	url := host + "/get-parameter-admin-by-key?key=format_file_logo"
+	tokens, _ := c.Get("token")
+	var payload string
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		log.Println("[AQI] [err] [GetRequest][Payload] ", err)
+	}
+	bodyReq := bytes.NewReader(payloadBytes)
+	token := tokens.(string)
+	Request, err := http.NewRequest("GET", url,bodyReq)	
+	Request.Header.Add("authorization",token )
+	Request.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Println("[AQI] [err] [GetRequest][Wraps] ", err)
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(Request)
+	if err != nil {
+		log.Println("[AQI] [err] [GetRequest][Do]", err)
+		
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Println("[AQI] [err] [GetRequest][ReadAll]", err)
+		return nil, err
+	}
+
+	datas := &APIResponseInterface{}
+	errorUM := json.Unmarshal([]byte(body), datas)
+	if errorUM != nil {
+		log.Println("[AQI] [err] [GetRequest][errorUM]", errorUM)
+	}
+
+	return datas, errorUM
+}

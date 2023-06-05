@@ -1,6 +1,7 @@
 package guidances
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"time"
@@ -9,14 +10,14 @@ import (
 )
 
 type FilesUsecaseInterface interface {
-	GetAllFilesOnType(c *gin.Context, types string) ([]*model.GuidanceFilesJSONResponse, error)
+	GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 	UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error
 	CreateNewFiles(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error)
 }
 
-func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*model.GuidanceFilesJSONResponse, error) {
+func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []*model.GuidanceFilesJSONResponse
-	raw_result, error_result := u.Repository.GetAllData()
+	raw_result, error_result := u.Repository.GetAllData(c)
 	if error_result != nil {
 		return nil, error_result
 	}
@@ -27,6 +28,7 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*m
 				Name:       item.Name,
 				Category:   item.Category,
 				File_size:  item.File_size,
+				File_path:  item.File_path,
 				File:       item.File,
 				Created_by: item.Created_by,
 				Created_at: item.Created_at,
@@ -36,7 +38,16 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) ([]*m
 			results = append(results, &result)
 		}
 	}
-	return results, nil
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData)
+	return &paginatedData, nil
+
 }
 
 func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error {
@@ -47,6 +58,7 @@ func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExist
 		Category:   "File",
 		Name:       props.Name,
 		File:       props.File_name,
+		File_path:  props.File_path,
 		File_size:  props.File_size,
 		Updated_at: time.Now(),
 		Updated_by: name_user.(string),
@@ -65,6 +77,7 @@ func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewRegulat
 		Category:   "File",
 		Name:       props.Name,
 		File:       props.File_name,
+		File_path:  props.File_path,
 		File_size:  props.File_size,
 		Created_at: time.Now(),
 		Created_by: name_user.(string),
