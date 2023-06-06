@@ -18,7 +18,7 @@ type GuidanceFileAndRegulationsJSONResponse struct {
 	Version     string `json:"version"`
 	File_Group  string `json:"file_group"`
 	File_Owner  string `json:"file_owner"`
-	Is_Visible  bool   `json:"is_visible"`
+	Order       int    `json:"order"`
 	Created_by  string `json:"created_by"`
 	Created_at  int64  `json:"created_at"`
 	Updated_by  string `json:"updated_by"`
@@ -37,7 +37,7 @@ type GuidanceFileAndRegulationsResultSetResponse struct {
 	File_path   string         `json:"file_path"`
 	File_Group  sql.NullString `json:"file_group"`
 	File_Owner  sql.NullString `json:"file_owner"`
-	Is_Visible  sql.NullBool   `json:"is_visible"`
+	Order       sql.NullInt32  `json:"order"`
 	Version     sql.NullString `json:"version"`
 	Created_by  string         `json:"created_by"`
 	Created_at  time.Time      `json:"created_at"`
@@ -59,7 +59,7 @@ type GuidanceJSONResponse struct {
 	Owner       string `json:"owner"`
 	File        string `json:"file"`
 	Link        string `json:"link"`
-	Is_Visible  bool   `json:"is_visible"`
+	Order       int    `json:"order"`
 	Created_by  string `json:"created_by"`
 	Created_at  int64  `json:"created_at"`
 	Updated_by  string `json:"updated_by"`

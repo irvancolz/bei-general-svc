@@ -6,6 +6,7 @@ import (
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
+	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ type CreateNewDataProps struct {
 	File_path   string
 	File_Group  string
 	File_Owner  string
-	Is_Visible  bool
+	Order       int
 	Version     string
 	Created_by  string
 	Created_at  time.Time
@@ -42,7 +43,7 @@ type UpdateExistingDataProps struct {
 	File_path   string
 	File_Group  string
 	File_Owner  string
-	Is_Visible  bool
+	Order       int
 	Version     string
 	Updated_by  string
 	Updated_at  time.Time
@@ -58,6 +59,8 @@ type GuidancesRepoInterface interface {
 	GetAllData(c *gin.Context) ([]model.GuidanceFileAndRegulationsJSONResponse, error)
 	UpdateExistingData(params UpdateExistingDataProps) error
 	DeleteExistingData(params DeleteExistingDataProps) error
+	CheckIsOrderFilled(order int) bool
+	UpdateOrder(order int) error
 }
 
 func NewGuidancesRepository() GuidancesRepoInterface {
@@ -83,7 +86,7 @@ func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 		props.File_path,
 		props.File_Group,
 		props.File_Owner,
-		props.Is_Visible,
+		props.Order,
 		props.Version,
 		props.Created_by,
 		props.Created_at)
@@ -150,7 +153,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 			Link:        result_set.Link.String,
 			File_Group:  result_set.File_Group.String,
 			File_Owner:  result_set.File_Owner.String,
-			Is_Visible:  result_set.Is_Visible.Bool,
+			Order:       int(result_set.Order.Int32),
 			Version:     result_set.Version.String,
 			Updated_by:  result_set.Updated_by.String,
 			Updated_at:  result_set.Updated_at.Time.Unix(),
@@ -161,6 +164,11 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 
 		results = append(results, result)
 	}
+
+	sort.SliceStable(results, func(current, before int) bool {
+		return results[current].Order < results[before].Order
+	})
+
 	return results, nil
 }
 
@@ -185,7 +193,7 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 		params.File_path,
 		params.File_Group,
 		params.File_Owner,
-		params.Is_Visible)
+		params.Order)
 	if error_update != nil {
 		log.Println("failed to excecute script to update data : ", error_update)
 		return error_update
@@ -223,5 +231,31 @@ func (r *guidancesRepository) DeleteExistingData(params DeleteExistingDataProps)
 		log.Println("database is not updated after transactions")
 		return errors.New("DATABASE IS NOT UPDATED, PLEASE TRY AGAIN")
 	}
+	return nil
+}
+
+func (r *guidancesRepository) CheckIsOrderFilled(order int) bool {
+	var result int
+	rowResult := r.DB.QueryRowx(checkIsOrderFilledQuery, order)
+	errorGetRows := rowResult.Scan(&result)
+	if errorGetRows != nil {
+		log.Println("failed to check guidances order avaliability :", errorGetRows)
+		return true
+	}
+	return result > 0
+}
+
+func (r *guidancesRepository) UpdateOrder(order int) error {
+	execResult, errorExec := r.DB.Exec(updateOrderQuery, order)
+	if errorExec != nil {
+		log.Println("failed to update order on guidances :", errorExec)
+		return errorExec
+	}
+
+	_, errorResult := execResult.RowsAffected()
+	if errorResult != nil {
+		log.Println("failed to get updated rows after editing order :", errorResult)
+	}
+
 	return nil
 }

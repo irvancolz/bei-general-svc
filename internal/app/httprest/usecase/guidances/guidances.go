@@ -25,7 +25,7 @@ type CreateNewGuidanceProps struct {
 	File_size   int64  `json:"file_size" binding:"required"`
 	File_path   string `json:"file_path" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
-	Is_visible  bool   `json:"visible" binding:"required"`
+	Order       int    `json:"order" binding:"required"`
 	Link        string `json:"link" binding:"required"`
 }
 type UpdateExsistingGuidances struct {
@@ -37,7 +37,7 @@ type UpdateExsistingGuidances struct {
 	File_path   string `json:"file_path" binding:"required"`
 	File_size   int64  `json:"file_size" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
-	Is_visible  bool   `json:"visible" binding:"required"`
+	Order       int    `json:"order" binding:"required"`
 	Link        string `json:"link" binding:"required"`
 }
 
@@ -54,11 +54,24 @@ func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateE
 		File_size:   props.File_size,
 		File_path:   props.File_path,
 		Version:     props.Version,
-		Is_Visible:  props.Is_visible,
+		Order:       props.Order,
 		Link:        props.Link,
 		Updated_at:  time.Now(),
 		Updated_by:  name_user.(string),
 	}
+
+	if props.Order <= 0 {
+		createNewDataArgs.Order = 1
+	}
+
+	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order)
+	if isOrderFilled {
+		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order)
+		if errorSetOrder != nil {
+			return errorSetOrder
+		}
+	}
+
 	error_result := u.Repository.UpdateExistingData(createNewDataArgs)
 	if error_result != nil {
 		log.Println(error_result)
@@ -77,12 +90,25 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		File:        props.File,
 		File_size:   props.File_size,
 		Version:     props.Version,
-		Is_Visible:  props.Is_visible,
+		Order:       props.Order,
 		File_path:   props.File_path,
 		Link:        props.Link,
 		Created_at:  time.Now(),
 		Created_by:  name_user.(string),
 	}
+
+	if props.Order <= 0 {
+		createNewDataArgs.Order = 1
+	}
+
+	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order)
+	if isOrderFilled {
+		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order)
+		if errorSetOrder != nil {
+			return 0, errorSetOrder
+		}
+	}
+
 	result, error_result := u.Repository.CreateNewData(createNewDataArgs)
 	if error_result != nil {
 		return 0, error_result
@@ -111,7 +137,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 				File_Group:  item.File_Group,
 				Owner:       item.File_Owner,
 				Link:        item.Link,
-				Is_Visible:  item.Is_Visible,
+				Order:       item.Order,
 				Created_by:  item.Created_by,
 				Created_at:  item.Created_at,
 				Updated_by:  item.Updated_by,

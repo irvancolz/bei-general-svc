@@ -14,7 +14,7 @@ CREATE TABLE public.guidance_file_and_regulation (
     "version" "text",
     file_group text,
     "owner" text,
-    is_visible boolean,
+    "order" integer,
     created_by text,
     created_at timestamp with time zone,
     updated_by text,
