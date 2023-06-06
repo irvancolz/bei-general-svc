@@ -12,7 +12,7 @@ const (
 		file_path,
 		file_group,
 		owner,
-		is_visible,
+		"order",
 		version,
 		created_by,
 		created_at
@@ -28,7 +28,7 @@ const (
 	file_size,
 	file_path,
 	file_group,
-	is_visible,
+	"order",
 	version,
 	created_by,
 	created_at,
@@ -50,11 +50,24 @@ const (
 	file_path = $11,
 	file_group = $12,
 	owner = $13,
-	is_visible = $14
+	"order" = $14
 	WHERE id = $1
 	AND category = $2`
 	querryDelete = `UPDATE public.guidance_file_and_regulation 
 	SET deleted_at  = $1,
 	deleted_by = $2
 	WHERE id = $3`
+	updateOrderQuery = `
+	UPDATE public.guidance_file_and_regulation 
+		SET "order" = "order" + 1
+	WHERE "order" >= $1
+	`
+	checkIsOrderFilledQuery = `
+	SELECT 
+		COUNT(*)
+	FROM public.guidance_file_and_regulation
+	WHERE "order" = $1
+	AND deleted_by IS NULL
+	AND deleted_at IS NULL
+	`
 )
