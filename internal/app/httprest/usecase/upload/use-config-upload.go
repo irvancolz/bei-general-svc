@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"fmt"
 	"strings"
 	"time"
@@ -29,7 +30,8 @@ func (c *UploadFileConfig) CheckFileExt(fileext string) bool {
 
 func (c *UploadFileConfig) GenerateFilename(filename string, date time.Time) string {
 	nameSlice := strings.Split(filename, " ")
-	currentTimestr := date.Format("2006-01-02_15-04-05")
+	t, _ := helper.TimeIn(date, "Asia/Jakarta")
+	currentTimestr := t.Format("2006-01-02-15-04-05")
 	nameSlice = append([]string{currentTimestr}, nameSlice...)
 	return strings.Join(nameSlice, "_")
 }
