@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func GetAllRole(c *gin.Context) (*APIResponse, error) {
 	err_host := godotenv.Load(".env")
 	if err_host != nil {
@@ -30,9 +29,10 @@ func GetAllRole(c *gin.Context) (*APIResponse, error) {
 	}
 	bodyReq := bytes.NewReader(payloadBytes)
 	token := tokens.(string)
-	{}
-	Request, err := http.NewRequest("GET", url,bodyReq)	
-	Request.Header.Add("authorization",token )
+	{
+	}
+	Request, err := http.NewRequest("GET", url, bodyReq)
+	Request.Header.Add("authorization", token)
 	Request.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][Wraps] ", err)
@@ -42,7 +42,7 @@ func GetAllRole(c *gin.Context) (*APIResponse, error) {
 	resp, err := http.DefaultClient.Do(Request)
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][Do]", err)
-		
+
 		return nil, err
 	}
 
@@ -78,8 +78,8 @@ func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, err
 	}
 	bodyReq := bytes.NewReader(payloadBytes)
 	token := tokens.(string)
-	Request, err := http.NewRequest("GET", url,bodyReq)	
-	Request.Header.Add("authorization",token )
+	Request, err := http.NewRequest("GET", url, bodyReq)
+	Request.Header.Add("authorization", token)
 	Request.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][Wraps] ", err)
@@ -89,7 +89,7 @@ func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, err
 	resp, err := http.DefaultClient.Do(Request)
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][Do]", err)
-		
+
 		return nil, err
 	}
 
