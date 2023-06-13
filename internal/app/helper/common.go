@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -39,7 +40,7 @@ func TimeIn(t time.Time, name string) (time.Time, error) {
 	return t, err
 }
 
-func ConvertListInterfaceToListString(list []interface{})([]string){
+func ConvertListInterfaceToListString(list []interface{}) []string {
 	stringList := make([]string, len(list))
 
 	for i, v := range list {
@@ -115,4 +116,53 @@ func IsContains[T comparable](list []T, data T) bool {
 		}
 	}
 	return false
+}
+
+// expected result = function will return array of rows data from data given so it can be used to provide data for export feature
+// mechanic get all values from properties in given params
+// order is mandatory to keep data order consistency cannot give 0 order
+// make sure there is no pointer used on this func, if there is pointer it will raise panic error
+func MapToArray(data map[string]interface{}, order []string) []string {
+	var result []string
+	if len(order) <= 0 {
+		log.Println("failed to convert map to array: please specify at least one array order to prevent unconsistent result")
+		return result
+	}
+	for _, orderValue := range order {
+		for key := range data {
+
+			// if key == orderValue {
+			if strings.EqualFold(key, orderValue) {
+				result = append(result, fmt.Sprintf("%v", data[key]))
+			}
+		}
+	}
+	return result
+}
+
+func StructToArray(data interface{}, order []string) []string {
+	var result []string
+
+	if len(order) <= 0 {
+		log.Println("failed to convert struct to array: please specify at least one array order to prevent unconsistent result")
+		return result
+	}
+
+	dataType := reflect.ValueOf(data)
+	dataProps := dataType.NumField()
+
+	for _, arrkey := range order {
+
+		for i := 0; i < dataProps; i++ {
+			if strings.EqualFold(arrkey, dataType.Type().Field(i).Name) {
+				result = append(result, fmt.Sprintf("%v", dataType.Field(i).Interface()))
+			}
+
+		}
+	}
+	return result
+}
+
+func generateFileNames(fileName, separator string, date time.Time) string {
+	return fileName + "_" + strconv.Itoa(int(time.Now().UnixNano()))
 }
