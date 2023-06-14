@@ -1,12 +1,9 @@
 package upload
 
 import (
-	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/upload"
-	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/httpresponse"
-	"errors"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +36,6 @@ func (h *handler) UploadForm(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "form",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -54,7 +50,6 @@ func (h *handler) UploadUser(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "user",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -69,7 +64,6 @@ func (h *handler) UploadReport(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "report",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -84,7 +78,6 @@ func (h *handler) UploadAdmin(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "admin",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -99,7 +92,6 @@ func (h *handler) UploadPkp(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "pkp",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -115,7 +107,6 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "guidebook",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -129,7 +120,6 @@ func (h *handler) UploadParameterAdminImage(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "ParameterAdmin",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -144,7 +134,6 @@ func (h *handler) UploadParameterAdminFile(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:       os.Getenv("DIR_HOST"),
 		Directory:  "ParameterAdmin",
-		Extensions: GetExtension(c),
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -180,14 +169,3 @@ func (h *handler) Remove(c *gin.Context) {
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, "berhasil menghapus file"))
 }
 
-func GetExtension(c *gin.Context) []string {
-	datas, err := utilities.GetParameterAdminImageExtension(c)
-	if err != nil {
-		model.GenerateReadErrorResponse(c, errors.New("fail to get data"))
-		c.Abort()
-	}
-	if datas.Data["value"] == nil {
-		return []string{}
-	}
-	return helper.ConvertListInterfaceToListString(datas.Data["value"].([]interface{}))
-}
