@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ContaContactPersonHandlerInterface interface {
-	SyncronizeInstitutionProfile(c *gin.Context)
+type ContactPersonHandlerInterface interface {
+	SynchronizeInstitutionProfile(c *gin.Context)
 	AddDivision(c *gin.Context)
 	EditDivision(c *gin.Context)
 	GetAllDivision(c *gin.Context)
@@ -32,15 +32,15 @@ type handler struct {
 	Usecase usecase.ContactPersonUsecaseInterface
 }
 
-func NewHandler() ContaContactPersonHandlerInterface {
+func NewHandler() ContactPersonHandlerInterface {
 	return &handler{
 		Usecase: usecase.NewUsecase(),
 	}
 }
 
-func (h *handler) SyncronizeInstitutionProfile(c *gin.Context) {
-	companyType := c.DefaultQuery("company_type", "AB")
-	data, error_data := h.Usecase.SyncronizeInstitutionProfile(c, companyType)
+func (h *handler) SynchronizeInstitutionProfile(c *gin.Context) {
+	companyType := c.Query("company_type")
+	data, error_data := h.Usecase.SynchronizeInstitutionProfile(c, companyType)
 	if error_data != nil {
 		model.GenerateUpdateErrorResponse(c, error_data)
 		return

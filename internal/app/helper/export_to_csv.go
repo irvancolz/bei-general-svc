@@ -19,7 +19,11 @@ func ExportTableToCsv(fileName string, data [][]string) (string, error) {
 	csvFile := csv.NewWriter(file)
 	defer csvFile.Flush()
 
-	csvFile.WriteAll(data)
+	errSave := csvFile.WriteAll(data)
+	if errSave != nil {
+		log.Println("failed to save file to disk :", errSave)
+		return "", errSave
+	}
 
 	return fileNameResult, nil
 }

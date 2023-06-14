@@ -5,25 +5,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE institutions (
     "id" text NOT NULL DEFAULT uuid_generate_v4 (),
     "code" text,
-    "name" text,
-    "address" text,
-    "website" text,
-    "postal_code" text,
-    "fax" text,
-    "telephone" text,
-    "business_permit_ojk" text,
-    "permit_bursa" text,
-    "other_business_permit_ojk" text,
     "type" text,
+    "name" text,
     "status" text,
-    "created_by" text,
-    "license" text,
-    "operational_status" text,
-    "created_at" timestamp,
-    "updated_by" text,
-    "updated_at" timestamp,
-    "deleted_by" text,
-    "deleted_at" timestamp,
     "is_deleted" boolean,
     CONSTRAINT company_code_unique_key UNIQUE (code),
     PRIMARY KEY (id)
@@ -73,7 +57,6 @@ VALUES ('Accounting', true, now()),
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
-DELETE FROM institution_division;
 DROP TABLE institution_members;
 DROP TABLE institution_division;
 DROP TABLE institutions;

@@ -10,7 +10,7 @@ import (
 
 func ExportTableToTxt(fileName string, data [][]string) (string, error) {
 	fileresultName := generateFileNames(fileName, "_", time.Now())
-	collumnWidth := getCollumnMaxWidth(data)
+	columnWidth := getColumnMaxWidth(data)
 	file, errorCreate := os.Create(fileresultName + ".txt")
 	if errorCreate != nil {
 		log.Println("failed to create txt files :", errorCreate)
@@ -23,7 +23,7 @@ func ExportTableToTxt(fileName string, data [][]string) (string, error) {
 		var beautifiedRows strings.Builder
 		for i, text := range item {
 			beautifiedRows.WriteString(text)
-			for space := len(text); space <= collumnWidth[i]; space++ {
+			for space := len(text); space <= columnWidth[i]; space++ {
 				beautifiedRows.WriteString("\u0020")
 			}
 			beautifiedRows.WriteString("\u0020")
@@ -42,21 +42,21 @@ func ExportTableToTxt(fileName string, data [][]string) (string, error) {
 	return fileresultName + ".txt", nil
 }
 
-func getCollumnMaxWidth(data [][]string) []int {
+func getColumnMaxWidth(data [][]string) []int {
 	var result []int
-	var tableCollumnContent [][]string
+	var tablecolumnContent [][]string
 
 	for i := 0; i < len(data[0]); i++ {
-		tableCollumnContent = append(tableCollumnContent, []string{})
+		tablecolumnContent = append(tablecolumnContent, []string{})
 	}
 
 	for _, rows := range data {
 		for d, text := range rows {
-			tableCollumnContent[d] = append(tableCollumnContent[d], text)
+			tablecolumnContent[d] = append(tablecolumnContent[d], text)
 		}
 	}
 
-	for _, rows := range tableCollumnContent {
+	for _, rows := range tablecolumnContent {
 		var max int
 		for _, text := range rows {
 			if len(text) > max {

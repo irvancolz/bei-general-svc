@@ -142,11 +142,12 @@ type InstitutionMembersDetailResultSetResponse struct {
 }
 
 type InstitutionResponse struct {
-	Id     string `json:"id"`
-	Type   string `json:"type"`
-	Code   string `json:"code"`
-	Name   string `json:"name"`
-	Status string `json:"status"`
+	Id         string `json:"id"`
+	Type       string `json:"type"`
+	Code       string `json:"code"`
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	Is_deleted bool   `json:"is_deleted"`
 }
 
 type InstitutionResultSetResponse struct {
@@ -158,26 +159,8 @@ type InstitutionResultSetResponse struct {
 }
 
 type ContactPersonSyncCompaniesResource struct {
-	ID                        string    `json:"id"`
-	Code                      string    `json:"code"`
-	Name                      string    `json:"name"`
-	Address                   string    `json:"address"`
-	Website                   string    `json:"website"`
-	Postal_code               string    `json:"postal_code"`
-	Fax                       string    `json:"fax"`
-	Telephone                 string    `json:"telephone"`
-	Business_permit_ojk       string    `json:"business_permit_ojk"`
-	Permit_bursa              string    `json:"permit_bursa"`
-	Other_business_permit_ojk string    `json:"other_business_permit_ojk"`
-	Type                      string    `json:"type"`
-	Status                    string    `json:"status"`
-	License                   string    `json:"license"`
-	Operational_Status        string    `json:"operational_status"`
-	Created_at                time.Time `json:"created_at"`
-	Created_by                string    `json:"created_by"`
-	Updated_at                time.Time `json:"updated_at"`
-	Updated_by                string    `json:"updated_by"`
-	Deleted_at                time.Time `json:"deleted_at"`
-	Deleted_by                string    `json:"deleted_by"`
-	Is_deleted                bool      `json:"is_deleted"`
+	Code       string `json:"code"`
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	Is_deleted bool   `json:"is_deleted"`
 }

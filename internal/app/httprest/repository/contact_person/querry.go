@@ -5,47 +5,15 @@ const (
 	INSERT INTO institutions (
 		code,
 		name,
-		address,
-		website,
-		postal_code,
-		fax,
-		telephone,
-		business_permit_ojk,
-		permit_bursa,
-		other_business_permit_ojk,
-		type,
 		status,
-		license,
-		operational_status,
-		created_by,
-		created_at,
-		updated_by,
-		updated_at,
-		deleted_by,
-		deleted_at,
+		type,
 		is_deleted
 	) VALUES (
-		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+		$1, $2, $3, $4, $5
 	) ON CONFLICT (code) DO UPDATE SET
 		name = EXCLUDED.name,
-		address = EXCLUDED.address,
-		website = EXCLUDED.website,
-		postal_code = EXCLUDED.postal_code,
-		fax = EXCLUDED.fax,
-		telephone = EXCLUDED.telephone,
-		business_permit_ojk = EXCLUDED.business_permit_ojk,
-		permit_bursa = EXCLUDED.permit_bursa,
-		other_business_permit_ojk = EXCLUDED.other_business_permit_ojk,
 		type = EXCLUDED.type,
 		status = EXCLUDED.status,
-		license = EXCLUDED.license,
-		operational_status = EXCLUDED.operational_status,
-		created_by = EXCLUDED.created_by,
-		created_at = EXCLUDED.created_at,
-		updated_by = EXCLUDED.updated_by,
-		updated_at = EXCLUDED.updated_at,
-		deleted_by = EXCLUDED.deleted_by,
-		deleted_at = EXCLUDED.deleted_at,
 		is_deleted = EXCLUDED.is_deleted
 	`
 	getAllDivisionByCompanyQuerry = `
@@ -122,7 +90,7 @@ const (
 	AND division_id = $2
 	AND deleted_by IS NULL
 	AND deleted_at IS NULL`
-	checkDivisionDeleteAvaliabilityQuerry = `
+	checkDivisionDeleteAvailabilityQuerry = `
 	SELECT 
 		COUNT(*)
 	FROM institution_members m 
@@ -133,7 +101,7 @@ const (
 	AND d.deleted_by IS NULL
 	AND m.deleted_at IS NULL
 	AND m.deleted_by IS NULL`
-	checkMemberViewAvaliabilityQuerry = `
+	checkMemberViewAvailabilityQuerry = `
 	SELECT 
 		COUNT(*)
 	FROM institution_members m 
@@ -257,14 +225,10 @@ const (
 		type, 
 		code, 
 		status, 
-		created_at, 
-		created_by, 
-		updated_at, 
-		updated_by
+		is_deleted
 	FROM institutions 
 	WHERE id = $1
-	AND deleted_by IS NULL
-	AND deleted_at IS NULL`
+	AND is_deleted = false`
 	getCompanyDivisionByCompanyCode = `
 	SELECT 
 		d.id, 

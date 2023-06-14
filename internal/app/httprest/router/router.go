@@ -161,7 +161,7 @@ func Routes() *gin.Engine {
 		contactPersonRoute.GET("/get-member-by-company-type", contact_person.GetMemberByCompanyType)
 		contactPersonRoute.GET("/get-all-company-by-type", contact_person.GetAllCompanyByType)
 		contactPersonRoute.GET("/search-all-company", contact_person.SearchCompany)
-		contactPersonRoute.PUT("/syncronize-contact-person-company", contact_person.SyncronizeInstitutionProfile)
+		contactPersonRoute.PUT("/syncronize-contact-person-company", contact_person.SynchronizeInstitutionProfile)
 		contactPersonRoute.GET("/export-contact-person-company-members", contact_person.ExportMember)
 	}
 

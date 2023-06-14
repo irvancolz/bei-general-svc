@@ -16,7 +16,7 @@ import (
 )
 
 type ContactPersonUsecaseInterface interface {
-	SyncronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error)
+	SynchronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error)
 	AddDivision(c *gin.Context, name string) (int64, error)
 	EditDivision(c *gin.Context, props EditDivisionprops) (int64, error)
 	GetAllDivision() ([]model.DivisionNameResponse, error)
@@ -146,10 +146,16 @@ func (u *usecase) EditDivision(c *gin.Context, props EditDivisionprops) (int64, 
 	return u.Repository.EditDivision(c, editDivArgs)
 }
 
-func (u *usecase) SyncronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error) {
+func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error) {
 
 	var latestCompanyList []model.ContactPersonSyncCompaniesResource
 	var errorGetCompanies error
+
+	if company_type == "" {
+		log.Println("failed to sync contact person companies : please specify the company type you want to sync with")
+		return nil, errors.New("failed to sync contact person companies : please specify the company type you want to sync with")
+	}
+
 	if strings.EqualFold(company_type, "AB") {
 		latestCompanyList, errorGetCompanies = utilities.GetLatestABCompanies(c)
 	}
@@ -158,7 +164,7 @@ func (u *usecase) SyncronizeInstitutionProfile(c *gin.Context, company_type stri
 		return nil, errorGetCompanies
 	}
 
-	errorSync := u.Repository.SyncronizeInstitutionProfile(latestCompanyList)
+	errorSync := u.Repository.SynchronizeInstitutionProfile(latestCompanyList, company_type)
 	if errorSync != nil {
 		return nil, errorSync
 	}
@@ -240,7 +246,7 @@ func (u *usecase) GetMemberByID(id string) (*model.InstitutionMembersDetailRespo
 func (u *usecase) DeleteMemberByID(c *gin.Context, member_id string) (int64, error) {
 	user_id, _ := c.Get("user_id")
 
-	if !u.Repository.CheckMemberAvaliability(member_id) {
+	if !u.Repository.CheckMemberAvailability(member_id) {
 		return 0, errors.New("cannot delete members, this member not found on database")
 	}
 
@@ -254,12 +260,12 @@ func (u *usecase) DeleteMemberByID(c *gin.Context, member_id string) (int64, err
 
 func (u *usecase) DeleteDivisionByID(c *gin.Context, division_id string) (int64, error) {
 	user_id, _ := c.Get("user_id")
-	isNotDefaultDivision := u.Repository.CheckDivisionEditAvaliability(division_id)
+	isNotDefaultDivision := u.Repository.CheckDivisionEditAvailability(division_id)
 	if !isNotDefaultDivision {
 		return 0, errors.New("divisi merupakan default sistem")
 	}
 
-	is_deletadble := u.Repository.CheckDivisionDeleteAvaliability(division_id)
+	is_deletadble := u.Repository.CheckDivisionDeleteAvailability(division_id)
 	if !is_deletadble {
 		return 0, errors.New("divisi memiliki karyawan")
 	}

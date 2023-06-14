@@ -15,9 +15,9 @@ import (
 )
 
 type ContactPersonRepositoryInterface interface {
-	SyncronizeInstitutionProfile(data []model.ContactPersonSyncCompaniesResource) error
+	SynchronizeInstitutionProfile(data []model.ContactPersonSyncCompaniesResource, company_type string) error
 	GetAllCompany(keyword string) ([]*model.InstitutionResponse, error)
-	GetCompanyDetail(id string) (*model.InstitutionProfileDetailResponse, error)
+	GetCompanyDetail(id string) (*model.InstitutionResponse, error)
 	GetAllDivision() ([]model.DivisionNameResponse, error)
 	GetAllDivisionByCompany(company_id string) ([]*model.InstitutionDivisionResponse, error)
 	AddDivision(c *gin.Context, props AddDivisionprops) (int64, error)
@@ -30,10 +30,10 @@ type ContactPersonRepositoryInterface interface {
 	GetMemberByID(member_id string) (*model.InstitutionMembersDetailResponse, error)
 	DeleteMemberByID(props DeleteDataProps) (int64, error)
 	DeleteDivisionByID(props DeleteDataProps) (int64, error)
-	CheckMemberAvaliability(id string) bool
-	CheckDivisionEditAvaliability(id string) bool
-	CheckDivisionDeleteAvaliability(division_id string) bool
-	CheckDivisionViewAvaliability(division_id string) bool
+	CheckMemberAvailability(id string) bool
+	CheckDivisionEditAvailability(id string) bool
+	CheckDivisionDeleteAvailability(division_id string) bool
+	CheckDivisionViewAvailability(division_id string) bool
 }
 
 type repository struct {
@@ -60,7 +60,7 @@ func (r *repository) GetAllDivision() ([]model.DivisionNameResponse, error) {
 		err_scan := row_result.StructScan(
 			&result,
 		)
-		result.Is_Default = !r.CheckDivisionEditAvaliability(result.Id)
+		result.Is_Default = !r.CheckDivisionEditAvailability(result.Id)
 
 		if err_scan != nil {
 			log.Println("failed to copy data from database : ", err_scan)
@@ -73,8 +73,8 @@ func (r *repository) GetAllDivision() ([]model.DivisionNameResponse, error) {
 	return results, nil
 }
 
-func (r *repository) CheckMemberAvaliability(id string) bool {
-	result := r.DB.QueryRowx(checkMemberViewAvaliabilityQuerry, id)
+func (r *repository) CheckMemberAvailability(id string) bool {
+	result := r.DB.QueryRowx(checkMemberViewAvailabilityQuerry, id)
 	var total int64
 	error_result := result.Scan(&total)
 	if error_result != nil {
@@ -85,8 +85,8 @@ func (r *repository) CheckMemberAvaliability(id string) bool {
 	return total > 0
 }
 
-func (r *repository) CheckDivisionDeleteAvaliability(id string) bool {
-	result := r.DB.QueryRowx(checkDivisionDeleteAvaliabilityQuerry, id)
+func (r *repository) CheckDivisionDeleteAvailability(id string) bool {
+	result := r.DB.QueryRowx(checkDivisionDeleteAvailabilityQuerry, id)
 
 	var total int64
 	error_result := result.Scan(&total)
@@ -98,33 +98,33 @@ func (r *repository) CheckDivisionDeleteAvaliability(id string) bool {
 	return total <= 0
 }
 
-func (r *repository) CheckDivisionEditAvaliability(division_id string) bool {
+func (r *repository) CheckDivisionEditAvailability(division_id string) bool {
 	var result int64
 	row_result := r.DB.QueryRowx(checkDivisionEditAvailabilityQuerry, division_id)
 
 	err_scan := row_result.Scan(&result)
 	if err_scan != nil {
-		log.Println("failed to get division delete avaliability : ", err_scan)
+		log.Println("failed to get division delete Availability : ", err_scan)
 		return false
 	}
 
 	return result > 0
 }
 
-func (r *repository) CheckDivisionViewAvaliability(division_id string) bool {
+func (r *repository) CheckDivisionViewAvailability(division_id string) bool {
 	var result int64
 	row_result := r.DB.QueryRowx(checkDivisionViewAvailabilityQuerry, division_id)
 
 	err_scan := row_result.Scan(&result)
 	if err_scan != nil {
-		log.Println("failed to get division delete avaliability : ", err_scan)
+		log.Println("failed to get division delete Availability : ", err_scan)
 		return false
 	}
 
 	return result > 0
 }
 
-func (r *repository) SyncronizeInstitutionProfile(data []model.ContactPersonSyncCompaniesResource) error {
+func (r *repository) SynchronizeInstitutionProfile(data []model.ContactPersonSyncCompaniesResource, types string) error {
 	statement, errStatement := r.DB.Preparex(syncContactPersonCompaniesQuery)
 	if errStatement != nil {
 		log.Println("failed to prepara statement on sync contact person :", errStatement)
@@ -132,28 +132,11 @@ func (r *repository) SyncronizeInstitutionProfile(data []model.ContactPersonSync
 	}
 
 	for _, companies := range data {
-		log.Println(companies)
 		execResult, errorExec := statement.Exec(
 			companies.Code,
 			companies.Name,
-			companies.Address,
-			companies.Website,
-			companies.Postal_code,
-			companies.Fax,
-			companies.Telephone,
-			companies.Business_permit_ojk,
-			companies.Permit_bursa,
-			companies.Other_business_permit_ojk,
-			companies.Type,
 			companies.Status,
-			companies.License,
-			companies.Operational_Status,
-			companies.Created_by,
-			companies.Created_at,
-			companies.Updated_by,
-			companies.Updated_at,
-			companies.Deleted_by,
-			companies.Deleted_at,
+			types,
 			companies.Is_deleted,
 		)
 		if errorExec != nil {
@@ -265,7 +248,7 @@ type EditDivisionprops struct {
 
 func (r *repository) EditDivision(c *gin.Context, props EditDivisionprops) (int64, error) {
 
-	isEditable := r.CheckDivisionEditAvaliability(props.Division_id)
+	isEditable := r.CheckDivisionEditAvailability(props.Division_id)
 	if !isEditable {
 		return 0, errors.New("cannot edit the default division, please select the non default division")
 	}
@@ -419,7 +402,7 @@ func (r *repository) GetMemberByDivisionAndCompanyId(division_id, company_id []s
 		return nil, errors.New("please specify the company you want to search")
 	}
 
-	if len(company_id) == 1 && !r.CheckDivisionViewAvaliability(division_id[0]) {
+	if len(company_id) == 1 && !r.CheckDivisionViewAvailability(division_id[0]) {
 		return nil, errors.New("cannot find the specified division")
 	}
 
@@ -569,7 +552,7 @@ func (r *repository) GetAllCompany(keyword string) ([]*model.InstitutionResponse
 func (r *repository) GetMemberByID(member_id string) (*model.InstitutionMembersDetailResponse, error) {
 	var mock model.InstitutionMembersDetailResultSetResponse
 
-	isMemberAvailable := r.CheckMemberAvaliability(member_id)
+	isMemberAvailable := r.CheckMemberAvailability(member_id)
 	if !isMemberAvailable {
 		return nil, errors.New("cannot find the specified members")
 	}
@@ -648,30 +631,18 @@ func (r *repository) DeleteDivisionByID(props DeleteDataProps) (int64, error) {
 	return result, nil
 }
 
-func (r *repository) GetCompanyDetail(id string) (*model.InstitutionProfileDetailResponse, error) {
-	var mock model.InstitutionProfileDetaiResultSetResponse
+func (r *repository) GetCompanyDetail(id string) (*model.InstitutionResponse, error) {
+	var result model.InstitutionResponse
 
 	if id == "" {
 		return nil, errors.New("cannot find the company : please specify the company_id")
 	}
 
 	rows := r.DB.QueryRowx(getCompanyDetailQuery, id)
-	errorScan := rows.StructScan(&mock)
+	errorScan := rows.StructScan(&result)
 	if errorScan != nil {
 		log.Println("failed to copy company detail from database : ", errorScan)
 		return nil, errorScan
-	}
-
-	result := model.InstitutionProfileDetailResponse{
-		Id:         mock.Id,
-		Name:       mock.Name,
-		Type:       mock.Type.String,
-		Code:       mock.Code,
-		Status:     mock.Status,
-		Created_at: mock.Created_at,
-		Created_by: mock.Created_by.String,
-		Updated_at: mock.Updated_at.Time,
-		Updated_by: mock.Updated_by.String,
 	}
 
 	return &result, nil
