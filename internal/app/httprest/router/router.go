@@ -2,6 +2,7 @@ package router
 
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
+	contactPerson "be-idx-tsg/internal/app/httprest/handler/contact_person"
 	FAQ "be-idx-tsg/internal/app/httprest/handler/faq"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
@@ -49,6 +50,7 @@ func Routes() *gin.Engine {
 	UnggahBerkasHandler := Unggahberkas.NewHandler()
 	topic := Topic.NewHandler()
 	faq := FAQ.NewHandler()
+	contact_person := contactPerson.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -141,6 +143,26 @@ func Routes() *gin.Engine {
 		faqRoute.GET("/get-all-faq", faq.GetAll)
 		faqRoute.POST("/create-faq", faq.CreateFAQ)
 		faqRoute.DELETE("/delete-faq", faq.DeleteFAQ)
+	}
+	contactPersonRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		contactPersonRoute.POST("/add-new-company-member", contact_person.AddMember)
+		contactPersonRoute.POST("/add-new-company-division", contact_person.AddDivision)
+		contactPersonRoute.PUT("/edit-company-member", contact_person.EditMember)
+		contactPersonRoute.DELETE("/delete-company-member", contact_person.DeleteMemberByID)
+		contactPersonRoute.DELETE("/delete-company-division", contact_person.DeleteDivisionByID)
+		contactPersonRoute.PUT("/edit-company-division", contact_person.EditDivision)
+		contactPersonRoute.GET("/get-all-company-division", contact_person.GetAllDivisionByCompany)
+		contactPersonRoute.GET("/get-all-division", contact_person.GetAllDivision)
+		contactPersonRoute.GET("/get-all-company-member-by-division", contact_person.GetMemberByDivision)
+		contactPersonRoute.GET("/get-all-company-member-by-division-and-company-id", contact_person.GetMemberByDivisionAndCompanyID)
+		contactPersonRoute.GET("/get-all-company-member", contact_person.GetMemberByCompanyID)
+		contactPersonRoute.GET("/get-company-member-by-id", contact_person.GetMemberByID)
+		contactPersonRoute.GET("/get-member-by-company-type", contact_person.GetMemberByCompanyType)
+		contactPersonRoute.GET("/get-all-company-by-type", contact_person.GetAllCompanyByType)
+		contactPersonRoute.GET("/search-all-company", contact_person.SearchCompany)
+		contactPersonRoute.PUT("/syncronize-contact-person-company", contact_person.SynchronizeInstitutionProfile)
+		contactPersonRoute.GET("/export-contact-person-company-members", contact_person.ExportMember)
 	}
 
 	return r
