@@ -143,6 +143,7 @@ func Routes() *gin.Engine {
 		faqRoute.GET("/get-all-faq", faq.GetAll)
 		faqRoute.POST("/create-faq", faq.CreateFAQ)
 		faqRoute.DELETE("/delete-faq", faq.DeleteFAQ)
+		faqRoute.PUT("/update-status-faq", faq.UpdateStatusFAQ)
 	}
 	contactPersonRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
