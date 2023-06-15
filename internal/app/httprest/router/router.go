@@ -132,6 +132,7 @@ func Routes() *gin.Engine {
 		topicRoute.GET("/get-by-id-topic", topic.GetById)
 		topicRoute.POST("/create-topic", topic.CreateTopicWithMessage)
 		topicRoute.PUT("/publish-draft-topic", topic.UpdateStatus)
+		topicRoute.PUT("/mark-topic-as-answered", topic.UpdateStatus)
 		topicRoute.PUT("/update-handler", topic.UpdateHandler)
 		topicRoute.POST("/create-message", topic.CreateMessage)
 		topicRoute.DELETE("/delete-topic", topic.DeleteTopic)
