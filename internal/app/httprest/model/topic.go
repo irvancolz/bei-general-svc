@@ -16,6 +16,7 @@ type Topic struct {
 	CreatedAt          time.Time      `json:"-" db:"created_at"`
 	FormattedCreatedAt string         `json:"created_at"`
 	UserFullName       string         `json:"user_full_name,omitempty" db:"user_full_name"`
+	CompanyCode        string         `json:"company_code,omitempty" db:"company_code"`
 	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
 	Status             TopicStatus    `json:"status" db:"status"`
 	HandlerID          string         `json:"handler_id" db:"handler_id"`
@@ -39,6 +40,7 @@ type CreateTopicWithMessage struct {
 	CreatedBy    string      `db:"created_by"`
 	CreatedAt    string      `db:"created_at"`
 	CompanyID    string      `db:"company_id"`
+	CompanyCode  string      `db:"company_code"`
 	CompanyName  string      `db:"company_name"`
 	TopicID      string      `db:"topic_id"`
 	UserFullName string      `db:"user_full_name"`

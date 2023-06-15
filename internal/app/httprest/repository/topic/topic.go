@@ -43,7 +43,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 
 	query := `SELECT 
 	t.id, t.created_by, t.created_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, 
-	tp.user_full_name, tp.company_name, tp.message
+	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
@@ -147,7 +147,7 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err := m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
@@ -274,6 +274,9 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 	companyId, _ := c.Get("company_id")
 	topic.CompanyID = companyId.(string)
 
+	companyCode, _ := c.Get("company_code")
+	topic.CompanyCode = companyCode.(string)
+
 	companyName, _ := c.Get("company_name")
 	topic.CompanyName = companyName.(string)
 
@@ -284,7 +287,7 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 		topic.CompanyID = "00000000-0000-0000-0000-000000000000"
 	}
 
-	query := `INSERT INTO topics (status, created_by, created_at) VALUES (:status, :created_by, :created_at) RETURNING id AS topic_id`
+	query := `INSERT INTO topics (status, created_by, created_at, company_code, company_name) VALUES (:status, :created_by, :created_at, :company_code, :company_name) RETURNING id AS topic_id`
 	row, err := m.DB.NamedQuery(query, topic)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateTopicWithMessage] ", err)
