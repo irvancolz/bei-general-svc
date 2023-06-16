@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"errors"
 	"log"
@@ -118,15 +119,16 @@ func (u *usecase) Download(c *gin.Context, pathFile string) error {
 
 func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string) error {
 	fileLocation := GetFilePath(slug)
+	prohibitedExt := []string{".go", ".env", ".dev", ".yml", ".sql"}
 
 	// get file extension from filename
 	ext := filepath.Ext(slug)
-	if len(props.Extensions) > 0 {
-		isExtAvailable := props.CheckFileExt(ext)
-		if !isExtAvailable {
-			return errors.New("the file ext does not supported")
-		}
+
+	isExtAvailable := props.CheckFileExt(ext)
+	if !isExtAvailable || helper.IsContains(prohibitedExt, ext) {
+		return errors.New("the file ext does not supported")
 	}
+
 	// file does not exist, return error message
 	if !IsFIleExists(fileLocation) {
 		log.Println("failed to get file : the file specified is not exists on storage")

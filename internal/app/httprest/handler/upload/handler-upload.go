@@ -34,8 +34,9 @@ func NewHandler() UploadFileHandlreInterface {
 
 func (h *handler) UploadForm(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "form",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "form",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -48,8 +49,9 @@ func (h *handler) UploadForm(c *gin.Context) {
 
 func (h *handler) UploadUser(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "user",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "user",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -62,8 +64,9 @@ func (h *handler) UploadUser(c *gin.Context) {
 
 func (h *handler) UploadReport(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "report",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "report",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -76,8 +79,9 @@ func (h *handler) UploadReport(c *gin.Context) {
 
 func (h *handler) UploadAdmin(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "admin",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "admin",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -90,8 +94,9 @@ func (h *handler) UploadAdmin(c *gin.Context) {
 
 func (h *handler) UploadPkp(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "pkp",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "pkp",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -105,8 +110,9 @@ func (h *handler) UploadPkp(c *gin.Context) {
 func (h *handler) UploadGuidebook(c *gin.Context) {
 
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "guidebook",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "guidebook",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -118,8 +124,9 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 }
 func (h *handler) UploadParameterAdminImage(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "ParameterAdmin",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "ParameterAdmin",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -132,8 +139,9 @@ func (h *handler) UploadParameterAdminImage(c *gin.Context) {
 
 func (h *handler) UploadParameterAdminFile(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
-		Directory:  "ParameterAdmin",
+		Host:      os.Getenv("WEB_HOST"),
+		Directory: "ParameterAdmin",
+		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
@@ -157,7 +165,7 @@ func (h *handler) Remove(c *gin.Context) {
 	slug := c.Query("path")
 
 	config := usecase.UploadFileConfig{
-		Host:       os.Getenv("DIR_HOST"),
+		Host:       os.Getenv("WEB_HOST"),
 		Directory:  "test",
 		Extensions: []string{},
 	}
@@ -168,4 +176,3 @@ func (h *handler) Remove(c *gin.Context) {
 	}
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, "berhasil menghapus file"))
 }
-
