@@ -2,12 +2,12 @@ package model
 
 import "time"
 
-type Status string
+type TopicStatus string
 
 const (
-	NotAnswered Status = "BELUM TERJAWAB"
-	Answered    Status = "SUDAH TERJAWAB"
-	Draft       Status = "DRAFT"
+	NotAnsweredTopic TopicStatus = "BELUM TERJAWAB"
+	AnsweredTopic    TopicStatus = "SUDAH TERJAWAB"
+	DraftTopic       TopicStatus = "DRAFT"
 )
 
 type Topic struct {
@@ -16,11 +16,12 @@ type Topic struct {
 	CreatedAt          time.Time      `json:"-" db:"created_at"`
 	FormattedCreatedAt string         `json:"created_at"`
 	UserFullName       string         `json:"user_full_name,omitempty" db:"user_full_name"`
+	CompanyCode        string         `json:"company_code,omitempty" db:"company_code"`
 	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
-	Status             Status         `json:"status" db:"status"`
+	Status             TopicStatus    `json:"status" db:"status"`
 	HandlerID          string         `json:"handler_id" db:"handler_id"`
-	Message            string         `json:"message,omitempty" db:"message"`
-	Messages           []TopicMessage `json:"messages,omitempty"`
+	Message            string         `json:"message" db:"message"`
+	Messages           []TopicMessage `json:"messages"`
 }
 
 type TopicMessage struct {
@@ -35,14 +36,15 @@ type TopicMessage struct {
 }
 
 type CreateTopicWithMessage struct {
-	Status       Status `json:"status" db:"status"`
-	CreatedBy    string `db:"created_by"`
-	CreatedAt    string `db:"created_at"`
-	CompanyID    string `db:"company_id"`
-	CompanyName  string `db:"company_name"`
-	TopicID      string `db:"topic_id"`
-	UserFullName string `db:"user_full_name"`
-	Message      string `db:"message" json:"message" binding:"required"`
+	Status       TopicStatus `json:"status" db:"status"`
+	CreatedBy    string      `db:"created_by"`
+	CreatedAt    string      `db:"created_at"`
+	CompanyID    string      `db:"company_id"`
+	CompanyCode  string      `db:"company_code"`
+	CompanyName  string      `db:"company_name"`
+	TopicID      string      `db:"topic_id"`
+	UserFullName string      `db:"user_full_name"`
+	Message      string      `db:"message" json:"message" binding:"required"`
 }
 
 type UpdateTopicHandler struct {
@@ -53,10 +55,10 @@ type UpdateTopicHandler struct {
 }
 
 type UpdateTopicStatus struct {
-	TopicID   string `db:"topic_id" json:"topic_id"`
-	Status    Status `db:"status"`
-	UpdatedBy string `db:"updated_by"`
-	UpdatedAt string `db:"updated_at"`
+	TopicID   string      `db:"topic_id" json:"topic_id"`
+	Status    TopicStatus `db:"status"`
+	UpdatedBy string      `db:"updated_by"`
+	UpdatedAt string      `db:"updated_at"`
 }
 
 type DeleteTopic struct {
@@ -66,14 +68,14 @@ type DeleteTopic struct {
 }
 
 type ArchiveTopicToFAQ struct {
-	ID        string `json:"id" db:"id"`
-	Status    Status `db:"status"`
-	UpdatedBy string `db:"updated_by"`
-	UpdatedAt string `db:"updated_at"`
-	CreatedBy string `db:"created_by"`
-	CreatedAt string `db:"created_at"`
-	Question  string `json:"question" db:"question"`
-	Answer    string `json:"answer" db:"answer"`
+	ID        string      `json:"id" db:"id"`
+	Status    TopicStatus `db:"status"`
+	UpdatedBy string      `db:"updated_by"`
+	UpdatedAt string      `db:"updated_at"`
+	CreatedBy string      `db:"created_by"`
+	CreatedAt string      `db:"created_at"`
+	Question  string      `json:"question" db:"question"`
+	Answer    string      `json:"answer" db:"answer"`
 }
 
 type CreateMessage struct {
