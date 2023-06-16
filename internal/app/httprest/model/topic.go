@@ -20,6 +20,7 @@ type Topic struct {
 	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
 	Status             TopicStatus    `json:"status" db:"status"`
 	HandlerID          string         `json:"handler_id" db:"handler_id"`
+	HandlerName        *string        `json:"handler_name" db:"handler_name"`
 	Message            string         `json:"message" db:"message"`
 	Messages           []TopicMessage `json:"messages"`
 }
@@ -48,10 +49,11 @@ type CreateTopicWithMessage struct {
 }
 
 type UpdateTopicHandler struct {
-	TopicID   string `db:"topic_id" json:"topic_id"`
-	HandlerID string `db:"handler_id"`
-	UpdatedBy string `db:"updated_by"`
-	UpdatedAt string `db:"updated_at"`
+	TopicID     string `db:"topic_id" json:"topic_id"`
+	HandlerID   string `db:"handler_id"`
+	HandlerName string `db:"handler_name"`
+	UpdatedBy   string `db:"updated_by"`
+	UpdatedAt   string `db:"updated_at"`
 }
 
 type UpdateTopicStatus struct {
