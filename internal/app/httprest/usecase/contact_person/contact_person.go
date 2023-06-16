@@ -32,7 +32,7 @@ type ContactPersonUsecaseInterface interface {
 	SearchCompany(keyword string) ([]*model.InstitutionResponse, error)
 	DeleteMemberByID(c *gin.Context, member_id string) (int64, error)
 	DeleteDivisionByID(c *gin.Context, division_id string) (int64, error)
-	ExportMember(c *gin.Context, company_type, company_id string) error
+	ExportMember(c *gin.Context, company_type, company_id, division_id string) error
 }
 
 type usecase struct {
@@ -305,7 +305,7 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 	return results, nil
 }
 
-func (u *usecase) ExportMember(c *gin.Context, company_type, company_id string) error {
+func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
 	exportedField := []string{
 		"company_code",
 		"company_name",
@@ -328,35 +328,42 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id string) 
 		"Posisi"}
 
 	var dataToExported [][]string
+	var memberStructList []model.InstitutionMembersResponse
 	dataToExported = append(dataToExported, tableHeader)
 
 	if len(company_type) <= 0 && len(company_id) <= 0 {
 		return errors.New("failed to export data members: please specify which companies member to be exported")
 	}
 
-	if len(company_id) > 0 || len(company_id) > 0 && len(company_type) >= 0 {
+	if len(division_id) > 0 && len(company_id) > 0 {
+		memberList, errorGetMember := u.GetMemberByDivisionAndCompanyID([]string{division_id}, []string{company_id})
+		if errorGetMember != nil {
+			return errorGetMember
+		}
+		memberStructList = append(memberStructList, memberList...)
+
+	} else if len(company_id) > 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyID([]string{company_id})
 		if errorGetMember != nil {
 			return errorGetMember
 		}
+		memberStructList = append(memberStructList, memberList...)
 
-		for i, member := range memberList {
-			var memberData []string
-			memberData = append(memberData, strconv.Itoa(i+1))
-			memberData = append(memberData, helper.StructToArray(member, exportedField)...)
-
-			dataToExported = append(dataToExported, memberData)
-		}
 	} else if len(company_type) >= 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyType(company_type)
 		if errorGetMember != nil {
 			return errorGetMember
 		}
+		memberStructList = append(memberStructList, memberList...)
 
-		for _, member := range memberList {
-			memberData := helper.StructToArray(member, exportedField)
-			dataToExported = append(dataToExported, memberData)
-		}
+	}
+
+	for i, member := range memberStructList {
+		var memberData []string
+		memberData = append(memberData, strconv.Itoa(i+1))
+		memberData = append(memberData, helper.StructToArray(member, exportedField)...)
+
+		dataToExported = append(dataToExported, memberData)
 	}
 
 	exportConfig := helper.ExportToExcelConfig{

@@ -267,10 +267,14 @@ const (
 		m.email,
 		m.telephone,
 		m.position, 
-		d.name AS division 
+		d.name AS division,
+		i.code AS company_code,
+		i.name AS company_name 
 	FROM institution_members m  
 	JOIN institution_division d 
 		ON m.division_id = d.id 
+	JOIN institutions i
+		ON m.institution_id = i.id
 	WHERE m.deleted_by IS NULL
 	AND m.deleted_at IS NULL`
 )
