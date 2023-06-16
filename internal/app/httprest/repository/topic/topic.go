@@ -158,7 +158,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 
 	data.FormattedCreatedAt = data.CreatedAt.Format("2006-01-02 15:04")
 
-	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = '%s' ORDER BY created_at ASC`, topicID)
+	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = '%s'`, topicID)
 
 	if keyword != "" {
 		query += ` AND (message ILIKE '%` + keyword + `%' OR company_name ILIKE '%` + keyword + `%' OR user_full_name ILIKE '%` + keyword + `%' OR created_at::text ILIKE '%` + keyword + `%')`
@@ -178,6 +178,10 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		}
 
 		data.Messages[i].FormattedCreatedAt = data.Messages[i].CreatedAt.Format("2006-01-02 15:04")
+	}
+
+	if len(data.Messages) == 0 {
+		data.Messages = []model.TopicMessage{}
 	}
 
 	return &data, nil
