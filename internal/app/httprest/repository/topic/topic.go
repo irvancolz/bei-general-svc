@@ -76,7 +76,6 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 
 	query += ` ORDER BY created_at DESC`
 
-	log.Println(query)
 	if page > 0 && limit > 0 {
 		offset := (page - 1) * limit
 
