@@ -132,6 +132,7 @@ func Routes() *gin.Engine {
 		topicRoute.GET("/get-by-id-topic", topic.GetById)
 		topicRoute.POST("/create-topic", topic.CreateTopicWithMessage)
 		topicRoute.PUT("/publish-draft-topic", topic.UpdateStatus)
+		topicRoute.PUT("/mark-topic-as-answered", topic.UpdateStatus)
 		topicRoute.PUT("/update-handler", topic.UpdateHandler)
 		topicRoute.POST("/create-message", topic.CreateMessage)
 		topicRoute.DELETE("/delete-topic", topic.DeleteTopic)
@@ -143,6 +144,7 @@ func Routes() *gin.Engine {
 		faqRoute.GET("/get-all-faq", faq.GetAll)
 		faqRoute.POST("/create-faq", faq.CreateFAQ)
 		faqRoute.DELETE("/delete-faq", faq.DeleteFAQ)
+		faqRoute.PUT("/update-status-faq", faq.UpdateStatusFAQ)
 	}
 	contactPersonRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{

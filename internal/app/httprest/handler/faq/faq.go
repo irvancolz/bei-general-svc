@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/usecase/faq"
 	"be-idx-tsg/internal/pkg/httpresponse"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +13,7 @@ type Handler interface {
 	GetAll(c *gin.Context)
 	CreateFAQ(c *gin.Context)
 	DeleteFAQ(c *gin.Context)
+	UpdateStatusFAQ(c *gin.Context)
 }
 
 type handler struct {
@@ -26,8 +28,9 @@ func NewHandler() Handler {
 
 func (m *handler) GetAll(c *gin.Context) {
 	var keyword = c.Query("keyword")
+	userId, _ := c.Get("user_id")
 
-	data, err := m.faq.GetAll(keyword)
+	data, err := m.faq.GetAll(keyword, userId.(string))
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
@@ -39,6 +42,7 @@ func (m *handler) GetAll(c *gin.Context) {
 func (m *handler) CreateFAQ(c *gin.Context) {
 	var (
 		request model.CreateFAQ
+		isDraft bool
 	)
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -46,7 +50,9 @@ func (m *handler) CreateFAQ(c *gin.Context) {
 		return
 	}
 
-	data, err := m.faq.CreateFAQ(request, c)
+	isDraft, _ = strconv.ParseBool(c.DefaultQuery("draft", "0"))
+
+	data, err := m.faq.CreateFAQ(request, c, isDraft)
 	if err != nil {
 		model.GenerateInsertErrorResponse(c, err)
 		return
@@ -69,4 +75,23 @@ func (m *handler) DeleteFAQ(c *gin.Context) {
 	}
 
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, data))
+}
+
+func (m *handler) UpdateStatusFAQ(c *gin.Context) {
+	var (
+		request model.UpdateFAQStatus
+	)
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		model.GenerateInvalidJsonResponse(c, err)
+		return
+	}
+
+	data, err := m.faq.UpdateStatusFAQ(request, c)
+	if err != nil {
+		model.GenerateUpdateErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, data))
 }

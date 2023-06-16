@@ -8,9 +8,10 @@ import (
 )
 
 type Usecase interface {
-	GetAll(keyword string) ([]*model.FAQ, error)
-	CreateFAQ(faq model.CreateFAQ, c *gin.Context) (int64, error)
+	GetAll(keyword, userId string) ([]*model.FAQ, error)
+	CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool) (int64, error)
 	DeleteFAQ(faqID string, c *gin.Context) (int64, error)
+	UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error)
 }
 
 type usecase struct {
@@ -23,14 +24,18 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(keyword string) ([]*model.FAQ, error) {
-	return m.faqRepo.GetAll(keyword)
+func (m *usecase) GetAll(keyword, userId string) ([]*model.FAQ, error) {
+	return m.faqRepo.GetAll(keyword, userId)
 }
 
-func (m *usecase) CreateFAQ(faq model.CreateFAQ, c *gin.Context) (int64, error) {
-	return m.faqRepo.CreateFAQ(faq, c)
+func (m *usecase) CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool) (int64, error) {
+	return m.faqRepo.CreateFAQ(faq, c, isDraft)
 }
 
 func (m *usecase) DeleteFAQ(faqID string, c *gin.Context) (int64, error) {
 	return m.faqRepo.DeleteFAQ(faqID, c)
+}
+
+func (m *usecase) UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error) {
+	return m.faqRepo.UpdateStatusFAQ(faq, c)
 }

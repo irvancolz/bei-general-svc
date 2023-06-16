@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,7 +43,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 
 	query := `SELECT 
 	t.id, t.created_by, t.created_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, 
-	tp.user_full_name, tp.company_name, tp.message
+	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
@@ -75,7 +76,6 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 
 	query += ` ORDER BY created_at DESC`
 
-	log.Println(query)
 	if page > 0 && limit > 0 {
 		offset := (page - 1) * limit
 
@@ -146,7 +146,7 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err := m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
@@ -184,21 +184,25 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 }
 
 func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error) {
+	var data model.Topic
+
+	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topic.TopicID)
+
+	err := m.DB.Get(&data, query)
+	if err != nil {
+		return 0, errors.New("not found")
+	}
+
+	if data.HandlerID != "00000000-0000-0000-0000-000000000000" {
+		return 0, errors.New("forbidden")
+	}
+
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topic.UpdatedAt = t.Format("2006-01-02 15:04:05")
 
 	handlerId, _ := c.Get("user_id")
 	topic.HandlerID = handlerId.(string)
 	topic.UpdatedBy = handlerId.(string)
-
-	var count int
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM topics WHERE id = '%s' AND handler_id != NULL`, topic.TopicID)
-
-	err := m.DB.Get(&count, query)
-	if err != nil || count != 0 {
-		return 0, errors.New("topik sudah dihandle")
-	}
 
 	query = `UPDATE topics SET handler_id = :handler_id, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
 
@@ -215,15 +219,32 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 }
 
 func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error) {
+	var data model.Topic
+
+	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topic.TopicID)
+
+	err := m.DB.Get(&data, query)
+	if err != nil {
+		return 0, errors.New("not found")
+	}
+
+	userId, _ := c.Get("user_id")
+
+	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
+		return 0, errors.New("forbidden")
+	}
+
+	topic.UpdatedBy = userId.(string)
+
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topic.UpdatedAt = t.Format("2006-01-02 15:04:05")
 
-	userId, _ := c.Get("user_id")
-	topic.UpdatedBy = userId.(string)
+	topic.Status = model.AnsweredTopic
+	if strings.Contains(c.FullPath(), "publish") {
+		topic.Status = model.NotAnsweredTopic
+	}
 
-	topic.Status = model.NotAnswered
-
-	query := `UPDATE topics SET status = :status, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
+	query = `UPDATE topics SET status = :status, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
 
 	result, err := m.DB.NamedExec(query, &topic)
 
@@ -238,9 +259,9 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 }
 
 func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error) {
-	topic.Status = model.NotAnswered
+	topic.Status = model.NotAnsweredTopic
 	if isDraft {
-		topic.Status = model.Draft
+		topic.Status = model.DraftTopic
 	}
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
@@ -252,6 +273,9 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 	companyId, _ := c.Get("company_id")
 	topic.CompanyID = companyId.(string)
 
+	companyCode, _ := c.Get("company_code")
+	topic.CompanyCode = companyCode.(string)
+
 	companyName, _ := c.Get("company_name")
 	topic.CompanyName = companyName.(string)
 
@@ -262,7 +286,7 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 		topic.CompanyID = "00000000-0000-0000-0000-000000000000"
 	}
 
-	query := `INSERT INTO topics (status, created_by, created_at) VALUES (:status, :created_by, :created_at) RETURNING id AS topic_id`
+	query := `INSERT INTO topics (status, created_by, created_at, company_code, company_name) VALUES (:status, :created_by, :created_at, :company_code, :company_name) RETURNING id AS topic_id`
 	row, err := m.DB.NamedQuery(query, topic)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateTopicWithMessage] ", err)
@@ -298,11 +322,12 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 	}
 
 	userId, _ := c.Get("user_id")
-	message.CreatedBy = userId.(string)
 
 	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
 		return 0, errors.New("forbidden")
 	}
+
+	message.CreatedBy = userId.(string)
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	message.CreatedAt = t.Format("2006-01-02 15:04:05")
@@ -395,25 +420,10 @@ func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.
 		return 0, errors.New("forbidden")
 	}
 
-	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
-
-	topicFAQ.Status = model.Answered
-
-	topicFAQ.UpdatedAt = t.Format("2006-01-02 15:04:05")
-
-	topicFAQ.UpdatedBy = userId.(string)
-
-	query = `UPDATE topics SET status = :status, updated_by = :updated_by, updated_at = :updated_at WHERE id = :id`
-
-	_, err = m.DB.NamedExec(query, &topicFAQ)
-	if err != nil {
-		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [ArchiveTopicToFAQ] ", err)
-		return 0, err
-	}
-
-	topicFAQ.CreatedAt = t.Format("2006-01-02 15:04:05")
-
 	topicFAQ.CreatedBy = userId.(string)
+
+	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
+	topicFAQ.CreatedAt = t.Format("2006-01-02 15:04:05")
 
 	query = `INSERT INTO faqs (question, answer, created_by, created_at) VALUES (:question, :answer, :created_by, :created_at)`
 

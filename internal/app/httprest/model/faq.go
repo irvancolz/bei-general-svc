@@ -2,6 +2,13 @@ package model
 
 import "time"
 
+type FAQStatus string
+
+const (
+	PublishedFAQ FAQStatus = "PUBLISHED"
+	DraftFAQ     FAQStatus = "DRAFT"
+)
+
 type FAQ struct {
 	ID                 string    `json:"id"`
 	CreatedBy          string    `json:"created_by" db:"created_by"`
@@ -9,13 +16,22 @@ type FAQ struct {
 	FormattedCreatedAt string    `json:"created_at"`
 	Question           string    `json:"question"`
 	Answer             string    `json:"answer"`
+	Status             FAQStatus `json:"status"`
 }
 
 type CreateFAQ struct {
-	CreatedBy string `db:"created_by"`
-	CreatedAt string `db:"created_at"`
-	Question  string `json:"question" db:"question"`
-	Answer    string `json:"answer" db:"answer"`
+	CreatedBy string    `db:"created_by"`
+	CreatedAt string    `db:"created_at"`
+	Status    FAQStatus `db:"status"`
+	Question  string    `json:"question" db:"question"`
+	Answer    string    `json:"answer" db:"answer"`
+}
+
+type UpdateFAQStatus struct {
+	ID        string    `db:"id" json:"id"`
+	Status    FAQStatus `db:"status"`
+	UpdatedBy string    `db:"updated_by"`
+	UpdatedAt string    `db:"updated_at"`
 }
 
 type DeleteFAQ struct {
