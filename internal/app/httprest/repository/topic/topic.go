@@ -42,7 +42,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
-	t.id, t.created_by, t.created_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, 
+	t.id, t.created_by, t.created_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
 	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
@@ -146,7 +146,7 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err := m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
@@ -180,6 +180,10 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		data.Messages[i].FormattedCreatedAt = data.Messages[i].CreatedAt.Format("2006-01-02 15:04")
 	}
 
+	if len(data.Messages) == 0 {
+		data.Messages = []model.TopicMessage{}
+	}
+
 	return &data, nil
 }
 
@@ -204,7 +208,10 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 	topic.HandlerID = handlerId.(string)
 	topic.UpdatedBy = handlerId.(string)
 
-	query = `UPDATE topics SET handler_id = :handler_id, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
+	name, _ := c.Get("name")
+	topic.HandlerName = name.(string)
+
+	query = `UPDATE topics SET handler_id = :handler_id, handler_name = :handler_name, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
 
 	result, err := m.DB.NamedExec(query, &topic)
 
