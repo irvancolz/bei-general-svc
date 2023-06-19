@@ -28,7 +28,7 @@ func TestGenerateFilename(t *testing.T) {
 	name := "test file.pdf"
 	mockTime, _ := time.Parse("2006-01-02", "2006-01-02")
 	result := config.GenerateFilename(name, mockTime)
-	if result != "2006-01-02_00-00-00_test_file.pdf" {
+	if result != "2006 01 02 07 00 00_test_file.pdf" {
 		t.Log(result)
 		t.Error("the file name generated didnt fullfilled the requirements")
 	}

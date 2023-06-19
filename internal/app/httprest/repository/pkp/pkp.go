@@ -248,6 +248,9 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			"question",
 			"answers_by",
 			"topic",
+			"answers",
+			"stakeholders",
+			"file_name",
 		},
 		TableName: "pkp",
 	}

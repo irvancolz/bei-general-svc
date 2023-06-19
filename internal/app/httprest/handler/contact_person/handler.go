@@ -285,8 +285,9 @@ func (h *handler) GetMemberByCompanyType(c *gin.Context) {
 func (h *handler) ExportMember(c *gin.Context) {
 	companyType := c.Query("company_type")
 	companyId := c.Query("company_id")
+	divisionId := c.Query("division_id")
 
-	errorExport := h.Usecase.ExportMember(c, companyType, companyId)
+	errorExport := h.Usecase.ExportMember(c, companyType, companyId, divisionId)
 	if errorExport != nil {
 		model.GenerateReadErrorResponse(c, errorExport)
 		return

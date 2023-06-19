@@ -40,6 +40,18 @@ func TimeIn(t time.Time, name string) (time.Time, error) {
 	return t, err
 }
 
+func GetWIBLocalTime(date *time.Time) time.Time {
+	var timeToParse time.Time
+	if date != nil {
+		timeToParse = *date
+	} else {
+		timeToParse = time.Now()
+	}
+
+	t, _ := TimeIn(timeToParse, "Asia/Jakarta")
+	return t
+}
+
 func ConvertListInterfaceToListString(list []interface{}) []string {
 	stringList := make([]string, len(list))
 
