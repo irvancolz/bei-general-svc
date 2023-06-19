@@ -366,10 +366,18 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		dataToExported = append(dataToExported, memberData)
 	}
 
-	exportConfig := helper.ExportToExcelConfig{
+	excelConfig := helper.ExportToExcelConfig{
 		CollumnStart: "b",
 	}
-	filepathResult, errorCreateFile := helper.ExportTableToFile(c, "Contact_person_members", dataToExported, exportConfig)
+	pdfConfig := helper.PdfTableOptions{
+		HeaderTitle: "Contact Person Member",
+	}
+	filepathResult, errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
+		Filename:    "contact_person_members",
+		Data:        dataToExported,
+		ExcelConfig: &excelConfig,
+		PdfConfig:   &pdfConfig,
+	})
 	if errorCreateFile != nil {
 		return errorCreateFile
 	}
