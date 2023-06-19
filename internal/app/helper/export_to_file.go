@@ -9,7 +9,7 @@ import (
 
 func ExportTableToFile(c *gin.Context, filename string, data [][]string, excelConfig ExportToExcelConfig) (string, error) {
 	fileType := c.Query("file_type")
-	if strings.EqualFold("excel", fileType) {
+	if strings.EqualFold("xlsx", fileType) {
 		return excelConfig.ExportTableToExcel(filename, data)
 	}
 	if strings.EqualFold("csv", fileType) {
