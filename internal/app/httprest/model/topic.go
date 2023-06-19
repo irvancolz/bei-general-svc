@@ -20,19 +20,20 @@ type Topic struct {
 	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
 	Status             TopicStatus    `json:"status" db:"status"`
 	HandlerID          string         `json:"handler_id" db:"handler_id"`
+	HandlerName        *string        `json:"handler_name" db:"handler_name"`
 	Message            string         `json:"message" db:"message"`
 	Messages           []TopicMessage `json:"messages"`
 }
 
 type TopicMessage struct {
-	ID                 string    `json:"id" db:"id"`
-	CreatedBy          string    `json:"created_by" db:"created_by"`
-	Message            string    `json:"message" db:"message"`
-	CompanyID          string    `json:"company_id" db:"company_id"`
-	CompanyName        string    `json:"company_name" db:"company_name"`
-	UserFullName       string    `json:"user_full_name" db:"user_full_name"`
+	ID                 string    `json:"id,omitempty" db:"id"`
+	CreatedBy          string    `json:"created_by,omitempty" db:"created_by"`
+	Message            string    `json:"message,omitempty" db:"message"`
+	CompanyID          string    `json:"company_id,omitempty" db:"company_id"`
+	CompanyName        string    `json:"company_name,omitempty" db:"company_name"`
+	UserFullName       string    `json:"user_full_name,omitempty" db:"user_full_name"`
 	CreatedAt          time.Time `json:"-" db:"created_at"`
-	FormattedCreatedAt string    `json:"created_at"`
+	FormattedCreatedAt string    `json:"created_at,omitempty"`
 }
 
 type CreateTopicWithMessage struct {
@@ -48,10 +49,11 @@ type CreateTopicWithMessage struct {
 }
 
 type UpdateTopicHandler struct {
-	TopicID   string `db:"topic_id" json:"topic_id"`
-	HandlerID string `db:"handler_id"`
-	UpdatedBy string `db:"updated_by"`
-	UpdatedAt string `db:"updated_at"`
+	TopicID     string `db:"topic_id" json:"topic_id"`
+	HandlerID   string `db:"handler_id"`
+	HandlerName string `db:"handler_name"`
+	UpdatedBy   string `db:"updated_by"`
+	UpdatedAt   string `db:"updated_at"`
 }
 
 type UpdateTopicStatus struct {
