@@ -21,7 +21,6 @@ type ExportToExcelConfig struct {
 
 func (c *ExportToExcelConfig) ExportTableToExcel(filenames string, data [][]string) (string, error) {
 	excelFile := excelize.NewFile()
-
 	currentSheet := "Sheet1"
 
 	if len(data) <= 0 {
