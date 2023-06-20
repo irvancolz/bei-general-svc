@@ -7,7 +7,6 @@ import (
 	"be-idx-tsg/internal/app/utilities"
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -372,7 +371,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 	pdfConfig := helper.PdfTableOptions{
 		HeaderTitle: "Contact Person Member",
 	}
-	filepathResult, errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
+	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
 		Filename:    "contact_person_members",
 		Data:        dataToExported,
 		ExcelConfig: &excelConfig,
@@ -382,10 +381,5 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		return errorCreateFile
 	}
 
-	c.File(filepathResult)
-	errRemoveFile := os.Remove(filepathResult)
-	if errRemoveFile != nil {
-		log.Println("failed to clean server disk after create excel files :", errRemoveFile)
-	}
 	return nil
 }

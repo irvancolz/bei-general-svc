@@ -34,9 +34,10 @@ func ConvertUnixToDateString(unix int64, format string) string {
 
 // filtering data obtained from database with comparing value on response object and params given by user
 // the time field used specially if we want to search data created/updated on a single day
+// there is excluded properties that will not filtered = "page", "limit", "search", "export", "orientation"
 func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string) []map[string]interface{} {
 	querries := c.Request.URL.Query()
-	reservedQueries := []string{"page", "limit", "search"}
+	reservedQueries := []string{"page", "limit", "search", "export", "orientation"}
 	results := ConvertToMap(data)
 	if len(querries) <= 0 {
 		return results
