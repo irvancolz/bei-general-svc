@@ -82,3 +82,39 @@ func TestConvertToMap(t *testing.T) {
 		t.Error("the resulted map should be same as expected")
 	}
 }
+
+func TestGenerateParamsTimeName(t *testing.T) {
+	paramsList := []string{"lorem", "ipsum", "dolor"}
+	result := generateTimeRangeParamList(paramsList)
+	expected := []string{"lorem_from", "ipsum_from", "dolor_from", "lorem_end", "ipsum_end", "dolor_end"}
+	for _, data := range result {
+		if !IsContains(expected, data) {
+			t.Log(data)
+			t.Error()
+		}
+	}
+}
+
+func TestCheckStarterTimeParam(t *testing.T) {
+	param := "lorem_from"
+	paramEnd := "lorem_end"
+	if !isStarterTimeParam(param) {
+		t.Error()
+	}
+	if isStarterTimeParam(paramEnd) {
+		t.Error()
+	}
+}
+
+func TestGetTimeBaseName(t *testing.T) {
+	param := "lorem_ipsum_from"
+	paramEnd := "lorem_ipsum_end"
+	result := getBaseTimeRange(param)
+	resultend := getBaseTimeRange(paramEnd)
+	if result != "lorem_ipsum" {
+		t.Error()
+	}
+	if resultend != "lorem_ipsum" {
+		t.Error()
+	}
+}
