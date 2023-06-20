@@ -3,6 +3,7 @@ package pkp
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
@@ -236,7 +237,11 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		file_name AS filename,
 		file_path AS filepath,
 		created_by AS CreateBy,
-		created_at AS CreatedAt
+		created_at AS CreatedAt,
+		updated_by AS UpdatedBy,
+		updated_at AS UpdatedAt,
+		deleted_by AS DeletedBy,
+		deleted_at AS DeletedAt
 	FROM pkp 
 	WHERE deleted_by IS NULL
 	AND deleted_at IS NULL`
@@ -288,12 +293,9 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			Topic:        item.Topic,
 			FileName:     item.FileName,
 			FilePath:     item.FilePath,
-			CreateBy:     item.CreateBy,
 			CreatedAt:    item.CreatedAt.Unix(),
 
 			UpdatedAt: item.UpdatedAt.Time.Unix(),
-			UpdatedBy: item.UpdatedBy.String,
-			DeletedBy: item.DeletedBy.String,
 			DeletedAt: item.DeletedAt.Time.Unix(),
 		}
 
@@ -304,6 +306,16 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		if !item.UpdatedAt.Valid {
 			data.UpdatedAt = 0
 		}
+
+		if item.UpdatedBy.Valid {
+			data.UpdatedBy = utilities.GetUserNameByID(c, item.UpdatedBy.String)
+		}
+
+		if item.DeletedBy.Valid {
+			data.DeletedBy = utilities.GetUserNameByID(c, item.DeletedBy.String)
+		}
+
+		data.CreateBy = utilities.GetUserNameByID(c, item.CreateBy)
 
 		result = append(result, data)
 	}

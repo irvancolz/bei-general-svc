@@ -1,6 +1,7 @@
 package utilities
 
 import (
+	"be-idx-tsg/internal/app/httprest/model"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -108,4 +109,58 @@ func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, err
 	}
 
 	return datas, errorUM
+}
+
+type UserDetailResponse struct {
+	Code    int64      `json:"code"`
+	Message string     `json:"message"`
+	Data    model.User `json:"data"`
+}
+
+func GetUserNameByID(c *gin.Context, id string) string {
+	err_host := godotenv.Load(".env")
+	if err_host != nil {
+		fmt.Println(err_host)
+	}
+	host := os.Getenv("SERVICE_AUTH_HOST")
+
+	url := host + "/management-user-get-user-by-id?id=" + id
+	tokens, _ := c.Get("token")
+
+	Request, err := http.NewRequest("GET", url, nil)
+
+	Request.Header.Add("authorization", tokens.(string))
+	Request.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Println("failed to create request to auth : ", err)
+		return ""
+	}
+
+	resp, err := http.DefaultClient.Do(Request)
+	if err != nil {
+		log.Println("failed to get user response from auth: ", err)
+		return ""
+	}
+
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		log.Println("failed to get user detail, an error occured when try to get data")
+		return ""
+	}
+
+	if err != nil {
+		log.Println("failed to read data user results : ", err)
+		return ""
+	}
+
+	result := UserDetailResponse{}
+	err_marshall := json.Unmarshal(data, &result)
+	if err_marshall != nil {
+		log.Println("failed to convert users to expected struct :", err_marshall)
+		return ""
+	}
+
+	return result.Data.Username
 }
