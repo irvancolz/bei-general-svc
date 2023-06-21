@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -80,6 +81,28 @@ func CheckIsOnSpecifiedTimeRange(c *gin.Context, key string, target int64) bool 
 	return target >= timeStart && target <= timeEnd
 }
 
+func HandleDataSorting(c *gin.Context, data []map[string]interface{}) []map[string]interface{} {
+	sortedField := c.Query("sort_by")
+	sortOrder := c.Query("sort_order")
+	results := data
+
+	if sortedField == "" {
+		return data
+	}
+
+	if strings.EqualFold(sortOrder, "desc") {
+		sort.SliceStable(results, func(current, before int) bool {
+			return fmt.Sprintf("%v", results[current][sortedField]) > fmt.Sprintf("%v", results[before][sortedField])
+		})
+		return results
+	}
+
+	sort.SliceStable(results, func(current, before int) bool {
+		return fmt.Sprintf("%v", results[current][sortedField]) < fmt.Sprintf("%v", results[before][sortedField])
+	})
+	return results
+}
+
 // filtering data obtained from database with comparing value on response object and params given by user
 // the time field used specially if we want to search data created/updated on a single day
 // there is excluded properties that will not filtered = "page", "limit", "search", "export", "orientation"
@@ -110,7 +133,10 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 			filteredResults = append(filteredResults, maps)
 		}
 	}
-	return filteredResults
+
+	sortedResults := HandleDataSorting(c, filteredResults)
+
+	return sortedResults
 }
 
 type PaginationResponse struct {
@@ -125,6 +151,7 @@ type PaginationResponse struct {
 
 func HandleDataPagination(c *gin.Context, data []map[string]interface{}) PaginationResponse {
 	var result PaginationResponse
+	totalData := len(data)
 	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if pageCount == 0 {
 		pageCount = 1
@@ -134,32 +161,32 @@ func HandleDataPagination(c *gin.Context, data []map[string]interface{}) Paginat
 		pageLimit = 5
 	}
 	showedDatafrom := (pageCount - 1) * pageLimit
-	pageTotal := float64(len(data)) / float64(pageLimit)
+	pageTotal := float64(totalData) / float64(pageLimit)
 
 	result.TotalPage = int(math.Ceil(pageTotal))
 	result.Limit = pageLimit
 	result.CurrentPage = pageCount
 	result.Next = true
 	result.Previous = true
-	result.TotalData = len(data)
+	result.TotalData = totalData
 
 	if pageCount <= 1 {
 		result.Previous = false
 	}
 
-	if pageCount*pageLimit > len(data) {
+	if pageCount*pageLimit > totalData {
 		result.Next = false
 	}
 
 	if showedDatafrom >= 0 && showedDatafrom < len(data) {
 		showedDataEnd := showedDatafrom + pageLimit
-		if showedDataEnd > len(data) {
-			showedDataEnd = len(data)
+		if showedDataEnd > totalData {
+			showedDataEnd = totalData
 		}
 		result.Data = data[showedDatafrom:showedDataEnd]
 	}
 
-	if showedDatafrom > len(data) || len(data) <= 0 {
+	if showedDatafrom > totalData || totalData <= 0 {
 		result.Data = make([]map[string]interface{}, 0)
 	}
 
