@@ -118,6 +118,11 @@ func (u *usecase) Download(c *gin.Context, pathFile string) error {
 }
 
 func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string) error {
+
+	if slug == "" {
+		return nil
+	}
+
 	fileLocation := GetFilePath(slug)
 	prohibitedExt := []string{".go", ".env", ".dev", ".yml", ".sql"}
 

@@ -11,8 +11,8 @@ import (
 
 type FilesUsecaseInterface interface {
 	GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
-	UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error
-	CreateNewFiles(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error)
+	UpdateExistingFiles(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error
+	CreateNewFiles(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error)
 }
 
 func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
@@ -24,16 +24,18 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*hel
 	for _, item := range raw_result {
 		if item.Category == types {
 			result := model.GuidanceFilesJSONResponse{
-				Id:         item.Id,
-				Name:       item.Name,
-				Category:   item.Category,
-				File_size:  item.File_size,
-				File_path:  item.File_path,
-				File:       item.File,
-				Created_by: item.Created_by,
-				Created_at: item.Created_at,
-				Updated_by: item.Updated_by,
-				Updated_at: item.Updated_at,
+				Id:          item.Id,
+				Name:        item.Name,
+				Category:    item.Category,
+				Description: item.Description,
+				Version:     item.Version,
+				File_size:   item.File_size,
+				File_path:   item.File_path,
+				File:        item.File,
+				Created_by:  item.Created_by,
+				Created_at:  item.Created_at,
+				Updated_by:  item.Updated_by,
+				Updated_at:  item.Updated_at,
 			}
 			results = append(results, result)
 		}
@@ -50,38 +52,50 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*hel
 
 }
 
-func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error {
+func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error {
 	name_user, _ := c.Get("name_user")
+	categories := "File"
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
-		Id:         props.Id,
-		Category:   "File",
-		Name:       props.Name,
-		File:       props.File_name,
-		File_path:  props.File_path,
-		File_size:  props.File_size,
-		Updated_at: time.Now(),
-		Updated_by: name_user.(string),
+		Id:          props.Id,
+		Category:    categories,
+		Name:        props.Name,
+		Description: props.Description,
+		File:        props.File,
+		File_path:   props.File_path,
+		File_size:   props.File_size,
+		Order:       props.Order,
+		Version:     props.Version,
+		File_Owner:  props.Owner,
+		Updated_at:  time.Now(),
+		Updated_by:  name_user.(string),
 	}
-	error_result := u.Repository.UpdateExistingData(createNewDataArgs)
+
+	error_result := u.Repository.UpdateExistingData(c, createNewDataArgs)
 	if error_result != nil {
 		return error_result
 	}
 	return nil
 }
 
-func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error) {
+func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error) {
 	name_user, _ := c.Get("name_user")
+	categories := "File"
 
 	createNewDataArgs := repo.CreateNewDataProps{
-		Category:   "File",
-		Name:       props.Name,
-		File:       props.File_name,
-		File_path:  props.File_path,
-		File_size:  props.File_size,
-		Created_at: time.Now(),
-		Created_by: name_user.(string),
+		Category:    categories,
+		Name:        props.Name,
+		Description: props.Description,
+		File:        props.File,
+		File_path:   props.File_path,
+		File_size:   props.File_size,
+		Order:       props.Order,
+		Version:     props.Version,
+		File_Owner:  props.Owner,
+		Created_at:  time.Now(),
+		Created_by:  name_user.(string),
 	}
+
 	result, error_result := u.Repository.CreateNewData(createNewDataArgs)
 	if error_result != nil {
 		return 0, error_result

@@ -31,7 +31,7 @@ func NewGuidanceHandler() GuidanceHandler {
 }
 
 func (h *guidancehandler) CreateNewGuidance(c *gin.Context) {
-	var request usecase.CreateNewGuidanceProps
+	var request usecase.CreateNewGuidanceAndFilesProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateInvalidJsonResponse(c, error_params)
 		return
@@ -45,7 +45,7 @@ func (h *guidancehandler) CreateNewGuidance(c *gin.Context) {
 }
 
 func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
-	var request usecase.UpdateExsistingGuidances
+	var request usecase.UpdateExsistingGuidancesAndFilesProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateUpdateErrorResponse(c, error_params)
 		return
@@ -115,7 +115,7 @@ func (h *guidancehandler) GetAllData(c *gin.Context) {
 }
 
 func (h *guidancehandler) CreateNewFiles(c *gin.Context) {
-	var request usecase.CreateNewRegulationsAndFileProps
+	var request usecase.CreateNewGuidanceAndFilesProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateInvalidJsonResponse(c, error_params)
 		return
@@ -129,7 +129,7 @@ func (h *guidancehandler) CreateNewFiles(c *gin.Context) {
 }
 
 func (h *guidancehandler) UpdateExistingFiles(c *gin.Context) {
-	var request usecase.UpdateExistingRegulationsAndFileProps
+	var request usecase.UpdateExsistingGuidancesAndFilesProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateUpdateErrorResponse(c, error_params)
 		return
@@ -143,7 +143,7 @@ func (h *guidancehandler) UpdateExistingFiles(c *gin.Context) {
 }
 
 func (h *guidancehandler) CreateNewRegulation(c *gin.Context) {
-	var request usecase.CreateNewRegulationsAndFileProps
+	var request usecase.CreateNewRegulationsProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateInsertErrorResponse(c, error_params)
 		return
@@ -157,7 +157,7 @@ func (h *guidancehandler) CreateNewRegulation(c *gin.Context) {
 }
 
 func (h *guidancehandler) UpdateExistingRegulation(c *gin.Context) {
-	var request usecase.UpdateExistingRegulationsAndFileProps
+	var request usecase.UpdateExistingRegulationsProps
 	if error_params := c.ShouldBindJSON(&request); error_params != nil {
 		model.GenerateUpdateErrorResponse(c, error_params)
 		return
