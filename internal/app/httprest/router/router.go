@@ -101,8 +101,8 @@ func Routes() *gin.Engine {
 		pkpRoute.POST("/create-pkp", pkp.CreatePKuser)
 		pkpRoute.PUT("/update-pkp", pkp.UpdatePKuser)
 		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
-		pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
-		pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
+		// pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
+		// pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
 	}
 
 	parameterAdminRoute := v3noauth.Group("").Use(globalRepo.Authentication(&ParameterAdmin))

@@ -80,14 +80,16 @@ type RegulationJSONResponse struct {
 }
 
 type GuidanceFilesJSONResponse struct {
-	Id         string `json:"id"`
-	Category   string `json:"category"`
-	Name       string `json:"name" binding:"required"`
-	File       string `json:"file"`
-	File_size  int64  `json:"file_size"`
-	File_path  string `json:"file_path"`
-	Created_by string `json:"created_by"`
-	Created_at int64  `json:"created_at"`
-	Updated_by string `json:"updated_by"`
-	Updated_at int64  `json:"updated_at"`
+	Id          string `json:"id"`
+	Category    string `json:"category"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+	Version     string `json:"version"`
+	File        string `json:"file"`
+	File_size   int64  `json:"file_size"`
+	File_path   string `json:"file_path"`
+	Created_by  string `json:"created_by"`
+	Created_at  int64  `json:"created_at"`
+	Updated_by  string `json:"updated_by"`
+	Updated_at  int64  `json:"updated_at"`
 }

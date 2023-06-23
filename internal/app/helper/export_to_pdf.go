@@ -17,8 +17,6 @@ type PdfTableOptions struct {
 	HeaderTitle string
 	// specify each collumn name
 	HeaderRows []string
-	// // L (landscape) or P (potrait), default is P
-	// Orientation string
 	// "A3", "A4", "Legal", "Letter", "A5" default is "A4"
 	PageSize string
 	// path to logo default is globe idx
@@ -29,6 +27,10 @@ type PdfTableOptions struct {
 	LineColor *color.Color
 	// even indexed rows bg color in table, default is gray
 	TableBgCol *color.Color
+	// setting paper width
+	PapperWidth float64
+	// setting papper height
+	Papperheight float64
 }
 
 func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfTableOptions) (string, error) {
@@ -52,7 +54,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfT
 		pageSize = string(consts.A4)
 	}
 
-	pdfFile := pdf.NewMaroto(consts.Orientation(strings.ToUpper(pageOrientation)), consts.PageSize(pageSize))
+	pdfFile := pdf.NewMarotoCustomSize(consts.Orientation(strings.ToUpper(pageOrientation)), consts.PageSize(pageSize), "mm", opt.PapperWidth, opt.Papperheight)
 
 	collumnGridSize := len(headers)
 	pdfFile.SetMaxGridSum(float64(collumnGridSize))

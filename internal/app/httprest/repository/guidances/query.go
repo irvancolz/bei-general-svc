@@ -61,13 +61,27 @@ const (
 	UPDATE public.guidance_file_and_regulation 
 		SET "order" = "order" + 1
 	WHERE "order" >= $1
+	AND category = $2
 	`
 	checkIsOrderFilledQuery = `
 	SELECT 
 		COUNT(*)
 	FROM public.guidance_file_and_regulation
 	WHERE "order" = $1
+	AND category = $2
 	AND deleted_by IS NULL
 	AND deleted_at IS NULL
+	`
+	getCurrentOrderQuery = `
+	SELECT 
+		"order"
+	FROM public.guidance_file_and_regulation
+	WHERE id = $1
+		`
+	getFileSavedPathQuery = `
+	SELECT 
+		file_path
+	FROM public.guidance_file_and_regulation
+	WHERE id = $1
 	`
 )

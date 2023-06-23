@@ -28,6 +28,10 @@ func (c *ExportToExcelConfig) ExportTableToExcel(filenames string, data [][]stri
 		return "", errors.New("failed to create excel file: try create excel from empty array")
 	}
 
+	if c.CollumnStart == "" {
+		c.CollumnStart = "b"
+	}
+
 	collumnStart := strings.ToUpper(string(c.CollumnStart[len(c.CollumnStart)-1]))
 	tableEndCol := string([]byte(collumnStart)[len(collumnStart)-1] + byte(len(data[0])-1))
 	headerStartRow := c.HeaderStartRow

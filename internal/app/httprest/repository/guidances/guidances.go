@@ -3,7 +3,9 @@ package guidances
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	fileOrganizer "be-idx-tsg/internal/app/httprest/usecase/upload"
 	"be-idx-tsg/internal/pkg/database"
+	"database/sql"
 	"errors"
 	"log"
 	"sort"
@@ -15,6 +17,24 @@ import (
 
 type guidancesRepository struct {
 	DB sqlx.DB
+}
+
+type GuidancesRepoInterface interface {
+	CreateNewData(props CreateNewDataProps) (int64, error)
+	insertNewData(props CreateNewDataProps) (int64, error)
+	GetAllData(c *gin.Context) ([]model.GuidanceFileAndRegulationsJSONResponse, error)
+	insertUpdatedData(params UpdateExistingDataProps) error
+	UpdateExistingData(c *gin.Context, params UpdateExistingDataProps) error
+	DeleteExistingData(params DeleteExistingDataProps) error
+	CheckIsOrderFilled(order int, category string) bool
+	UpdateOrder(order int, category string) error
+	GetFileSavedPath(id string) string
+}
+
+func NewGuidancesRepository() GuidancesRepoInterface {
+	return &guidancesRepository{
+		DB: *database.Init().MySql,
+	}
 }
 
 type CreateNewDataProps struct {
@@ -32,6 +52,28 @@ type CreateNewDataProps struct {
 	Created_by  string
 	Created_at  time.Time
 }
+
+func (u *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, error) {
+	createNewDataArgs := props
+	if props.Order <= 0 {
+		createNewDataArgs.Order = 1
+	}
+
+	isOrderFilled := u.CheckIsOrderFilled(props.Order, props.Category)
+	if isOrderFilled {
+		errorSetOrder := u.UpdateOrder(props.Order, props.Category)
+		if errorSetOrder != nil {
+			return 0, errorSetOrder
+		}
+	}
+
+	result, error_result := u.insertNewData(createNewDataArgs)
+	if error_result != nil {
+		return 0, error_result
+	}
+	return result, nil
+}
+
 type UpdateExistingDataProps struct {
 	Id          string
 	Category    string `validate:"oneof=Guidebook File Regulation"`
@@ -48,28 +90,39 @@ type UpdateExistingDataProps struct {
 	Updated_by  string
 	Updated_at  time.Time
 }
-type DeleteExistingDataProps struct {
-	Id         string
-	Deleted_by string
-	Deleted_at time.Time
-}
 
-type GuidancesRepoInterface interface {
-	CreateNewData(props CreateNewDataProps) (int64, error)
-	GetAllData(c *gin.Context) ([]model.GuidanceFileAndRegulationsJSONResponse, error)
-	UpdateExistingData(params UpdateExistingDataProps) error
-	DeleteExistingData(params DeleteExistingDataProps) error
-	CheckIsOrderFilled(order int) bool
-	UpdateOrder(order int) error
-}
-
-func NewGuidancesRepository() GuidancesRepoInterface {
-	return &guidancesRepository{
-		DB: *database.Init().MySql,
+func (u *guidancesRepository) UpdateExistingData(c *gin.Context, props UpdateExistingDataProps) error {
+	createNewDataArgs := props
+	if props.Order <= 0 {
+		createNewDataArgs.Order = 1
 	}
+
+	isOrderFilled := u.CheckIsOrderFilled(props.Order, props.Category)
+	if isOrderFilled && props.Order != int(u.GetCurrentOrder(props.Id)) {
+		errorSetOrder := u.UpdateOrder(props.Order, props.Category)
+		if errorSetOrder != nil {
+			return errorSetOrder
+		}
+	}
+
+	// update the filesaved
+	savedFile := u.GetFileSavedPath(props.Id)
+	if props.File_path != savedFile && savedFile != "" {
+		errRemove := fileOrganizer.NewUsecase().DeleteFile(c, fileOrganizer.UploadFileConfig{}, savedFile)
+		if errRemove != nil {
+			log.Println("failed to delete existing file saved :", errRemove)
+			return errRemove
+		}
+	}
+
+	error_result := u.insertUpdatedData(createNewDataArgs)
+	if error_result != nil {
+		return error_result
+	}
+	return nil
 }
 
-func (r *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, error) {
+func (r *guidancesRepository) insertNewData(props CreateNewDataProps) (int64, error) {
 	error_validate := helper.Validator().Struct(props)
 	if error_validate != nil {
 		log.Println("data is not passed validation ", error_validate)
@@ -172,7 +225,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 	return results, nil
 }
 
-func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps) error {
+func (r *guidancesRepository) insertUpdatedData(params UpdateExistingDataProps) error {
 	error_validate := helper.Validator().Struct(params)
 	if error_validate != nil {
 		log.Println("data is not passed validation ", error_validate)
@@ -212,6 +265,12 @@ func (r *guidancesRepository) UpdateExistingData(params UpdateExistingDataProps)
 	return nil
 }
 
+type DeleteExistingDataProps struct {
+	Id         string
+	Deleted_by string
+	Deleted_at time.Time
+}
+
 func (r *guidancesRepository) DeleteExistingData(params DeleteExistingDataProps) error {
 	updated_rows, error_update := r.DB.Exec(querryDelete,
 		params.Deleted_at,
@@ -234,9 +293,9 @@ func (r *guidancesRepository) DeleteExistingData(params DeleteExistingDataProps)
 	return nil
 }
 
-func (r *guidancesRepository) CheckIsOrderFilled(order int) bool {
+func (r *guidancesRepository) CheckIsOrderFilled(order int, category string) bool {
 	var result int
-	rowResult := r.DB.QueryRowx(checkIsOrderFilledQuery, order)
+	rowResult := r.DB.QueryRowx(checkIsOrderFilledQuery, order, category)
 	errorGetRows := rowResult.Scan(&result)
 	if errorGetRows != nil {
 		log.Println("failed to check guidances order avaliability :", errorGetRows)
@@ -245,8 +304,8 @@ func (r *guidancesRepository) CheckIsOrderFilled(order int) bool {
 	return result > 0
 }
 
-func (r *guidancesRepository) UpdateOrder(order int) error {
-	execResult, errorExec := r.DB.Exec(updateOrderQuery, order)
+func (r *guidancesRepository) UpdateOrder(order int, category string) error {
+	execResult, errorExec := r.DB.Exec(updateOrderQuery, order, category)
 	if errorExec != nil {
 		log.Println("failed to update order on guidances :", errorExec)
 		return errorExec
@@ -258,4 +317,31 @@ func (r *guidancesRepository) UpdateOrder(order int) error {
 	}
 
 	return nil
+}
+
+func (r *guidancesRepository) GetFileSavedPath(guidancesid string) string {
+
+	filePath := r.DB.QueryRow(getFileSavedPathQuery, guidancesid)
+	var result sql.NullString
+
+	errorPath := filePath.Scan(&result)
+	if errorPath != nil {
+		log.Println("failed to get filepath saved :", errorPath)
+		return ""
+	}
+
+	return result.String
+}
+
+func (r *guidancesRepository) GetCurrentOrder(id string) int64 {
+	var result sql.NullInt64
+	checkResult := r.DB.QueryRowx(getCurrentOrderQuery, id)
+
+	errorScan := checkResult.Scan(&result)
+	if errorScan != nil {
+		log.Println("failed to get current files order :", errorScan)
+		return 0
+	}
+
+	return result.Int64
 }

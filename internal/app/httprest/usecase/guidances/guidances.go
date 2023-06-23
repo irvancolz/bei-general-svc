@@ -4,20 +4,19 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type GuidancesUsecaseInterface interface {
-	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error)
-	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error
+	CreateNewGuidance(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error)
+	UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error
 	GetAllGuidanceBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 	DeleteGuidances(c *gin.Context, id string) error
 }
 
-type CreateNewGuidanceProps struct {
+type CreateNewGuidanceAndFilesProps struct {
 	Owner       string `json:"owner" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description" binding:"required"`
@@ -26,9 +25,9 @@ type CreateNewGuidanceProps struct {
 	File_path   string `json:"file_path" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
 	Order       int    `json:"order" binding:"required"`
-	Link        string `json:"link" binding:"required"`
 }
-type UpdateExsistingGuidances struct {
+
+type UpdateExsistingGuidancesAndFilesProps struct {
 	Id          string `json:"id" binding:"required"`
 	Owner       string `json:"owner" binding:"required"`
 	Name        string `json:"name" binding:"required"`
@@ -38,15 +37,15 @@ type UpdateExsistingGuidances struct {
 	File_size   int64  `json:"file_size" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
 	Order       int    `json:"order" binding:"required"`
-	Link        string `json:"link" binding:"required"`
 }
 
-func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidances) error {
+func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error {
 	name_user, _ := c.Get("name_user")
+	categories := "Guidebook"
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
 		Id:          props.Id,
-		Category:    "Guidebook",
+		Category:    categories,
 		File_Owner:  props.Owner,
 		Name:        props.Name,
 		Description: props.Description,
@@ -55,35 +54,23 @@ func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateE
 		File_path:   props.File_path,
 		Version:     props.Version,
 		Order:       props.Order,
-		Link:        props.Link,
 		Updated_at:  time.Now(),
 		Updated_by:  name_user.(string),
 	}
 
-	if props.Order <= 0 {
-		createNewDataArgs.Order = 1
-	}
-
-	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order)
-	if isOrderFilled {
-		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order)
-		if errorSetOrder != nil {
-			return errorSetOrder
-		}
-	}
-
-	error_result := u.Repository.UpdateExistingData(createNewDataArgs)
+	error_result := u.Repository.UpdateExistingData(c, createNewDataArgs)
 	if error_result != nil {
-		log.Println(error_result)
 		return error_result
 	}
 	return nil
 }
-func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuidanceProps) (int64, error) {
+
+func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error) {
 	name_user, _ := c.Get("name_user")
+	categories := "Guidebook"
 
 	createNewDataArgs := repo.CreateNewDataProps{
-		Category:    "Guidebook",
+		Category:    categories,
 		File_Owner:  props.Owner,
 		Name:        props.Name,
 		Description: props.Description,
@@ -92,21 +79,8 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		Version:     props.Version,
 		Order:       props.Order,
 		File_path:   props.File_path,
-		Link:        props.Link,
 		Created_at:  time.Now(),
 		Created_by:  name_user.(string),
-	}
-
-	if props.Order <= 0 {
-		createNewDataArgs.Order = 1
-	}
-
-	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order)
-	if isOrderFilled {
-		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order)
-		if errorSetOrder != nil {
-			return 0, errorSetOrder
-		}
 	}
 
 	result, error_result := u.Repository.CreateNewData(createNewDataArgs)
@@ -120,7 +94,6 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 	var results []model.GuidanceJSONResponse
 	raw_result, error_result := u.Repository.GetAllData(c)
 	if error_result != nil {
-		log.Println(error_result)
 		return nil, error_result
 	}
 	for _, item := range raw_result {

@@ -9,59 +9,76 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CreateNewRegulationsAndFileProps struct {
-	Name      string `json:"name" binding:"required"`
-	File_name string `json:"file_name" binding:"required"`
-	File_size int64  `json:"file_size" binding:"required"`
-	File_path string `json:"file_path" binding:"required"`
+type CreateNewRegulationsProps struct {
+	Name  string `json:"name" binding:"required"`
+	Owner string `json:"owner" binding:"required"`
+	Order int    `json:"order" binding:"required"`
+	Link  string `json:"link" binding:"required"`
 }
 
-type UpdateExistingRegulationsAndFileProps struct {
-	Id        string `json:"id" binding:"required"`
-	Name      string `json:"name" binding:"required"`
-	File_name string `json:"file_name" binding:"required"`
-	File_size int64  `json:"file_size" binding:"required"`
-	File_path string `json:"file_path" binding:"required"`
+type UpdateExistingRegulationsProps struct {
+	Id    string `json:"id" binding:"required"`
+	Name  string `json:"name" binding:"required"`
+	Owner string `json:"owner" binding:"required"`
+	Order int    `json:"order" binding:"required"`
+	Link  string `json:"link" binding:"required"`
 }
 
 type RegulationUsecaseInterface interface {
-	CreateNewRegulations(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error)
-	UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error
+	CreateNewRegulations(c *gin.Context, props CreateNewRegulationsProps) (int64, error)
+	UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsProps) error
 	GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 }
 
-func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewRegulationsAndFileProps) (int64, error) {
+func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewRegulationsProps) (int64, error) {
 	name_user, _ := c.Get("name_user")
+	categories := "Regulation"
 
 	createDataArgs := repo.CreateNewDataProps{
-		Category:   "Regulation",
+		Category:   categories,
 		Name:       props.Name,
-		File:       props.File_name,
-		File_size:  props.File_size,
-		File_path:  props.File_path,
+		File_Owner: props.Owner,
+		Link:       props.Link,
+		Order:      props.Order,
 		Created_by: name_user.(string),
 		Created_at: time.Now(),
 	}
+
 	result, error_result := r.Repository.CreateNewData(createDataArgs)
 	if error_result != nil {
 		return 0, error_result
 	}
 	return result, nil
 }
-func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsAndFileProps) error {
+
+func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsProps) error {
 	name_user, _ := c.Get("name_user")
+	categories := "Regulation"
 
 	updateDataArgs := repo.UpdateExistingDataProps{
-		Category:   "Regulation",
+		Category:   categories,
 		Name:       props.Name,
-		File:       props.File_name,
-		File_size:  props.File_size,
-		File_path:  props.File_path,
+		File_Owner: props.Owner,
+		Link:       props.Link,
+		Order:      props.Order,
 		Updated_by: name_user.(string),
 		Updated_at: time.Now(),
 		Id:         props.Id,
 	}
-	error_result := r.Repository.UpdateExistingData(updateDataArgs)
+
+	if props.Order <= 0 {
+		updateDataArgs.Order = 1
+	}
+
+	isOrderFilled := r.Repository.CheckIsOrderFilled(updateDataArgs.Order, categories)
+	if isOrderFilled {
+		errorSetOrder := r.Repository.UpdateOrder(updateDataArgs.Order, categories)
+		if errorSetOrder != nil {
+			return errorSetOrder
+		}
+	}
+
+	error_result := r.Repository.UpdateExistingData(c, updateDataArgs)
 	if error_result != nil {
 		return error_result
 	}
