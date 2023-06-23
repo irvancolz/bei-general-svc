@@ -50,6 +50,7 @@ func ExportTableToFile(c *gin.Context, props ExportTableToFileProps) error {
 	}
 
 	c.File(filePath)
+	c.Abort()
 	errRemoveFile := os.Remove(filePath)
 	if errRemoveFile != nil {
 		log.Println("failed to clean server disk after create files :", errRemoveFile)

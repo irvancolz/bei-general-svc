@@ -8,6 +8,7 @@ CREATE TABLE public.pkp (
     code text NOT NULL,
     "name" text NOT NULL,
     external_type text,
+    additional_information text,
     question_date timestamptz,
     question text NOT NULL,
     answers text NOT NULL,
@@ -27,4 +28,5 @@ CREATE TABLE public.pkp (
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
-DROP TABLE public.pkp -- +goose StatementEnd
+DROP TABLE public.pkp;
+-- +goose StatementEnd

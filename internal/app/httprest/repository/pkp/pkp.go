@@ -18,8 +18,6 @@ type Repository interface {
 	CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error)
 	UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
-	GetAllWithFilter(keyword []string) ([]model.PKuser, error)
-	GetAllWithSearch(Code string, Name string, QuestionDate time.Time, Question string, Answers string, answered_by string, AnsweredAt time.Time) ([]*model.PKuser, error)
 }
 
 type repository struct {
@@ -30,194 +28,6 @@ func NewRepository() Repository {
 	return &repository{
 		DB: database.Init().MySql,
 	}
-}
-
-func (m *repository) GetAllWithSearch(Code string, Name string, QuestionDate time.Time, Question string, Answers string, answered_by string, AnsweredAt time.Time) ([]*model.PKuser, error) {
-	var querySelect = `SELECT 
-							id, 
-							stakeholders, 
-							code, 
-							name, 
-							question_date, 
-							question, 
-							answers, 
-							answers_by, 
-							answers_at, 
-							topic, 
-							file_name, 
-							file_path, 
-							created_by, 
-							created_at, 
-							updated_by, 
-							updated_at
-						FROM pkp
-						WHERE code = $1 
-						AND name ILIKE '%' || $2 || '%' 
-						AND question_date BETWEEN $3 AND now() 
-						AND (answers_at BETWEEN $4 AND now() OR answers_at IS NULL)
-						AND deleted_at IS NULL`
-
-	var listData = []*model.PKuser{}
-	selDB, err := m.DB.Query(querySelect, Code, Name, QuestionDate, AnsweredAt)
-	if err != nil {
-		log.Println("[AQI-debug] [err] [repository] [questions] [sqlQuery] [GetAllWithSearch] ", err)
-		return nil, err
-	}
-	for selDB.Next() {
-		pk := model.PKuser{}
-		err = selDB.Scan(
-			&pk.ID,
-			&pk.Stakeholders,
-			&pk.Code,
-			&pk.Name,
-			&pk.QuestionDate,
-			&pk.Question,
-			&pk.Answers,
-			&pk.AnswersBy,
-			&pk.AnswersAt,
-			&pk.Topic,
-			&pk.FileName,
-			&pk.FilePath,
-			&pk.CreateBy,
-			&pk.CreatedAt,
-			&pk.UpdatedBy,
-			&pk.UpdatedAt,
-		)
-		if err != nil {
-			log.Println("[AQI-debug] [err] [repository] [questions] [sqlQuery] [GetAllWithSearch] ", err)
-			return nil, err
-		}
-		listData = append(listData, &pk)
-	}
-	return listData, nil
-}
-
-func (m *repository) GetAllWithFilter(keyword []string) ([]model.PKuser, error) {
-
-	var querySelect = `select 
-	id, 
-	stakeholders,
-	code, 
-	name, 
-	question_date, 
-	question, 
-	answers, 
-	answers_by, 
-	answers_at, 
-	topic,
-	file_name, 
-	file_path, 
-	created_by, 
-	created_at, 
-	updated_by,
-	updated_at
-	from pkp where deleted_by IS NULL`
-
-	if len(keyword) > 3 {
-		return nil, errors.New("keyword more than three")
-	}
-
-	var query, oneKeyword, twoKeywords, threeKeyword string
-
-	if len(keyword) == 1 {
-		oneKeyword = `
-		SELECT * FROM (
-			` + querySelect + `
-		) AS a 
-		WHERE a.name ILIKE '%` + keyword[0] + `%' 
-			OR a.code ILIKE '%` + keyword[0] + `%' 
-			OR a.question ILIKE '%` + keyword[0] + `%'  
-			OR a.answers_by ILIKE '%` + keyword[0] + `%'
-			OR a.topic ILIKE '%` + keyword[0] + `%'`
-		query = oneKeyword
-	} else if len(keyword) == 2 {
-		oneKeyword = `
-		SELECT * FROM (
-			` + querySelect + `
-		) AS a 
-		WHERE a.name ILIKE '%` + keyword[0] + `%' 
-			OR a.code ILIKE '%` + keyword[0] + `%' 
-			OR a.question ILIKE '%` + keyword[0] + `%'  
-			OR a.answers_by ILIKE '%` + keyword[0] + `%'
-			OR a.topic ILIKE '%` + keyword[0] + `%'`
-
-		twoKeywords = `
-		SELECT * FROM (
-			` + oneKeyword + `
-		) AS b
-		WHERE b.name ILIKE '%` + keyword[1] + `%'
-			OR b.code ILIKE '%` + keyword[1] + `%'
-			OR b.question ILIKE '%` + keyword[1] + `%'
-			OR b.answers_by ILIKE '%` + keyword[1] + `%'
-			OR b.topic ILIKE '%` + keyword[1] + `%'`
-		query = twoKeywords
-	} else if len(keyword) == 3 {
-		oneKeyword = `
-		SELECT * FROM (
-			` + querySelect + `
-		) AS a 
-		WHERE a.name ILIKE '%` + keyword[0] + `%' 
-			OR a.code ILIKE '%` + keyword[0] + `%' 
-			OR a.question ILIKE '%` + keyword[0] + `%'  
-			OR a.answers_by ILIKE '%` + keyword[0] + `%'
-			OR a.topic ILIKE '%` + keyword[0] + `%'`
-
-		twoKeywords = `
-		SELECT * FROM (
-			` + oneKeyword + `
-		) AS b
-		WHERE b.name ILIKE '%` + keyword[1] + `%'
-			OR b.code ILIKE '%` + keyword[1] + `%'
-			OR b.question ILIKE '%` + keyword[1] + `%'
-			OR b.answers_by ILIKE '%` + keyword[1] + `%'
-			OR b.topic ILIKE '%` + keyword[1] + `%'`
-
-		threeKeyword = `
-		SELECT * FROM (
-			` + twoKeywords + `
-		) AS c
-		WHERE c.name ILIKE '%` + keyword[2] + `%'
-			OR c.code ILIKE '%` + keyword[2] + `%'
-			OR c.question ILIKE '%` + keyword[2] + `%'
-			OR c.answers_by ILIKE '%` + keyword[2] + `%'
-			OR c.topic ILIKE '%` + keyword[2] + `%'`
-		query = threeKeyword
-	} else {
-		query = querySelect
-	}
-	var listData = []model.PKuser{}
-	selDB, err := m.DB.Query(query)
-	if err != nil {
-		log.Println("failed to get data from databases : ", err)
-		return nil, err
-	}
-	for selDB.Next() {
-		pkp := model.PKuser{}
-		err = selDB.Scan(
-			&pkp.ID,
-			&pkp.Stakeholders,
-			&pkp.Code,
-			&pkp.Name,
-			&pkp.QuestionDate,
-			&pkp.Question,
-			&pkp.Answers,
-			&pkp.AnswersBy,
-			&pkp.AnswersAt,
-			&pkp.Topic,
-			&pkp.FileName,
-			&pkp.FilePath,
-			&pkp.CreateBy,
-			&pkp.CreatedAt,
-			&pkp.UpdatedBy,
-			&pkp.UpdatedAt,
-		)
-		if err != nil {
-			log.Println("failed to copy data from database into struct : ", err)
-			return nil, err
-		}
-		listData = append(listData, pkp)
-	}
-	return listData, nil
 }
 
 func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
@@ -234,6 +44,8 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		answers_by AS AnswersBy,
 		answers_at AS AnswersAt,
 		topic,
+		external_type AS ExternalType,
+		additional_information AS AdditionalInfo,
 		file_name AS filename,
 		file_path AS filepath,
 		created_by AS CreateBy,
@@ -281,19 +93,21 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		}
 
 		data := model.PKuser{
-			ID:           item.ID,
-			Stakeholders: item.Stakeholders,
-			Code:         item.Code,
-			Name:         item.Name,
-			QuestionDate: item.QuestionDate.Unix(),
-			Question:     item.Question,
-			Answers:      item.Answers,
-			AnswersBy:    item.AnswersBy,
-			AnswersAt:    item.AnswersAt.Unix(),
-			Topic:        item.Topic,
-			FileName:     item.FileName,
-			FilePath:     item.FilePath,
-			CreatedAt:    item.CreatedAt.Unix(),
+			ID:             item.ID,
+			Stakeholders:   item.Stakeholders,
+			Code:           item.Code,
+			Name:           item.Name,
+			QuestionDate:   item.QuestionDate.Unix(),
+			Question:       item.Question,
+			Answers:        item.Answers,
+			AnswersBy:      item.AnswersBy,
+			AnswersAt:      item.AnswersAt.Unix(),
+			Topic:          item.Topic,
+			FileName:       item.FileName,
+			FilePath:       item.FilePath,
+			ExternalType:   item.ExternalType,
+			AdditionalInfo: item.AdditionalInfo.String,
+			CreatedAt:      item.CreatedAt.Unix(),
 
 			UpdatedAt: item.UpdatedAt.Time.Unix(),
 			DeletedAt: item.DeletedAt.Time.Unix(),
@@ -345,9 +159,11 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 			file_name,
 			file_path,
 			created_by,
-			created_at
+			created_at,
+			external_type,
+			additional_information
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`
 
 	result, err := m.DB.Exec(
 		query,
@@ -364,6 +180,8 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 		pkp.FilePath,
 		UserId.(string),
 		t,
+		pkp.ExternalType,
+		pkp.AdditionalInfo,
 	)
 
 	if err != nil {
@@ -395,7 +213,9 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 			file_name = $11,
 			file_path = $12,
 			updated_by = $13,
-			updated_at = $14
+			updated_at = $14,
+			external_type = $15,
+			additional_information = $16
 		WHERE id = $1 
 			AND deleted_by IS NULL
 			AND  deleted_at IS NULL;
@@ -419,6 +239,8 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 		pkp.FilePath,
 		userId.(string),
 		UpdatedAt,
+		pkp.ExternalType,
+		pkp.AdditionalInfo,
 	)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [PKP] [updateData] failed to update PKP data: ", err)
