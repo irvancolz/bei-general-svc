@@ -15,7 +15,7 @@ type Topic struct {
 	CreatedBy          string         `json:"created_by" db:"created_by"`
 	CreatedAt          time.Time      `json:"-" db:"created_at"`
 	FormattedCreatedAt string         `json:"created_at"`
-	UpdatedAt          time.Time      `json:"-" db:"pdated_at"`
+	UpdatedAt          time.Time      `json:"-" db:"updated_at"`
 	FormattedUpdatedAt string         `json:"pdated_at"`
 	UserFullName       string         `json:"user_full_name,omitempty" db:"user_full_name"`
 	CompanyCode        string         `json:"company_code,omitempty" db:"company_code"`
@@ -25,6 +25,14 @@ type Topic struct {
 	HandlerName        *string        `json:"handler_name" db:"handler_name"`
 	Message            string         `json:"message" db:"message"`
 	Messages           []TopicMessage `json:"messages"`
+}
+
+type TopicExport struct {
+	Name    string `json:"name"`
+	Company string `json:"company"`
+	Message string `json:"message"`
+	Date    string `json:"date"`
+	Status  string `json:"status"`
 }
 
 type TopicMessage struct {

@@ -17,8 +17,8 @@ import (
 )
 
 type Repository interface {
-	GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error)
+	GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
+	GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
@@ -38,11 +38,11 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
+func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
-	t.id, t.created_by, t.created_at, t.updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
+	t.id, t.created_by, t.created_at, COALESCE(t.updated_at, CURRENT_TIMESTAMP) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
 	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
@@ -63,8 +63,8 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 		query += ` AND tp.user_full_name = '` + name + `'`
 	}
 
-	if company_name != "" {
-		query += ` AND tp.company_name = '` + company_name + `'`
+	if companyName != "" {
+		query += ` AND tp.company_name = '` + companyName + `'`
 	}
 
 	if startDate != "" && endDate != "" {
@@ -90,6 +90,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
+		log.Println(query)
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [GetAll] ", err)
 		return listData, err
 	}
@@ -106,7 +107,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 	return listData, nil
 }
 
-func (m *repository) GetTotal(keyword, status, name, company_name, startDate, endDate, userId string, page, limit int) (int, int, error) {
+func (m *repository) GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error) {
 	var totalData int
 
 	query := `SELECT COUNT(t.id)
@@ -129,8 +130,8 @@ func (m *repository) GetTotal(keyword, status, name, company_name, startDate, en
 		query += ` AND tp.user_full_name = '` + name + `'`
 	}
 
-	if company_name != "" {
-		query += ` AND tp.company_name = '` + company_name + `'`
+	if companyName != "" {
+		query += ` AND tp.company_name = '` + companyName + `'`
 	}
 
 	if startDate != "" && endDate != "" {
