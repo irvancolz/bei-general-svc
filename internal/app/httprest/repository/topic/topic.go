@@ -42,7 +42,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
-	t.id, t.created_by, t.created_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
+	t.id, t.created_by, t.created_at, t.updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
 	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
@@ -74,6 +74,12 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 		query += ` AND (tp.created_at BETWEEN '` + startDate + `' AND '` + endDate + `')`
 	}
 
+	if startDate != "" {
+		startDate = parseTime(startDate)
+
+		query += ` AND tp.created_at = '` + startDate + `'`
+	}
+
 	query += ` ORDER BY created_at DESC`
 
 	if page > 0 && limit > 0 {
@@ -94,6 +100,7 @@ func (m *repository) GetAll(keyword, status, name, company_name, startDate, endD
 		}
 
 		listData[i].FormattedCreatedAt = listData[i].CreatedAt.Format("2006-01-02 15:04")
+		listData[i].FormattedUpdatedAt = listData[i].UpdatedAt.Format("2006-01-02 15:04")
 	}
 
 	return listData, nil
@@ -282,9 +289,15 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 
 	companyCode, _ := c.Get("company_code")
 	topic.CompanyCode = companyCode.(string)
+	if topic.CompanyCode == "" {
+		topic.CompanyCode = "BEI"
+	}
 
 	companyName, _ := c.Get("company_name")
 	topic.CompanyName = companyName.(string)
+	if topic.CompanyName == "" {
+		topic.CompanyName = "Bursa Efek Indonesia"
+	}
 
 	name, _ := c.Get("name")
 	topic.UserFullName = name.(string)
@@ -360,6 +373,25 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateMessage] ", err)
 		return 0, err
 	}
+
+	recipientID := data.CreatedBy
+	title := fmt.Sprintf("%s \u0020 telah membalas jawaban pertanyaan anda", name.(string))
+	if userId.(string) == data.CreatedBy {
+		recipientID = data.HandlerID
+		title = fmt.Sprintf("%s \u0020 telah membalas pertanyaan anda", name.(string))
+	}
+
+	param := helper.CreateSingleNotificationParam{
+		UserID: recipientID,
+		Data: helper.NotificationData{
+			Title: title,
+			Date:  helper.GetCurrentTime(),
+		},
+		Link: message.TopicID,
+		Type: "Topic",
+	}
+
+	helper.CreateSingleNotification(c, param)
 
 	rowsAffected, _ := result.RowsAffected()
 

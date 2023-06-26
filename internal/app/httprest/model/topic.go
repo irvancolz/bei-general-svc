@@ -15,6 +15,8 @@ type Topic struct {
 	CreatedBy          string         `json:"created_by" db:"created_by"`
 	CreatedAt          time.Time      `json:"-" db:"created_at"`
 	FormattedCreatedAt string         `json:"created_at"`
+	UpdatedAt          time.Time      `json:"-" db:"pdated_at"`
+	FormattedUpdatedAt string         `json:"pdated_at"`
 	UserFullName       string         `json:"user_full_name,omitempty" db:"user_full_name"`
 	CompanyCode        string         `json:"company_code,omitempty" db:"company_code"`
 	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
