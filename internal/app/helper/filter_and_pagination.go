@@ -111,7 +111,7 @@ func generateFilterParameter(data []map[string]interface{}) map[string][]string 
 
 	for _, items := range data {
 		for _, keys := range mapKeys {
-			if IsString(items[keys]) && !IsContains(results[keys], items[keys].(string)) {
+			if IsString(items[keys]) && !IsContains(results[keys], items[keys].(string)) && items[keys].(string) != "" {
 				results[keys] = append(results[keys], items[keys].(string))
 			}
 		}
