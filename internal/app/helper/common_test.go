@@ -118,3 +118,15 @@ func TestGetTimeBaseName(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestGenerateParams(t *testing.T) {
+	var exportedData []map[string]interface{}
+	for i := 0; i < 10; i++ {
+		data := make(map[string]interface{})
+		data["count"] = strconv.Itoa(i + 1)
+		exportedData = append(exportedData, data)
+	}
+
+	filteredParameter := generateFilterParameter(exportedData)
+	t.Log(filteredParameter)
+}
