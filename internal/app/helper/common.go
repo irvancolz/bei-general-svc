@@ -178,3 +178,8 @@ func StructToArray(data interface{}, order []string) []string {
 func generateFileNames(fileName, separator string, date time.Time) string {
 	return fileName + "_" + strconv.Itoa(int(time.Now().UnixNano()))
 }
+
+func IsString(val interface{}) bool {
+	_, isString := val.(string)
+	return isString
+}

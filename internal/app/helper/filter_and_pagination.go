@@ -103,6 +103,23 @@ func HandleDataSorting(c *gin.Context, data []map[string]interface{}) []map[stri
 	return results
 }
 
+// this func will get all unique values from exported data to users, this will only retrieve
+// data thats saved in string type, this will not return another data types.
+func generateFilterParameter(data []map[string]interface{}) map[string][]string {
+	results := make(map[string][]string)
+	mapKeys := GetMapKeys(data[0])
+
+	for _, items := range data {
+		for _, keys := range mapKeys {
+			if IsString(items[keys]) && !IsContains(results[keys], items[keys].(string)) {
+				results[keys] = append(results[keys], items[keys].(string))
+			}
+		}
+	}
+
+	return results
+}
+
 // filtering data obtained from database with comparing value on response object and params given by user
 // the time field used specially if we want to search data created/updated on a single day
 // there is excluded properties that will not filtered = "page", "limit", "search", "export", "orientation"
@@ -140,13 +157,14 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 }
 
 type PaginationResponse struct {
-	TotalPage   int                      `json:"total_page"`
-	TotalData   int                      `json:"total_data"`
-	Data        []map[string]interface{} `json:"data"`
-	Next        bool                     `json:"next"`
-	Previous    bool                     `json:"previous"`
-	CurrentPage int                      `json:"current_page"`
-	Limit       int                      `json:"limit"`
+	TotalPage       int                      `json:"total_page"`
+	TotalData       int                      `json:"total_data"`
+	Data            []map[string]interface{} `json:"data"`
+	FilterParameter map[string][]string      `json:"filter_parameter"`
+	Next            bool                     `json:"next"`
+	Previous        bool                     `json:"previous"`
+	CurrentPage     int                      `json:"current_page"`
+	Limit           int                      `json:"limit"`
 }
 
 func HandleDataPagination(c *gin.Context, data []map[string]interface{}) PaginationResponse {
@@ -163,6 +181,7 @@ func HandleDataPagination(c *gin.Context, data []map[string]interface{}) Paginat
 	showedDatafrom := (pageCount - 1) * pageLimit
 	pageTotal := float64(totalData) / float64(pageLimit)
 
+	result.FilterParameter = generateFilterParameter(data)
 	result.TotalPage = int(math.Ceil(pageTotal))
 	result.Limit = pageLimit
 	result.CurrentPage = pageCount
