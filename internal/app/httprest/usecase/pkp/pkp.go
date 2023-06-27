@@ -37,7 +37,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"createdat", "updatedat", "questiondate", "answersat", "deletedat"})
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"createdat", "updatedat", "questiondate", "answersat", "deletedat"})
 	sortedData := helper.HandleDataSorting(c, filteredData)
 	exportedFields := []string{
 		"stakeholders",
@@ -91,7 +91,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	}
 	helper.ExportTableToFile(c, exportTableProps)
 
-	paginatedData := helper.HandleDataPagination(c, sortedData)
+	paginatedData := helper.HandleDataPagination(c, sortedData, filterParameter)
 	return &paginatedData, nil
 }
 
