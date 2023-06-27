@@ -125,8 +125,8 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
-	paginatedData := helper.HandleDataPagination(c, filteredData)
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 	return &paginatedData, nil
 }
 

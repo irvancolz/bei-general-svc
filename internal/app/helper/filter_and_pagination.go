@@ -123,12 +123,13 @@ func generateFilterParameter(data []map[string]interface{}) map[string][]string 
 // filtering data obtained from database with comparing value on response object and params given by user
 // the time field used specially if we want to search data created/updated on a single day
 // there is excluded properties that will not filtered = "page", "limit", "search", "export", "orientation"
-func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string) []map[string]interface{} {
+func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string) (filteredData []map[string]interface{}, filterParameter map[string][]string) {
 	querries := c.Request.URL.Query()
 	rangeTimeParams := generateTimeRangeParamList(timeField)
 	results := ConvertToMap(data)
+	filteredParameterResults := generateFilterParameter(results)
 	if len(querries) <= 0 {
-		return results
+		return results, filteredParameterResults
 	}
 
 	var filteredResults []map[string]interface{}
@@ -153,7 +154,7 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 
 	sortedResults := HandleDataSorting(c, filteredResults)
 
-	return sortedResults
+	return sortedResults, filteredParameterResults
 }
 
 type PaginationResponse struct {
@@ -167,7 +168,7 @@ type PaginationResponse struct {
 	Limit           int                      `json:"limit"`
 }
 
-func HandleDataPagination(c *gin.Context, data []map[string]interface{}) PaginationResponse {
+func HandleDataPagination(c *gin.Context, data []map[string]interface{}, filterParameter map[string][]string) PaginationResponse {
 	var result PaginationResponse
 	totalData := len(data)
 	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -181,7 +182,7 @@ func HandleDataPagination(c *gin.Context, data []map[string]interface{}) Paginat
 	showedDatafrom := (pageCount - 1) * pageLimit
 	pageTotal := float64(totalData) / float64(pageLimit)
 
-	result.FilterParameter = generateFilterParameter(data)
+	result.FilterParameter = filterParameter
 	result.TotalPage = int(math.Ceil(pageTotal))
 	result.Limit = pageLimit
 	result.CurrentPage = pageCount
