@@ -6,6 +6,7 @@ import (
 	repo "be-idx-tsg/internal/app/httprest/repository/contact_person"
 	"be-idx-tsg/internal/app/utilities"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -305,9 +306,8 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 }
 
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
-	exportedField := []string{
-		"company_code",
-		"company_name",
+	var exportedField, tableHeader []string
+	exportedField = []string{
 		"division",
 		"name",
 		"position",
@@ -316,10 +316,8 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"email",
 	}
 
-	tableHeader := []string{
+	tableHeader = []string{
 		"No",
-		"Kode",
-		"Nama Perusahaan",
 		"Fungsi",
 		"Nama",
 		"Jabatan",
@@ -327,9 +325,15 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"No Tel. Kantor",
 		"Email"}
 
+	excelConfig := helper.ExportToExcelConfig{
+		CollumnStart: "b",
+	}
+	pdfConfig := helper.PdfTableOptions{
+		HeaderTitle: "Contact Person Member",
+	}
+
 	var dataToExported [][]string
 	var memberStructList []model.InstitutionMembersResponse
-	dataToExported = append(dataToExported, tableHeader)
 
 	if len(company_type) <= 0 && len(company_id) <= 0 {
 		return errors.New("failed to export data members: please specify which companies member to be exported")
@@ -341,22 +345,47 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-
+		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU", fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
 	} else if len(company_id) > 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyID([]string{company_id})
 		if errorGetMember != nil {
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-
+		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU", fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
 	} else if len(company_type) >= 0 {
+		exportedField = []string{
+			"company_code",
+			"company_name",
+			"division",
+			"name",
+			"position",
+			"phone",
+			"telephone",
+			"email",
+		}
+
+		tableHeader = []string{
+			"No",
+			"Kode",
+			"Nama Perusahaan",
+			"Fungsi",
+			"Nama",
+			"Jabatan",
+			"No. HP",
+			"No Tel. Kantor",
+			"Email"}
+
+		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU"}
+
 		memberList, errorGetMember := u.GetMemberByCompanyType(company_type)
 		if errorGetMember != nil {
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-
 	}
+
+	dataToExported = append(dataToExported, tableHeader)
 
 	for i, member := range memberStructList {
 		var memberData []string
@@ -366,12 +395,6 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		dataToExported = append(dataToExported, memberData)
 	}
 
-	excelConfig := helper.ExportToExcelConfig{
-		CollumnStart: "b",
-	}
-	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "Contact Person Member",
-	}
 	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
 		Filename:    "contact_person_members",
 		Data:        dataToExported,
