@@ -12,6 +12,7 @@ type Usecase interface {
 	CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool) (int64, error)
 	DeleteFAQ(faqID string, c *gin.Context) (int64, error)
 	UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error)
+	UpdateOrderFAQ(faqs []model.UpdateFAQOrder, c *gin.Context) (int64, error)
 }
 
 type usecase struct {
@@ -38,4 +39,8 @@ func (m *usecase) DeleteFAQ(faqID string, c *gin.Context) (int64, error) {
 
 func (m *usecase) UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error) {
 	return m.faqRepo.UpdateStatusFAQ(faq, c)
+}
+
+func (m *usecase) UpdateOrderFAQ(faqs []model.UpdateFAQOrder, c *gin.Context) (int64, error) {
+	return m.faqRepo.UpdateOrderFAQ(faqs, c)
 }
