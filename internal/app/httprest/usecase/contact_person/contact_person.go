@@ -329,7 +329,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		CollumnStart: "b",
 	}
 	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "Contact Person Member",
+		HeaderTitle: "CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU",
 	}
 
 	var dataToExported [][]string

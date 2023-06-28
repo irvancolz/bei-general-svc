@@ -125,13 +125,14 @@ func createHeader(page pdf.Maroto, config PdfTableOptions, columnTotal uint) {
 				})
 			})
 
-			page.Col(columnTotal-uint(logoWidth), func() {
+			page.Col(columnTotal-uint(2*logoWidth), func() {
 				page.Text(title, props.Text{
 					Style: consts.Bold,
 					Size:  18,
 					Align: consts.Middle,
 				})
 			})
+			page.ColSpace(uint(logoWidth))
 		})
 		drawLine(page, config)
 	})
