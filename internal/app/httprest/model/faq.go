@@ -14,9 +14,10 @@ type FAQ struct {
 	CreatedBy          string    `json:"created_by" db:"created_by"`
 	CreatedAt          time.Time `json:"-" db:"created_at"`
 	FormattedCreatedAt string    `json:"created_at"`
-	Question           string    `json:"question"`
-	Answer             string    `json:"answer"`
-	Status             FAQStatus `json:"status"`
+	Question           string    `json:"question" db:"question"`
+	Answer             string    `json:"answer" db:"answer"`
+	Status             FAQStatus `json:"status" db:"status"`
+	OrderNum           int       `json:"order_num" db:"order_num"`
 }
 
 type CreateFAQ struct {
@@ -25,13 +26,22 @@ type CreateFAQ struct {
 	Status    FAQStatus `db:"status"`
 	Question  string    `json:"question" db:"question"`
 	Answer    string    `json:"answer" db:"answer"`
+	OrderNum  int       `db:"order_num"`
 }
 
 type UpdateFAQStatus struct {
 	ID        string    `db:"id" json:"id"`
 	Status    FAQStatus `db:"status"`
+	OrderNum  int       `db:"order_num"`
 	UpdatedBy string    `db:"updated_by"`
 	UpdatedAt string    `db:"updated_at"`
+}
+
+type UpdateFAQOrder struct {
+	ID        string `db:"id" json:"id"`
+	OrderNum  int    `db:"order_num" json:"order_num"`
+	UpdatedBy string `db:"updated_by"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 type DeleteFAQ struct {

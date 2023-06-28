@@ -137,6 +137,7 @@ func Routes() *gin.Engine {
 		topicRoute.POST("/create-message", topic.CreateMessage)
 		topicRoute.DELETE("/delete-topic", topic.DeleteTopic)
 		topicRoute.POST("/archive-topic", topic.ArchiveTopicToFAQ)
+		topicRoute.GET("/export-topic", topic.ExportTopic)
 	}
 
 	faqRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
@@ -145,6 +146,7 @@ func Routes() *gin.Engine {
 		faqRoute.POST("/create-faq", faq.CreateFAQ)
 		faqRoute.DELETE("/delete-faq", faq.DeleteFAQ)
 		faqRoute.PUT("/update-status-faq", faq.UpdateStatusFAQ)
+		faqRoute.PUT("/update-order-faq", faq.UpdateOrderFAQ)
 	}
 	contactPersonRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
