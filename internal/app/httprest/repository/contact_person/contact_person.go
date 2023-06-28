@@ -364,7 +364,7 @@ func SearchMemberByDivisionAndCompanyIdQuerry(divisons, companies []string) stri
 	for _, company := range companies {
 		formattedCompanies = append(formattedCompanies, "'"+company+"'")
 	}
-	sb.WriteString(fmt.Sprintf("\nAND d.deleted_at IS NULL \nAND d.deleted_by IS NULL \nAND d.id IN (%s) \nAND m.institution_id IN (%s)", strings.Join(formatedDivisions, ","), strings.Join(formattedCompanies, ",")))
+	sb.WriteString(fmt.Sprintf("\nAND d.deleted_at IS NULL \nAND d.deleted_by IS NULL \nAND d.id IN (%s) \nAND m.institution_id IN (%s) ORDER BY m.name ASC", strings.Join(formatedDivisions, ","), strings.Join(formattedCompanies, ",")))
 
 	return sb.String()
 }
