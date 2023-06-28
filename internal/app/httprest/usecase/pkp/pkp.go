@@ -52,24 +52,23 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"filename",
 		"createdat",
 		"createby",
-		"additionalinfo",
 	}
 	columnHeaders := []string{
 		"No",
 		"Identitas Stakeholder",
-		"kode Perusahaan",
+		"kode",
 		"Nama Perusahaan",
 		"Waktu Pertanyaan / Keluhan",
 		"Pertanyaan / Keluhan",
 		"Waktu Jawaban / Respon",
 		"Jawaban / Respon",
 		"Topik",
-		"Personil Follow Up",
+		"Personel Follow Up",
 		"Lampiran",
 		"Waktu",
 		"User",
-		"sumber Informasi Tambahan",
 	}
+
 	var exportedData [][]string
 	exportedData = append(exportedData, columnHeaders)
 	for i, item := range sortedData {
@@ -80,16 +79,21 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		exportedData = append(exportedData, exportedRows)
 	}
 	exportTableProps := helper.ExportTableToFileProps{
-		Filename:    "PKP",
-		Data:        exportedData,
-		Headers:     columnHeaders,
-		ExcelConfig: &helper.ExportToExcelConfig{},
+		Filename: "PKP",
+		Data:     exportedData,
+		Headers:  columnHeaders,
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Pertanyaan Keluhan Pelanggan"},
+		},
 		PdfConfig: &helper.PdfTableOptions{
 			PapperWidth:  630,
 			Papperheight: 300,
 		},
 	}
-	helper.ExportTableToFile(c, exportTableProps)
+	errorExport := helper.ExportTableToFile(c, exportTableProps)
+	if errorExport != nil {
+		return nil, errorExport
+	}
 
 	paginatedData := helper.HandleDataPagination(c, sortedData, filterParameter)
 	return &paginatedData, nil
