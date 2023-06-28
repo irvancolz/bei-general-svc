@@ -258,8 +258,7 @@ const (
 		ON m.institution_id = i.id
 	WHERE m.division_id  IN( %s ) 
 	AND m.deleted_by IS NULL
-	AND m.deleted_at IS NULL
-	ORDER BY d.name ASC, m.name ASC `
+	AND m.deleted_at IS NULL`
 	getMemberDetailByDivisionAndCompanyCodeBaseQuery = `
 	SELECT 
 		DISTINCT ON (m.id) m.id,
