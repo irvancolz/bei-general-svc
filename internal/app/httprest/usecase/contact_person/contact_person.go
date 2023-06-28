@@ -310,21 +310,22 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"company_name",
 		"division",
 		"name",
-		"email",
+		"position",
 		"phone",
 		"telephone",
-		"position"}
+		"email",
+	}
 
 	tableHeader := []string{
 		"No",
-		"Kode Perusahaan",
+		"Kode",
 		"Nama Perusahaan",
-		"Divisi",
+		"Fungsi",
 		"Nama",
-		"Email",
-		"Nomor HP",
-		"No Telepon Kantor",
-		"Posisi"}
+		"Jabatan",
+		"No. HP",
+		"No Tel. Kantor",
+		"Email"}
 
 	var dataToExported [][]string
 	var memberStructList []model.InstitutionMembersResponse

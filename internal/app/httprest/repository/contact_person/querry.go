@@ -59,7 +59,7 @@ const (
 	AND m.deleted_by IS NULL
 	AND d.deleted_at IS NULL
 	AND d.deleted_by IS NULL
-	ORDER BY i.code ASC, m.name ASC`
+	ORDER BY i.code ASC, d.name ASC, m.name ASC`
 	crateMemberQuerry = `
 	INSERT INTO public.institution_members (
 		institution_id,
@@ -261,7 +261,7 @@ const (
 	AND m.deleted_at IS NULL`
 	getMemberDetailByDivisionAndCompanyCodeBaseQuery = `
 	SELECT 
-		DISTINCT ON (m.id) m.id,
+		m.id,
 		m.name,
 		m.phone,
 		m.email,
