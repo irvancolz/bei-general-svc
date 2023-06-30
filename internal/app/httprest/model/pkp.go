@@ -70,7 +70,7 @@ type CreatePKuser struct {
 type UpdatePKuser struct {
 	ID             string    `json:"id" binding:"required"`
 	ExternalType   string    `json:"external_type" binding:"required"`
-	AdditionalInfo string    `json:"additional_info" binding:"required"`
+	AdditionalInfo string    `json:"additional_info"`
 	Stakeholders   string    `json:"stakeholders"`
 	Code           string    `json:"code"`
 	Name           string    `json:"name"`
