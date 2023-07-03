@@ -64,7 +64,7 @@ type CreatePKuser struct {
 	FileName       string    `json:"file_name" binding:"required"`
 	FilePath       string    `json:"file_path" binding:"required"`
 	ExternalType   string    `json:"external_type" binding:"required"`
-	AdditionalInfo string    `json:"additional_info" binding:"required"`
+	AdditionalInfo string    `json:"additional_info"`
 }
 
 type UpdatePKuser struct {
