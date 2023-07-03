@@ -104,6 +104,9 @@ func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types st
 				Created_at: item.Created_at,
 				Updated_by: item.Updated_by,
 				Updated_at: item.Updated_at,
+				Owner:      item.File_Owner,
+				Order:      item.Order,
+				Link:       item.Link,
 			}
 			results = append(results, result)
 		}

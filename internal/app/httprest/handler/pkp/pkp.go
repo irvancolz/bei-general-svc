@@ -29,7 +29,7 @@ func NewHandler() Handler {
 func (m *handler) GetAllPKuser(c *gin.Context) {
 	data, err := m.pkp.GetAllPKuser(c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
@@ -45,20 +45,17 @@ func (m *handler) CreatePKuser(c *gin.Context) {
 	)
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		model.GenerateInsertErrorResponse(c, err)
 		return
 	}
 
 	data, err := m.pkp.CreatePKuser(request, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateInvalidJsonResponse(c, err)
 		return
 	}
-	if data == 1 {
-		c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, data))
-	} else {
-		c.JSON(httpresponse.Format(httpresponse.CREATEFAILED_400, nil, data))
-	}
+	c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, data))
+
 }
 
 func (m *handler) UpdatePKuser(c *gin.Context) {
@@ -66,12 +63,12 @@ func (m *handler) UpdatePKuser(c *gin.Context) {
 		request model.UpdatePKuser
 	)
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(httpresponse.Format(httpresponse.ERR_REQUESTBODY_400, err))
+		model.GenerateInvalidJsonResponse(c, err)
 		return
 	}
 	data, err := m.pkp.UpdatePKuser(request, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateUpdateErrorResponse(c, err)
 		return
 	}
 
@@ -83,7 +80,7 @@ func (m *handler) Delete(c *gin.Context) {
 	ID := c.Query("id")
 	data, err := m.pkp.Delete(ID, c)
 	if err != nil {
-		c.JSON(httpresponse.Format(httpresponse.READFAILED_400, err))
+		model.GenerateInsertErrorResponse(c, err)
 		return
 	}
 
