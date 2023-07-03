@@ -69,13 +69,8 @@ type RegulationJSONResponse struct {
 	Id         string `json:"id"`
 	Name       string `json:"name" binding:"required"`
 	Category   string `json:"category"`
-	File       string `json:"file"`
-	File_size  int64  `json:"file_size"`
-	File_path  string `json:"file_path"`
-	Owner      string `json:"owner" binding:"required"`
 	Order      int    `json:"order" binding:"required"`
 	Link       string `json:"link" binding:"required"`
-	Version    string `json:"version"`
 	Created_by string `json:"created_by"`
 	Created_at int64  `json:"created_at"`
 	Updated_by string `json:"updated_by"`
