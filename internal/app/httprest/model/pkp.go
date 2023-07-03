@@ -61,8 +61,8 @@ type CreatePKuser struct {
 	AnswersBy      string    `json:"answers_by" binding:"required"`
 	AnswersAt      time.Time `json:"answers_at" binding:"required"`
 	Topic          string    `json:"topic" binding:"required"`
-	FileName       string    `json:"file_name" binding:"required"`
-	FilePath       string    `json:"file_path" binding:"required"`
+	FileName       string    `json:"file_name"`
+	FilePath       string    `json:"file_path"`
 	ExternalType   string    `json:"external_type" binding:"required"`
 	AdditionalInfo string    `json:"additional_info"`
 }
