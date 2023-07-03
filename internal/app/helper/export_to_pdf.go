@@ -31,11 +31,20 @@ type PdfTableOptions struct {
 	PapperWidth float64
 	// setting papper height
 	Papperheight float64
+	// setting page orientation by default "p" / "l"
+	PageOrientation string
 }
 
 func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfTableOptions) (string, error) {
 
-	pageOrientation := c.DefaultQuery("orientation", "p")
+	pageOrientation := c.Query("orientation")
+	if c.Query("orientation") == "" && (opt.PageOrientation == "" || !IsContains([]string{"p", "l"}, opt.PageOrientation)) {
+		pageOrientation = "p"
+	}
+
+	if c.Query("orientation") == "" && IsContains([]string{"p", "l"}, opt.PageOrientation) {
+		pageOrientation = opt.PageOrientation
+	}
 
 	headers := opt.HeaderRows
 	if len(opt.HeaderRows) <= 0 {
