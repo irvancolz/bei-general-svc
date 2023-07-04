@@ -3,6 +3,7 @@ package contactperson
 import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -34,6 +35,7 @@ type ContactPersonRepositoryInterface interface {
 	CheckDivisionEditAvailability(id string) bool
 	CheckDivisionDeleteAvailability(division_id string) bool
 	CheckDivisionViewAvailability(division_id string) bool
+	GetCompanyType(company_id string) string
 }
 
 type repository struct {
@@ -646,4 +648,17 @@ func (r *repository) GetCompanyDetail(id string) (*model.InstitutionResponse, er
 	}
 
 	return &result, nil
+}
+
+func (r *repository) GetCompanyType(id string) string {
+	var results sql.NullString
+	searchResults := r.DB.QueryRowx(getCompanyTypeQuery, id)
+
+	errorResults := searchResults.Scan(&results)
+	if errorResults != nil {
+		log.Println("failed to get company type :", errorResults)
+		return results.String
+	}
+
+	return results.String
 }
