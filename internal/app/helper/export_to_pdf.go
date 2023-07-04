@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"be-idx-tsg/internal/app/httprest/model"
 	"log"
 	"strings"
 	"time"
@@ -35,16 +36,23 @@ type PdfTableOptions struct {
 	PageOrientation string
 }
 
-func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfTableOptions) (string, error) {
-
+func (opt *PdfTableOptions) getPageOrientation(c *gin.Context) string {
 	pageOrientation := c.Query("orientation")
 	if c.Query("orientation") == "" && (opt.PageOrientation == "" || !IsContains([]string{"p", "l"}, opt.PageOrientation)) {
 		pageOrientation = "p"
+		return pageOrientation
 	}
 
 	if c.Query("orientation") == "" && IsContains([]string{"p", "l"}, opt.PageOrientation) {
 		pageOrientation = opt.PageOrientation
+		return pageOrientation
 	}
+	return pageOrientation
+}
+
+func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfTableOptions) (string, error) {
+
+	pageOrientation := opt.getPageOrientation(c)
 
 	headers := opt.HeaderRows
 	if len(opt.HeaderRows) <= 0 {
@@ -111,12 +119,12 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, opt PdfT
 
 func createHeader(page pdf.Maroto, config PdfTableOptions, columnTotal uint) {
 	title := config.HeaderTitle
-	if title == "" {
+	if config.HeaderTitle == "" {
 		title = "Bursa Effek Indonesia"
 	}
 
 	logoPath := config.FooterLogo
-	if logoPath == "" {
+	if config.FooterLogo == "" {
 		logoPath = "internal/app/helper/icon-globe-idx.png"
 	}
 
@@ -208,4 +216,80 @@ func drawLine(page pdf.Maroto, config PdfTableOptions) {
 		// red color
 		Color: *lineColor,
 	})
+}
+
+func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTableOptions, filename string) (string, error) {
+	filenames := filename
+	if filename == "" {
+		filenames = "export-to-pdf.pdf"
+	}
+
+	pageOrientation := opt.getPageOrientation(c)
+
+	pageSize := opt.PageSize
+	if pageSize == "" {
+		pageSize = string(consts.A4)
+	}
+
+	pdfFile := pdf.NewMarotoCustomSize(consts.Orientation(strings.ToUpper(pageOrientation)), consts.PageSize(pageSize), "mm", opt.PapperWidth, opt.Papperheight)
+	pdfFile.SetMaxGridSum(12)
+	createHeader(pdfFile, opt, 12)
+	createFooter(pdfFile, opt, 12)
+
+	titleHeight := 8
+	creatorHeight := 16
+	pdfFile.Row(float64(titleHeight), func() {
+		infoType := func() string {
+			var infoType string
+			if infoType == "" {
+				infoType = "SEMUA"
+				return infoType
+			}
+			if strings.EqualFold(data.InformationType, "AB") {
+				infoType = "ANGGOTA BURSA"
+				return infoType
+			}
+			return infoType
+		}()
+		pdfFile.Text("Jenis Informasi :"+infoType, props.Text{
+			Size:  16,
+			Style: consts.Bold,
+		})
+	})
+
+	pdfFile.Row(float64(creatorHeight), func() {
+		pdfFile.Col(4, func() {
+			pdfFile.Text("dibuat oleh : "+data.Creator, props.Text{
+				Style: consts.Italic,
+				Size:  12,
+				Color: color.Color{
+					Red:   141,
+					Green: 137,
+					Blue:  137},
+			})
+		})
+		pdfFile.Col(4, func() {
+			pdfFile.Text("dibuat pada :"+data.EffectiveDate.Format("15-06-2006"), props.Text{
+				Style: consts.Italic,
+				Size:  12,
+				Color: color.Color{
+					Red:   141,
+					Green: 137,
+					Blue:  137},
+			})
+		})
+	})
+
+	pdfFile.Row(10, func() {
+		pdfFile.Text(data.Regarding, props.Text{
+			Size: 12,
+		})
+	})
+
+	errSave := pdfFile.OutputFileAndClose(filenames)
+	if errSave != nil {
+		log.Println("failed to save pdf :", errSave)
+		return "", errSave
+	}
+	return filenames, nil
 }

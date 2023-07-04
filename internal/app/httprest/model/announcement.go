@@ -1,12 +1,14 @@
 package model
 
+import "time"
+
 type Announcement struct {
-	ID              string  `json:"id"`
-	InformationType string  `json:"information_type"`
-	EffectiveDate   string  `json:"effective_date"`
-	Regarding       string  `json:"regarding"`
-	Type            *string `json:"type"`
-	Creator         string  `json:"creator"`
+	ID              string    `json:"id"`
+	InformationType string    `json:"information_type"`
+	EffectiveDate   time.Time `json:"effective_date"`
+	Regarding       string    `json:"regarding"`
+	Type            *string   `json:"type"`
+	Creator         string    `json:"creator"`
 }
 
 type CreateAnnouncement struct {
