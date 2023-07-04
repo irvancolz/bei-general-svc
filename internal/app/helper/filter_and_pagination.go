@@ -107,6 +107,9 @@ func HandleDataSorting(c *gin.Context, data []map[string]interface{}) []map[stri
 // data thats saved in string type, this will not return another data types.
 func generateFilterParameter(data []map[string]interface{}) map[string][]string {
 	results := make(map[string][]string)
+	if len(data) <= 0 {
+		return results
+	}
 	mapKeys := GetMapKeys(data[0])
 
 	for _, items := range data {
