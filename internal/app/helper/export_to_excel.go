@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"be-idx-tsg/internal/app/httprest/model"
 	"errors"
 	"fmt"
 	"log"
@@ -36,6 +37,14 @@ func (c *ExportToExcelConfig) getTitleRowFrom() int {
 		return 1
 	}
 	return c.headerStartRow
+}
+
+func createBorder(borderType, borderColor string, borderStyle int) excelize.Border {
+	return excelize.Border{
+		Type:  borderType,
+		Color: borderColor,
+		Style: borderStyle,
+	}
 }
 
 func (c *ExportToExcelConfig) ExportTableToExcel(filenames string, data [][]string) (string, error) {
@@ -212,10 +221,100 @@ func (c *ExportToExcelConfig) Addtable(excelFile *excelize.File) error {
 	return nil
 }
 
-func createBorder(borderType, borderColor string, borderStyle int) excelize.Border {
-	return excelize.Border{
-		Type:  borderType,
-		Color: borderColor,
-		Style: borderStyle,
+func ExportAnnouncementsToExcel(filename string, data model.Announcement) (string, error) {
+	filenames := filename
+	if filename == "" {
+		filenames = "BEI_Report"
 	}
+	excelFile := excelize.NewFile()
+
+	currentSheet := "Sheet1"
+
+	annStyleId, _ := excelFile.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold:  true,
+			Color: "#ffffff",
+			Size:  24,
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Pattern: 1,
+			Color:   []string{"#9f0e0f"},
+		},
+		Border: []excelize.Border{
+			createBorder("top", "#000000", 2),
+		},
+	})
+
+	typeAnnStyleId, _ := excelFile.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold:  true,
+			Color: "#ffffff",
+			Size:  16,
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Pattern: 1,
+			Color:   []string{"#9f0e0f"},
+		},
+	})
+
+	creatorStyleId, _ := excelFile.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Color:  "#ffffff",
+			Italic: true,
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Pattern: 1,
+			Color:   []string{"#9f0e0f"},
+		},
+	})
+
+	bottomStyleId, _ := excelFile.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Color: "#ffffff",
+			Size:  11,
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Pattern: 1,
+			Color:   []string{"#9f0e0f"},
+		},
+		Border: []excelize.Border{
+			createBorder("bottom", "#000000", 2),
+		},
+	})
+
+	contentStyleId, _ := excelFile.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			WrapText:   true,
+			Horizontal: "left",
+			Vertical:   "top",
+		},
+	})
+
+	_ = excelFile.MergeCell(currentSheet, "B9", "P50")
+
+	_ = excelFile.SetCellStyle(currentSheet, "B2", "P2", annStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B3", "P3", creatorStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B4", "P4", typeAnnStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B5", "P5", creatorStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B6", "P6", creatorStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B7", "P7", bottomStyleId)
+	_ = excelFile.SetCellStyle(currentSheet, "B9", "B9", contentStyleId)
+
+	_ = excelFile.SetCellValue(currentSheet, "B2", "PENGUMUMAN")
+	_ = excelFile.SetCellValue(currentSheet, "B4", "Jenis Informasi :"+data.InformationType)
+	_ = excelFile.SetCellValue(currentSheet, "B5", "dibuat oleh :"+data.Creator)
+	_ = excelFile.SetCellValue(currentSheet, "B6", "dibuat pada :"+data.EffectiveDate.Format("15-06-2006"))
+	_ = excelFile.SetCellValue(currentSheet, "B9", data.Regarding)
+
+	result := generateFileNames(filenames, "_", time.Now()) + ".xlsx"
+	errSave := excelFile.SaveAs(result)
+	if errSave != nil {
+		log.Println("failed to save excel file:", errSave)
+		return "", errSave
+	}
+	return result, nil
 }

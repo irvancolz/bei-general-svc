@@ -82,6 +82,7 @@ func Routes() *gin.Engine {
 		announcementRoute.DELETE("/delete-announcement", announcement.Delete)
 		announcementRoute.GET("/get-an-by-filter", announcement.GetAllANWithFilter)
 		announcementRoute.POST("/get-an-by-search", announcement.GetAllANWithSearch)
+		announcementRoute.GET("/export-an-by-id", announcement.Export)
 	}
 	guidancesRoute := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
 	{

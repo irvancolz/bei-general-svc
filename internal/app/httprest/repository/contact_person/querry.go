@@ -277,4 +277,10 @@ const (
 		ON m.institution_id = i.id
 	WHERE m.deleted_by IS NULL
 	AND m.deleted_at IS NULL`
+	getCompanyTypeQuery = `
+	SELECT 
+		type
+	FROM institutions
+	WHERE id = $1	
+	`
 )

@@ -15,6 +15,7 @@ type Handler interface {
 	GetById(c *gin.Context)
 	Create(c *gin.Context)
 	Update(c *gin.Context)
+	Export(c *gin.Context)
 	Delete(c *gin.Context)
 	GetAllANWithFilter(c *gin.Context)
 	GetAllANWithSearch(c *gin.Context)
@@ -107,7 +108,7 @@ func (m *handler) Update(c *gin.Context) {
 		request model.UpdateAnnouncement
 	)
 	if err := c.ShouldBindJSON(&request); err != nil {
-		model.GenerateInvalidJsonResponse(c, err) 
+		model.GenerateInvalidJsonResponse(c, err)
 		return
 	}
 	data, err := m.an.Update(request, c)
@@ -133,5 +134,14 @@ func (m *handler) Delete(c *gin.Context) {
 		c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil))
 	} else {
 		model.GenerateDeleteErrorResponse(c, err)
+	}
+}
+
+func (m *handler) Export(c *gin.Context) {
+	id := c.Query("id")
+	err := m.an.Export(c, id)
+	if err != nil {
+		model.GenerateReadErrorResponse(c, err)
+		return
 	}
 }

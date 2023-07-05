@@ -3,6 +3,7 @@ package announcement
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
@@ -210,6 +211,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 	information_type,
 	effective_date,
 	regarding,
+	created_by,
 	type
    FROM announcements
 	` + filterQuery + `;`
@@ -221,14 +223,16 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 	defer rows.Close()
 	for rows.Next() {
 		var item model.Announcement
-
+		var userId string
 		err := rows.Scan(
 			&item.ID,
 			&item.InformationType,
 			&item.EffectiveDate,
 			&item.Regarding,
+			&userId,
 			&item.Type,
 		)
+		item.Creator = utilities.GetUserNameByID(c, userId)
 
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetAllAnnouncement] ", err)
@@ -241,11 +245,14 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 }
 
 func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, error) {
+	var creatorId string
 	query := `
 		SELECT 
 		id,
 		information_type,
 		effective_date,
+		created_by,
+		type,
 		regarding
 		FROM announcements
 		WHERE id = $1 
@@ -258,11 +265,15 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 		&item.ID,
 		&item.InformationType,
 		&item.EffectiveDate,
+		&creatorId,
+		&item.Type,
 		&item.Regarding,
 	); err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetByID] ", err)
 		return nil, errors.New("announcement Not Found")
 	}
+
+	item.Creator = utilities.GetUserNameByID(c, creatorId)
 
 	return item, nil
 }

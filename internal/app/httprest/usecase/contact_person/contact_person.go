@@ -307,6 +307,8 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
 	var exportedField, tableHeader []string
+
+	exportTitle := "CONTACT PERSON "
 	exportedField = []string{
 		"division",
 		"name",
@@ -345,14 +347,14 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU", fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
 	} else if len(company_id) > 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyID([]string{company_id})
 		if errorGetMember != nil {
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU", fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
 	} else if len(company_type) >= 0 {
 		exportedField = []string{
 			"company_code",
@@ -376,8 +378,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			"No Tel. Kantor",
 			"Email"}
 
-		excelConfig.HeaderText = []string{"CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU"}
-
+		excelConfig.HeaderText = []string{exportTitle + " " + company_type}
 		memberList, errorGetMember := u.GetMemberByCompanyType(company_type)
 		if errorGetMember != nil {
 			return errorGetMember
