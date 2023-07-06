@@ -6,6 +6,7 @@ import (
 	FAQ "be-idx-tsg/internal/app/httprest/handler/faq"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
+	logSystem "be-idx-tsg/internal/app/httprest/handler/log_system"
 	Pkp "be-idx-tsg/internal/app/httprest/handler/pkp"
 	Topic "be-idx-tsg/internal/app/httprest/handler/topic"
 	Unggahberkas "be-idx-tsg/internal/app/httprest/handler/unggah-berkas"
@@ -51,6 +52,7 @@ func Routes() *gin.Engine {
 	topic := Topic.NewHandler()
 	faq := FAQ.NewHandler()
 	contact_person := contactPerson.NewHandler()
+	log_system := logSystem.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -168,6 +170,12 @@ func Routes() *gin.Engine {
 		contactPersonRoute.GET("/search-all-company", contact_person.SearchCompany)
 		contactPersonRoute.PUT("/syncronize-contact-person-company", contact_person.SynchronizeInstitutionProfile)
 		contactPersonRoute.GET("/export-contact-person-company-members", contact_person.ExportMember)
+	}
+
+	logSystemRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		logSystemRoute.GET("/get-all-log-system", log_system.GetAll)
+		logSystemRoute.POST("/create-log-system", log_system.CreateLogSystem)
 	}
 
 	return r
