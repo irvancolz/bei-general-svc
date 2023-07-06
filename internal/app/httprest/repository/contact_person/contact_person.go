@@ -138,7 +138,7 @@ func (r *repository) SynchronizeInstitutionProfile(data []model.ContactPersonSyn
 			companies.Code,
 			companies.Name,
 			companies.Status,
-			types,
+			strings.ToUpper(types),
 			companies.Is_deleted,
 		)
 		if errorExec != nil {

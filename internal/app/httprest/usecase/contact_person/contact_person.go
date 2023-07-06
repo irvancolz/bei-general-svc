@@ -158,6 +158,8 @@ func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type str
 
 	if strings.EqualFold(company_type, "AB") {
 		latestCompanyList, errorGetCompanies = utilities.GetLatestABCompanies(c)
+	} else if strings.EqualFold(company_type, "Participant") {
+		latestCompanyList, errorGetCompanies = utilities.GetLatestParticipantCompanies(c)
 	}
 
 	if errorGetCompanies != nil {
@@ -231,7 +233,7 @@ func (u *usecase) GetAllCompanyByType(company_type string) ([]*model.Institution
 		return nil, err_company_list
 	}
 	for _, data := range company_list {
-		if data.Type == company_type {
+		if strings.EqualFold(data.Type, company_type) {
 			results = append(results, data)
 		}
 	}
