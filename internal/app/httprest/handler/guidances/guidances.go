@@ -111,7 +111,10 @@ func (h *guidancehandler) GetAllData(c *gin.Context) {
 		return
 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+	if !c.Writer.Written() {
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+	}
+
 }
 
 func (h *guidancehandler) CreateNewFiles(c *gin.Context) {
