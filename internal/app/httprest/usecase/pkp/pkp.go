@@ -52,6 +52,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"filename",
 		"createdat",
 		"createby",
+		"additionalinfo",
 	}
 	columnHeaders := []string{
 		"No",
@@ -67,6 +68,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Lampiran",
 		"Waktu",
 		"User",
+		"Sumber Informasi Tambahan",
 	}
 
 	var exportedData [][]string

@@ -177,6 +177,10 @@ func (c *ExportToExcelConfig) Addtable(excelFile *excelize.File) error {
 		Border: []excelize.Border{
 			createBorder("bottom", "#000000", 1),
 		},
+		Alignment: &excelize.Alignment{
+			WrapText: true,
+			Vertical: "center",
+		},
 	})
 
 	if errorCreateContentStyle != nil {
@@ -206,7 +210,13 @@ func (c *ExportToExcelConfig) Addtable(excelFile *excelize.File) error {
 				}
 			}
 
-			errorSetWidth := excelFile.SetColWidth(c.currentSheet, currentCol, currentCol, float64(maxColWdth[columnIndex]+4))
+			errorSetWidth := excelFile.SetColWidth(c.currentSheet, currentCol, currentCol, func() float64 {
+				if float64(maxColWdth[columnIndex]+4) > 50 {
+					return 50
+				}
+				return float64(maxColWdth[columnIndex] + 4)
+			}())
+
 			if errorSetWidth != nil {
 				log.Println("failed to set collumn width : ", errorSetWidth)
 			}
