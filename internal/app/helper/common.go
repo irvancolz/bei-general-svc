@@ -176,7 +176,7 @@ func StructToArray(data interface{}, order []string) []string {
 }
 
 func generateFileNames(fileName, separator string, date time.Time) string {
-	return fileName + "_" + strconv.Itoa(int(time.Now().UnixNano()))
+	return fileName + "_" + strconv.Itoa(int(date.UnixNano()))
 }
 
 func IsString(val interface{}) bool {
