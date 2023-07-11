@@ -38,7 +38,7 @@ func ExportTableToFile(c *gin.Context, props ExportTableToFileProps) error {
 	if strings.EqualFold("xlsx", fileType) && props.ExcelConfig != nil {
 		filePath, errorPath = props.ExcelConfig.ExportTableToExcel(props.Filename, props.Data)
 	} else if strings.EqualFold("pdf", fileType) && props.PdfConfig != nil {
-		filePath, errorPath = ExportTableToPDF(c, props.Data, props.Filename, *props.PdfConfig)
+		filePath, errorPath = ExportTableToPDF(c, props.Data, props.Filename, props.PdfConfig)
 	} else if strings.EqualFold("csv", fileType) {
 		filePath, errorPath = ExportTableToCsv(props.Filename, props.Data)
 	} else if strings.EqualFold("txt", fileType) {

@@ -77,8 +77,9 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 			HeaderText: []string{"Management Berkas "},
 		},
 		PdfConfig: &helper.PdfTableOptions{
-			PapperWidth:  300,
-			Papperheight: 450,
+			PapperWidth:     300,
+			Papperheight:    450,
+			PageOrientation: "l",
 		},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
