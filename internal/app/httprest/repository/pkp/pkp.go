@@ -3,7 +3,6 @@ package pkp
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
-	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
 	"log"
@@ -109,28 +108,13 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			ExternalType:   item.ExternalType,
 			AdditionalInfo: item.AdditionalInfo.String,
 			CreatedAt:      item.CreatedAt.Unix(),
+			CreateBy:       item.CreateBy,
 
+			UpdatedBy: item.UpdatedBy.String,
+			DeletedBy: item.DeletedBy.String,
 			UpdatedAt: item.UpdatedAt.Time.Unix(),
 			DeletedAt: item.DeletedAt.Time.Unix(),
 		}
-
-		if !item.DeletedAt.Valid {
-			data.DeletedAt = 0
-		}
-
-		if !item.UpdatedAt.Valid {
-			data.UpdatedAt = 0
-		}
-
-		if item.UpdatedBy.Valid {
-			data.UpdatedBy = utilities.GetUserNameByID(c, item.UpdatedBy.String)
-		}
-
-		if item.DeletedBy.Valid {
-			data.DeletedBy = utilities.GetUserNameByID(c, item.DeletedBy.String)
-		}
-
-		data.CreateBy = utilities.GetUserNameByID(c, item.CreateBy)
 
 		result = append(result, data)
 	}
@@ -139,7 +123,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 }
 
 func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error) {
-	UserId, _ := c.Get("user_id")
+	UserId, _ := c.Get("name_user")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 
 	QuestionDate := pkp.QuestionDate
@@ -198,7 +182,7 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("user_id")
+	userId, _ := c.Get("name_user")
 	query := `
 		UPDATE
 			pkp SET
@@ -265,7 +249,7 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("user_id")
+	userId, _ := c.Get("name_user")
 	deleted_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	query := `
 	UPDATE
