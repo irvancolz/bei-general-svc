@@ -51,6 +51,7 @@ func (h *handler) UploadUser(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:      os.Getenv("WEB_HOST"),
 		Directory: "user",
+		Extensions: []string{"jpg", "png","jpeg"},
 		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
