@@ -115,7 +115,7 @@ func (m *repository) UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) 
 		return 0, err
 	}
 
-	query = `UPDATE faqs SET status = :status, updated_by = :updated_by, updated_at = :updated_at, order_num = :order_num WHERE id = :id`
+	query = `UPDATE faqs SET status = :status, question = :question, answer = :answer, updated_by = :updated_by, updated_at = :updated_at, order_num = :order_num WHERE id = :id`
 
 	result, err := m.DB.NamedExec(query, &faq)
 	if err != nil {
