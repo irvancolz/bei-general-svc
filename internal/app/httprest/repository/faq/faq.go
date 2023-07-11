@@ -65,7 +65,7 @@ func (m *repository) CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool
 
 	faq.Status = model.PublishedFAQ
 
-	query := `SELECT MAX(order_num) + 1 AS max FROM faqs`
+	query := `SELECT COALESCE(MAX(order_num), 0) + 1 AS max FROM faqs`
 
 	err := m.DB.Get(&faq.OrderNum, query)
 	if err != nil {

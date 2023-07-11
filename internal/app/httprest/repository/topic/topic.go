@@ -55,7 +55,7 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 		OR t.created_at::text ILIKE '%` + keyword + `%')`
 	}
 
-	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" {
+	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		query += ` AND t.status = '` + status + `'`
 	}
 
@@ -80,7 +80,7 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 		query += ` AND tp.created_at = '` + startDate + `'`
 	}
 
-	query += ` ORDER BY created_at DESC`
+	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, created_at DESC`
 
 	if page > 0 && limit > 0 {
 		offset := (page - 1) * limit
@@ -122,7 +122,7 @@ func (m *repository) GetTotal(keyword, status, name, companyName, startDate, end
 		OR t.created_at::text ILIKE '%` + keyword + `%')`
 	}
 
-	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" {
+	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		query += ` AND t.status = '` + status + `'`
 	}
 
