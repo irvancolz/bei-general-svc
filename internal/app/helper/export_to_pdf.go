@@ -239,7 +239,7 @@ func drawFooter(pdf *fpdf.Fpdf) {
 		pdf.MultiCell(float64(appNameWidth), 8, "Sistem Portal Bursa", "", "C", false)
 
 		// idx footer logo
-		pdf.ImageOptions("internal/app/helper/idx-logo-2.png", pageWidth-float64(appNameWidth)-float64(footerImgHeight), pageHeight-float64(footerHeight)+2, float64(footerImgHeight), float64(footerImgHeight), false, fpdf.ImageOptions{}, 0, "")
+		pdf.ImageOptions("internal/app/helper/idx-logo-2.png", (pageWidth-float64(footerImgHeight))/2, pageHeight-float64(footerHeight)+2, float64(footerImgHeight), float64(footerImgHeight), false, fpdf.ImageOptions{}, 0, "")
 	})
 }
 
