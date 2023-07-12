@@ -24,14 +24,16 @@ type CreateFAQ struct {
 	CreatedBy string    `db:"created_by"`
 	CreatedAt string    `db:"created_at"`
 	Status    FAQStatus `db:"status"`
-	Question  string    `json:"question" db:"question"`
-	Answer    string    `json:"answer" db:"answer"`
+	Question  string    `json:"question" db:"question" binding:"required"`
+	Answer    string    `json:"answer" db:"answer" binding:"required"`
 	OrderNum  int       `db:"order_num"`
 }
 
 type UpdateFAQStatus struct {
 	ID        string    `db:"id" json:"id"`
 	Status    FAQStatus `db:"status"`
+	Question  string    `json:"question" db:"question" binding:"required"`
+	Answer    string    `json:"answer" db:"answer" binding:"required"`
 	OrderNum  int       `db:"order_num"`
 	UpdatedBy string    `db:"updated_by"`
 	UpdatedAt string    `db:"updated_at"`

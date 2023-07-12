@@ -69,7 +69,7 @@ type UpdateTopicHandler struct {
 type UpdateTopicStatus struct {
 	TopicID   string      `db:"topic_id" json:"topic_id"`
 	Status    TopicStatus `db:"status"`
-	Message   string      `db:"message" json:"message" binding:"required"`
+	Message   string      `db:"message" json:"message"`
 	UpdatedBy string      `db:"updated_by"`
 	UpdatedAt string      `db:"updated_at"`
 }

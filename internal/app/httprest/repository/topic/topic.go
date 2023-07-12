@@ -268,13 +268,15 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 		return 0, err
 	}
 
-	query = `UPDATE topic_messages SET message = :message, updated_at = :updated_at, updated_by = :updated_by WHERE id = (SELECT id FROM topic_messages tp WHERE tp.topic_id = :topic_id ORDER BY created_at LIMIT 1)`
+	if topic.Message != "" {
+		query = `UPDATE topic_messages SET message = :message, updated_at = :updated_at, updated_by = :updated_by WHERE id = (SELECT id FROM topic_messages tp WHERE tp.topic_id = :topic_id ORDER BY created_at LIMIT 1)`
 
-	result, err = m.DB.NamedExec(query, &topic)
+		result, err = m.DB.NamedExec(query, &topic)
 
-	if err != nil {
-		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [UpdateHandler] ", err)
-		return 0, err
+		if err != nil {
+			log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [UpdateHandler] ", err)
+			return 0, err
+		}
 	}
 
 	rowsAffected, _ := result.RowsAffected()
