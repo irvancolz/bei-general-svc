@@ -67,20 +67,13 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 		query += ` AND tp.company_name = '` + companyName + `'`
 	}
 
-	if startDate != "" && endDate != "" {
-		startDate = parseTime(startDate)
-		endDate = parseTime(endDate)
-
-		query += ` AND (tp.created_at BETWEEN '` + startDate + `' AND '` + endDate + `')`
-	}
-
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` AND tp.created_at = '` + startDate + `'`
+		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
-	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, created_at DESC`
+	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, t.created_at DESC`
 
 	if page > 0 && limit > 0 {
 		offset := (page - 1) * limit
@@ -134,11 +127,10 @@ func (m *repository) GetTotal(keyword, status, name, companyName, startDate, end
 		query += ` AND tp.company_name = '` + companyName + `'`
 	}
 
-	if startDate != "" && endDate != "" {
+	if startDate != "" {
 		startDate = parseTime(startDate)
-		endDate = parseTime(endDate)
 
-		query += ` AND (tp.created_at BETWEEN '` + startDate + `' AND '` + endDate + `')`
+		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
 	err := m.DB.Get(&totalData, query)
@@ -497,18 +489,8 @@ func parseTime(input string) string {
 		return ""
 	}
 
-	// set timezone yang diinginkan
-	location, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		log.Println("error loading location:", err)
-		return ""
-	}
-
-	// konversi time.Time object ke timezone yang diinginkan
-	t = t.In(location)
-
 	// format output string
-	output := t.Format("2006-01-02 15:04:05.999 -0700")
+	output := t.Format("2006-01-02")
 
 	return output
 }
