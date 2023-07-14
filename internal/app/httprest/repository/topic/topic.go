@@ -489,6 +489,16 @@ func parseTime(input string) string {
 		return ""
 	}
 
+	// set timezone yang diinginkan
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		log.Println("error loading location:", err)
+		return ""
+	}
+
+	// konversi time.Time object ke timezone yang diinginkan
+	t = t.In(location)
+
 	// format output string
 	output := t.Format("2006-01-02")
 
