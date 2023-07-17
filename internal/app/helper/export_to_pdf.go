@@ -251,7 +251,8 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 		headerTitleWidth := pageWidth / 2
 		headerTitle := title
 		headerImgHeight := pageProps.headerHeight - 5
-		watermarkWidth := pageWidth * 0.85
+		a4PageWidth := 210
+		watermarkWidth := float64(a4PageWidth) * 0.85
 
 		// watermark
 		pdf.SetAlpha(0.1, "Normal")
