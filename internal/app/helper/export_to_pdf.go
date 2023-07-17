@@ -236,7 +236,7 @@ func drawFooter(pdf *fpdf.Fpdf) {
 		pdf.SetY(pageHeight - float64(footerHeight))
 		appNameWidth := 50
 		pdf.SetX(pageWidth - float64(appNameWidth))
-		pdf.MultiCell(float64(appNameWidth), 8, "Sistem Portal Bursa", "", "C", false)
+		pdf.MultiCell(float64(appNameWidth), 8, "Sistem IDX Portal", "", "C", false)
 
 		// idx footer logo
 		pdf.ImageOptions("internal/app/helper/idx-logo-2.png", (pageWidth-float64(footerImgHeight))/2, pageHeight-float64(footerHeight)+2, float64(footerImgHeight), float64(footerImgHeight), false, fpdf.ImageOptions{}, 0, "")
