@@ -19,15 +19,26 @@ func ExportTableToTxt(fileName string, data [][]string) (string, error) {
 	defer file.Close()
 	var beautifiedData []string
 
-	for _, item := range data {
+	for j, item := range data {
 		var beautifiedRows strings.Builder
 		for i, text := range item {
-			beautifiedRows.WriteString(text)
+			beautifiedRows.WriteString("| " + text)
 			for space := len(text); space <= columnWidth[i]; space++ {
 				beautifiedRows.WriteString("\u0020")
 			}
-			beautifiedRows.WriteString("\u0020")
+			beautifiedRows.WriteString("|")
 		}
+
+		// header border bottom
+		if j == 0 {
+			beautifiedRows.WriteString("\n")
+			for i := 0; i < len(data[j]); i++ {
+				for char := 0; char <= columnWidth[i]; char++ {
+					beautifiedRows.WriteString("-")
+				}
+			}
+		}
+
 		beautifiedData = append(beautifiedData, beautifiedRows.String())
 	}
 
