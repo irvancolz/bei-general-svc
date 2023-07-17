@@ -27,7 +27,9 @@ const (
 		id, name
 	FROM institution_division 
 	WHERE deleted_by IS NULL
-	AND deleted_at IS NULL`
+	AND deleted_at IS NULL
+	ORDER BY updated_at DESC 
+	NULLS LAST`
 	addDivisionQuerry = `
 	INSERT INTO public.institution_division (
 		is_default,
