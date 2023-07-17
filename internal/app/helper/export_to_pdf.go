@@ -351,7 +351,7 @@ func (opt *PdfTableOptions) getPageOrientation(c *gin.Context) string {
 
 func (opt *PdfTableOptions) getHeaderTitle() string {
 	if opt.HeaderTitle == "" {
-		return "Bursa Effek Indonesia"
+		return "Bursa Efek Indonesia"
 	}
 	return opt.HeaderTitle
 }

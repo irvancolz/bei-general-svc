@@ -57,7 +57,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	columnHeaders := []string{
 		"No",
 		"Identitas Stakeholder",
-		"Kode",
+		"Kode Perusahaan",
 		"Nama Perusahaan",
 		"Waktu Pertanyaan / Keluhan",
 		"Pertanyaan / Keluhan",
