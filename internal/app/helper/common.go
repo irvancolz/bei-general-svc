@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 func ConvertArrayStringtoString(array []string) string {
@@ -182,4 +186,45 @@ func generateFileNames(fileName, separator string, date time.Time) string {
 func IsString(val interface{}) bool {
 	_, isString := val.(string)
 	return isString
+}
+
+func GetFilePath(path string) string {
+	pat := filepath.FromSlash(path)
+	pathStr := strings.Split(pat, string(os.PathSeparator))
+	result := pathStr[len(pathStr)-3:]
+	return filepath.Join(result...)
+}
+
+func ReadExcelTable(filenames string, tablerowStartIndex int) ([][]string, error) {
+	var result [][]string
+
+	file, errorReadFile := excelize.OpenFile(filenames)
+	if errorReadFile != nil {
+		log.Println("failed open excel :", errorReadFile)
+		return nil, errorReadFile
+	}
+
+	currentSheet := "Sheet1"
+	rows, errorReadRows := file.Rows(currentSheet)
+
+	if errorReadRows != nil {
+		log.Println("failed to read this rows :", errorReadRows)
+		return nil, errorReadRows
+	}
+
+	for rows.Next() {
+		row, errReadCol := rows.Columns()
+		if errReadCol != nil {
+			log.Println("failed to get collumns value :", errReadCol)
+			return nil, errReadCol
+		}
+		result = append(result, row)
+	}
+
+	if errCloseFile := rows.Close(); errCloseFile != nil {
+		fmt.Println(errCloseFile)
+		return nil, errCloseFile
+	}
+
+	return result[tablerowStartIndex:], errorReadFile
 }
