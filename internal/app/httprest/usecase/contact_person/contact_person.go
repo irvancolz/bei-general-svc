@@ -19,7 +19,7 @@ type ContactPersonUsecaseInterface interface {
 	SynchronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error)
 	AddDivision(c *gin.Context, name string) (int64, error)
 	EditDivision(c *gin.Context, props EditDivisionprops) (int64, error)
-	GetAllDivision() ([]model.DivisionNameResponse, error)
+	GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, error)
 	GetAllDivisionByCompany(company_id string) ([]*model.InstitutionDivisionResponse, error)
 	AddMember(c *gin.Context, props AddMemberProps) (int64, error)
 	EditMember(c *gin.Context, props EditMemberProps) (int64, error)
@@ -179,8 +179,46 @@ func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type str
 	return latestCompaniesData, nil
 }
 
-func (u *usecase) GetAllDivision() ([]model.DivisionNameResponse, error) {
-	return u.Repository.GetAllDivision()
+func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, error) {
+	results, errorResult := u.Repository.GetAllDivision()
+	if errorResult != nil {
+		return nil, errorResult
+	}
+
+	var exportedData []interface{}
+
+	for _, item := range results {
+		exportedData = append(exportedData, item)
+	}
+
+	var exportedDataStr [][]string
+
+	exportedDataStr = append(exportedDataStr, []string{"No", "Nama"})
+
+	exportedDataMap := helper.ConvertToMap(exportedData)
+
+	for i, maps := range exportedDataMap {
+		var exportedRows []string
+		// add number
+		exportedRows = append(exportedRows, fmt.Sprintf("%v", i+1))
+		exportedRows = append(exportedRows, helper.MapToArray(maps, []string{"name"})...)
+
+		// add rows to data
+		exportedDataStr = append(exportedDataStr, exportedRows)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename:    "company division",
+		ExcelConfig: &helper.ExportToExcelConfig{},
+		PdfConfig:   &helper.PdfTableOptions{},
+		Data:        exportedDataStr,
+	}
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return nil, errorExport
+	}
+
+	return results, nil
 }
 
 func (u *usecase) GetAllDivisionByCompany(company_id string) ([]*model.InstitutionDivisionResponse, error) {
