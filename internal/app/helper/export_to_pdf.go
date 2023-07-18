@@ -116,12 +116,16 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		pdf.SetX(currentX)
 		pdf.SetY(currentY)
 
-		for _, col := range rows {
+		for colNumber, col := range rows {
 			pdf.SetY(currentY)
 			pdf.SetX(currentX)
 
 			pdf.SetAlpha(.25, "Normal")
 			pdf.Line(currentX, currentY, currentX, currentY+currRowsheight)
+			if colNumber == len(rows)-1 {
+				pdf.Line(pageWidth-pageProps.pageRightpadding, currentY, pageWidth-pageProps.pageRightpadding, currentY+currRowsheight)
+
+			}
 			pdf.SetAlpha(1, "Normal")
 
 			splittedtext := pdf.SplitLines([]byte(col), columnsWidth)
