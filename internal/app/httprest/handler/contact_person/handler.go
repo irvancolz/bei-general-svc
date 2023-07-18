@@ -122,18 +122,21 @@ func (h *handler) GetMemberByDivisionAndCompanyID(c *gin.Context) {
 }
 
 func (h *handler) GetAllDivision(c *gin.Context) {
-	data, error_data := h.Usecase.GetAllDivision()
+	data, error_data := h.Usecase.GetAllDivision(c)
+
 	if error_data != nil {
 		model.GenerateReadErrorResponse(c, error_data)
 		return
 	}
 
-	if len(data) == 0 {
-		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]map[string]interface{}, 0)))
-		return
+	if !c.Writer.Written() {
+		if len(data) == 0 {
+			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, make([]map[string]interface{}, 0)))
+			return
+		}
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 }
 
 func (h *handler) GetAllDivisionByCompany(c *gin.Context) {
