@@ -160,6 +160,8 @@ func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type str
 		latestCompanyList, errorGetCompanies = utilities.GetLatestABCompanies(c)
 	} else if strings.EqualFold(company_type, "Participant") {
 		latestCompanyList, errorGetCompanies = utilities.GetLatestParticipantCompanies(c)
+	} else if strings.EqualFold(company_type, "PJSPPA") {
+		latestCompanyList, errorGetCompanies = utilities.GetLatestPJSPPACompanies(c)
 	}
 
 	if errorGetCompanies != nil {
