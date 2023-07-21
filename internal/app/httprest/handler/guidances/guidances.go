@@ -69,7 +69,10 @@ func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 				model.GenerateFlowErrorResponse(c, error_result)
 				return
 			}
-			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+
+			if !c.Writer.Written() {
+				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+			}
 
 			break
 		}
