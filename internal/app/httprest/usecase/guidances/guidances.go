@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -124,8 +125,37 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 	for _, item := range results {
 		dataToConverted = append(dataToConverted, item)
 	}
-
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+
+	tableColumns := []string{"No", "Nama berkas", "Deskripsi", "Versi", "File Lampiran", "Ukuran File"}
+	dataOrder := []string{"name", "description", "version", "file", "file_size"}
+	var exportedData [][]string
+
+	exportedData = append(exportedData, tableColumns)
+
+	for i, content := range filteredData {
+		var item []string
+		item = append(item, fmt.Sprintf("%v", i+1))
+		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		exportedData = append(exportedData, item)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename: "guidances",
+		Data:     exportedData,
+		Headers:  tableColumns,
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Buku Petunjuk"},
+		},
+		PdfConfig: &helper.PdfTableOptions{
+			PapperWidth:     300,
+			Papperheight:    450,
+			PageOrientation: "l",
+		},
+	}
+
+	helper.ExportTableToFile(c, exportConfig)
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 	return &paginatedData, nil
 }
