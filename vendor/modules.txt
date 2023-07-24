@@ -3,18 +3,11 @@
 github.com/beevik/etree
 # github.com/boombuler/barcode v1.0.1
 ## explicit
-github.com/boombuler/barcode
-github.com/boombuler/barcode/aztec
-github.com/boombuler/barcode/codabar
-github.com/boombuler/barcode/code128
-github.com/boombuler/barcode/code39
-github.com/boombuler/barcode/datamatrix
-github.com/boombuler/barcode/ean
-github.com/boombuler/barcode/qr
-github.com/boombuler/barcode/twooffive
-github.com/boombuler/barcode/utils
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
+# github.com/dustin/go-humanize v1.0.1
+## explicit; go 1.16
+github.com/dustin/go-humanize
 # github.com/gin-contrib/cors v1.3.1
 ## explicit; go 1.13
 github.com/gin-contrib/cors
@@ -57,12 +50,7 @@ github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/johnfercher/maroto v0.42.0
 ## explicit; go 1.13
-github.com/johnfercher/maroto/internal
-github.com/johnfercher/maroto/internal/fpdf
 github.com/johnfercher/maroto/pkg/color
-github.com/johnfercher/maroto/pkg/consts
-github.com/johnfercher/maroto/pkg/pdf
-github.com/johnfercher/maroto/pkg/props
 # github.com/joho/godotenv v1.4.0
 ## explicit; go 1.12
 github.com/joho/godotenv
@@ -71,11 +59,15 @@ github.com/joho/godotenv
 github.com/json-iterator/go
 # github.com/jung-kurt/gofpdf v1.16.2
 ## explicit; go 1.12
-github.com/jung-kurt/gofpdf
-github.com/jung-kurt/gofpdf/contrib/barcode
 # github.com/k3a/html2text v1.1.0
 ## explicit; go 1.16
 github.com/k3a/html2text
+# github.com/klauspost/compress v1.16.7
+## explicit; go 1.18
+github.com/klauspost/compress/s2
+# github.com/klauspost/cpuid/v2 v2.2.5
+## explicit; go 1.15
+github.com/klauspost/cpuid/v2
 # github.com/leodido/go-urn v1.2.1
 ## explicit; go 1.13
 github.com/leodido/go-urn
@@ -89,6 +81,25 @@ github.com/lib/pq/scram
 github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v1.14.16
 ## explicit; go 1.16
+# github.com/minio/md5-simd v1.1.2
+## explicit; go 1.14
+github.com/minio/md5-simd
+# github.com/minio/minio-go/v7 v7.0.61
+## explicit; go 1.17
+github.com/minio/minio-go/v7
+github.com/minio/minio-go/v7/pkg/credentials
+github.com/minio/minio-go/v7/pkg/encrypt
+github.com/minio/minio-go/v7/pkg/lifecycle
+github.com/minio/minio-go/v7/pkg/notification
+github.com/minio/minio-go/v7/pkg/replication
+github.com/minio/minio-go/v7/pkg/s3utils
+github.com/minio/minio-go/v7/pkg/set
+github.com/minio/minio-go/v7/pkg/signer
+github.com/minio/minio-go/v7/pkg/sse
+github.com/minio/minio-go/v7/pkg/tags
+# github.com/minio/sha256-simd v1.0.1
+## explicit; go 1.17
+github.com/minio/sha256-simd
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -104,12 +115,17 @@ github.com/richardlehane/mscfb
 # github.com/richardlehane/msoleps v1.0.3
 ## explicit
 github.com/richardlehane/msoleps/types
+# github.com/rs/xid v1.5.0
+## explicit; go 1.12
+github.com/rs/xid
 # github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245
 ## explicit; go 1.15
-github.com/ruudk/golang-pdf417
 # github.com/shohiebsense/gojsontoxml v1.0.0
 ## explicit; go 1.20
 github.com/shohiebsense/gojsontoxml
+# github.com/sirupsen/logrus v1.9.3
+## explicit; go 1.13
+github.com/sirupsen/logrus
 # github.com/ugorji/go/codec v1.1.7
 ## explicit
 github.com/ugorji/go/codec
@@ -122,23 +138,30 @@ github.com/xuri/excelize/v2
 # github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22
 ## explicit; go 1.15
 github.com/xuri/nfp
-# golang.org/x/crypto v0.8.0
+# golang.org/x/crypto v0.11.0
 ## explicit; go 1.17
+golang.org/x/crypto/argon2
 golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blake2b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/md4
 golang.org/x/crypto/ripemd160
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.9.0
+# golang.org/x/net v0.12.0
 ## explicit; go 1.17
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/sys v0.7.0
+golang.org/x/net/http/httpguts
+golang.org/x/net/idna
+golang.org/x/net/publicsuffix
+# golang.org/x/sys v0.10.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# golang.org/x/text v0.9.0
+golang.org/x/sys/windows
+# golang.org/x/text v0.11.0
 ## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
@@ -164,7 +187,10 @@ golang.org/x/text/language
 golang.org/x/text/message
 golang.org/x/text/message/catalog
 golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 ## explicit; go 1.11
 # google.golang.org/protobuf v1.27.1
@@ -205,6 +231,9 @@ gopkg.in/dgrijalva/jwt-go.v3
 # gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 ## explicit
 gopkg.in/gomail.v2
+# gopkg.in/ini.v1 v1.67.0
+## explicit
+gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2

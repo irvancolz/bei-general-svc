@@ -20,7 +20,7 @@ func (c *UploadFileConfig) CheckFileExt(fileext string) bool {
 		return true
 	}
 	for _, ext := range c.Extensions {
-		result = strings.ToLower(ext) == strings.ToLower(fileext)
+		result = strings.EqualFold(ext, fileext)
 		if result {
 			return result
 		}
