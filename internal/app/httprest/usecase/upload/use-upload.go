@@ -47,25 +47,40 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 		}
 	}
 
-	uploadDir := filepath.Join("uploaded", props.Directory)
-
-	errDir := os.MkdirAll(uploadDir, os.ModePerm)
-	if errDir != nil {
-		log.Println("failed to create new directories :", errDir)
-		return nil, errDir
-	}
-
 	newFileName := props.GenerateFilename(file.Filename, time.Now())
 
-	errSave := c.SaveUploadedFile(file, filepath.Join(uploadDir, newFileName))
+	// save file temporary to local server before uploaded to minio
+	errSave := c.SaveUploadedFile(file, file.Filename)
 	if errSave != nil {
 		log.Println("failed to save file to server : ", errSave)
 		return nil, errSave
 	}
 
+	minioSaveConfig := helper.UploadToMinioProps{
+		BucketName:     props.Directory,
+		FileOriginName: file.Filename,
+		FileSavedName:  newFileName,
+	}
+
+	minioClient, errorCreateMinionConn := helper.InitMinio()
+	if errorCreateMinionConn != nil {
+		return nil, errorCreateMinionConn
+	}
+	_, errorUploadToMinio := helper.UploadToMinio(minioClient, c, minioSaveConfig)
+	if errorUploadToMinio != nil {
+		return nil, errorUploadToMinio
+	}
+
 	result.FileName = newFileName
 	result.FileSize = file.Size
 	result.Filepath = props.GenerateFilePath(newFileName)
+
+	// cleanup
+	errRemoveFile := os.Remove(file.Filename)
+	if errRemoveFile != nil {
+		log.Println("failed to cleanup directory : ", err)
+		return nil, errRemoveFile
+	}
 
 	return result, nil
 }
@@ -73,8 +88,15 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 func GetFilePath(path string) string {
 	pat := filepath.FromSlash(path)
 	pathStr := strings.Split(pat, string(os.PathSeparator))
-	result := pathStr[len(pathStr)-3:]
-	return filepath.Join(result...)
+	result := pathStr[len(pathStr)-1]
+	return result
+}
+
+func GetFilesBucket(path string) string {
+	pat := filepath.FromSlash(path)
+	pathStr := strings.Split(pat, string(os.PathSeparator))
+	result := pathStr[len(pathStr)-2]
+	return result
 }
 
 func GetFileName(slug string) string {
@@ -108,12 +130,29 @@ func IsFIleExists(slug string) bool {
 func (u *usecase) Download(c *gin.Context, pathFile string) error {
 	fileLocation := GetFilePath(pathFile)
 
-	if !IsFIleExists(pathFile) {
-		log.Println("failed to get file : the file specified is not exists on storage")
-		return errors.New("failed to get file : the file specified is not exists on storage")
+	minioClient, errorCreateMinionConn := helper.InitMinio()
+	if errorCreateMinionConn != nil {
+		return errorCreateMinionConn
+	}
+
+	minioSaveConfig := helper.UploadToMinioProps{
+		BucketName:    GetFilesBucket(pathFile),
+		FileSavedName: fileLocation,
+	}
+
+	errGetFromMinio := helper.GetFileFromMinio(minioClient, c, minioSaveConfig)
+	if errGetFromMinio != nil {
+		return errGetFromMinio
 	}
 
 	c.File(fileLocation)
+
+	errorCleanup := os.Remove(fileLocation)
+	if errorCleanup != nil {
+		log.Println("failed to do cleanup on downloaded files :", fileLocation)
+		return nil
+	}
+
 	return nil
 }
 
@@ -134,13 +173,18 @@ func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string
 		return errors.New("the file ext does not supported")
 	}
 
-	// file does not exist, return error message
-	if !IsFIleExists(fileLocation) {
-		log.Println("failed to get file : the file specified is not exists on storage")
-		return errors.New("failed to get file : the file specified is not exists on storage")
+	minioSaveConfig := helper.UploadToMinioProps{
+		BucketName:    GetFilesBucket(slug),
+		FileSavedName: fileLocation,
 	}
 
-	err := os.Remove(fileLocation)
+	minioClient, errorCreateMinionConn := helper.InitMinio()
+	if errorCreateMinionConn != nil {
+		return errorCreateMinionConn
+	}
+
+	// err := os.Remove(fileLocation)
+	err := helper.DeleteFileInMinio(minioClient, c, minioSaveConfig)
 	if err != nil {
 		log.Println("failed to remove file : ", err)
 		return err
