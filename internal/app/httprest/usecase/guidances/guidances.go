@@ -155,7 +155,10 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 		},
 	}
 
-	helper.ExportTableToFile(c, exportConfig)
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return nil, errorExport
+	}
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 	return &paginatedData, nil
 }
