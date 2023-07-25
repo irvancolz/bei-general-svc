@@ -6,18 +6,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 func InitMinio() (*minio.Client, error) {
-
-	errGetEnv := godotenv.Load()
-	if errGetEnv != nil {
-		log.Println("failed to read .env file :", errGetEnv)
-		return nil, errGetEnv
-	}
 
 	minoEndpointPath := os.Getenv("MINIO_ENDPOINT")
 	minioAcceskeyID := os.Getenv("MINIO_ACCESS_KEY_ID")
