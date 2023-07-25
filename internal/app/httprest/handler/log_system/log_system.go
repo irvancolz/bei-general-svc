@@ -11,6 +11,7 @@ import (
 type Handler interface {
 	GetAll(c *gin.Context)
 	CreateLogSystem(c *gin.Context)
+	ExportLogSystem(c *gin.Context)
 }
 
 type handler struct {
@@ -54,4 +55,12 @@ func (m *handler) CreateLogSystem(c *gin.Context) {
 	}
 
 	c.JSON(httpresponse.Format(httpresponse.CREATESUCCESS_200, nil, data))
+}
+
+func (m *handler) ExportLogSystem(c *gin.Context) {
+	err := m.log.ExportLogSystem(c)
+	if err != nil {
+		model.GenerateReadErrorResponse(c, err)
+		return
+	}
 }

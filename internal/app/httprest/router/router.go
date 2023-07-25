@@ -175,6 +175,7 @@ func Routes() *gin.Engine {
 	{
 		logSystemRoute.GET("/get-all-log-system", log_system.GetAll)
 		logSystemRoute.POST("/create-log-system", log_system.CreateLogSystem)
+		logSystemRoute.GET("/export-log-system", log_system.ExportLogSystem)
 	}
 
 	return r
