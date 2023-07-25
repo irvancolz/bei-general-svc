@@ -3,6 +3,7 @@ package router
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
 	contactPerson "be-idx-tsg/internal/app/httprest/handler/contact_person"
+	exporttofile "be-idx-tsg/internal/app/httprest/handler/export-to-file"
 	FAQ "be-idx-tsg/internal/app/httprest/handler/faq"
 	Guidances "be-idx-tsg/internal/app/httprest/handler/guidances"
 	JsonToXml "be-idx-tsg/internal/app/httprest/handler/jsontoxml"
@@ -53,6 +54,7 @@ func Routes() *gin.Engine {
 	faq := FAQ.NewHandler()
 	contact_person := contactPerson.NewHandler()
 	log_system := logSystem.NewHandler()
+	exportHandler := exporttofile.NewHandler()
 
 	v3noauth := r.Group("/api")
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
@@ -96,6 +98,10 @@ func Routes() *gin.Engine {
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation-by-type", guidances.GetAllGuidanceBasedOnType)
 		guidancesRoute.GET("/get-all-guidance-file-or-regulation", guidances.GetAllData)
 		guidancesRoute.DELETE("/delete-guidance-file-or-regulation", guidances.DeleteGuidances)
+	}
+	exportRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
+	{
+		exportRoute.POST("/export-table-to-file", exportHandler.ExportTableToFile)
 	}
 	pkpRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
