@@ -151,10 +151,8 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 			HeaderText: []string{"Buku Petunjuk"},
 		},
 		PdfConfig: &helper.PdfTableOptions{
-			PapperWidth:     300,
-			Papperheight:    450,
-			PageOrientation: "l",
 			HeaderRows:      tableHeaders,
+			PageOrientation: "l",
 		},
 	}
 
