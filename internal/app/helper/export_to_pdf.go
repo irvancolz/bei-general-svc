@@ -122,6 +122,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	currentY = pageProps.currentY
 
 	for r, rows := range data {
+		currentX = tableMarginX
 		maxColHeight := getHighestCol(pdf, columnWidth, rows)
 
 		// reset properties when add page
@@ -135,8 +136,6 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		pdf.SetTextColor(0, 0, 0)
 		pdf.SetFillColor(240, 240, 240)
 
-		currentX = pageProps.pageLeftPadding
-
 		if r%2 != 0 {
 			pdf.SetAlpha(0, "Normal")
 		}
@@ -144,7 +143,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		currRowsheight := float64(maxColHeight) * lineHeight
 
 		// draw bg
-		pdf.Rect(currentX, currentY, (pageWidth - pageProps.pageLeftPadding - pageProps.pageRightpadding), currRowsheight, "F")
+		pdf.Rect(currentX, currentY, float64(totalWidth), currRowsheight, "F")
 		pdf.SetAlpha(1, "Normal")
 
 		pdf.SetX(currentX)

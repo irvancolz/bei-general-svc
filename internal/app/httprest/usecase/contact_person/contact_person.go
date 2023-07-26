@@ -349,6 +349,8 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
 	var exportedField, tableHeader []string
+	var columnWidths []float64
+	var tableHeaders []helper.TableHeader
 
 	exportTitle := "CONTACT PERSON "
 	exportedField = []string{
@@ -369,11 +371,25 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"No Tel. Kantor",
 		"Email"}
 
+	columnWidths = []float64{20, 40, 60, 60, 50, 40, 60}
+
+	for i, header := range tableHeader {
+		item := helper.TableHeader{
+			Title: header,
+			Width: columnWidths[i],
+		}
+
+		tableHeaders = append(tableHeaders, item)
+	}
+
 	excelConfig := helper.ExportToExcelConfig{
 		CollumnStart: "b",
 	}
 	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU",
+		HeaderTitle:  "CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU",
+		HeaderRows:   tableHeaders,
+		PapperWidth:  500,
+		Papperheight: 300,
 	}
 
 	var dataToExported [][]string
@@ -420,6 +436,20 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			"No Tel. Kantor",
 			"Email"}
 
+		columnWidths = []float64{20, 40, 50, 40, 60, 60, 50, 40, 60}
+
+		var tableHeaders []helper.TableHeader
+
+		for i, header := range tableHeader {
+			item := helper.TableHeader{
+				Title: header,
+				Width: columnWidths[i],
+			}
+
+			tableHeaders = append(tableHeaders, item)
+		}
+
+		pdfConfig.HeaderRows = tableHeaders
 		excelConfig.HeaderText = []string{exportTitle + " " + company_type}
 		memberList, errorGetMember := u.GetMemberByCompanyType(company_type)
 		if errorGetMember != nil {
@@ -427,8 +457,6 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		}
 		memberStructList = append(memberStructList, memberList...)
 	}
-
-	dataToExported = append(dataToExported, tableHeader)
 
 	for i, member := range memberStructList {
 		var memberData []string
