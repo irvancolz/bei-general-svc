@@ -278,7 +278,7 @@ func drawFooter(pdf *fpdf.Fpdf) {
 
 		// current Time
 		pdf.SetFont("Times", "", 10)
-		pdf.SetX(0)
+		pdf.SetLeftMargin(0)
 		pdf.SetY(pageHeight - float64(footerHeight))
 		footerDate := func() string {
 			return time.Now().Format("02/01/2006") + " - Page " + fmt.Sprintf("%v", pdf.PageNo()) + " Of " + fmt.Sprintf("%v", pdf.PageCount())
@@ -449,8 +449,6 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 		for _, text := range splittedtext {
 			pdf.CellFormat(curColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(header.Title))
 		}
-
-		// pdf.CellFormat(curColWidth, lineHeight, string(header.Title), "", 2, "C", false, 0, getLink(header.Title))
 
 		currentX += curColWidth
 		if len(header.Children) > 0 {
