@@ -464,3 +464,22 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 	pageProps.currentY += float64(maxColHeight * int(lineHeight))
 
 }
+
+func GenerateTableHeaders(titles []string, widths []float64) []TableHeader {
+	var result []TableHeader
+
+	for i, title := range titles {
+		item := TableHeader{
+			Title: title,
+			Width: func() float64 {
+				if i >= len(widths) {
+					return 20
+				}
+				return widths[i]
+			}(),
+		}
+		result = append(result, item)
+	}
+
+	return result
+}

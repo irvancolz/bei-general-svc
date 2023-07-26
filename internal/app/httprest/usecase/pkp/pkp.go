@@ -73,15 +73,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 
 	columnWidth := []float64{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60}
 
-	var tableHeaders []helper.TableHeader
-
-	for i, col := range columnHeaders {
-		header := helper.TableHeader{
-			Title: col,
-			Width: columnWidth[i],
-		}
-		tableHeaders = append(tableHeaders, header)
-	}
+	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
 	// exportedData = append(exportedData, columnHeaders)

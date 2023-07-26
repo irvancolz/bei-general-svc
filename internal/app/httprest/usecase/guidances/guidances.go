@@ -128,10 +128,12 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
 
 	tableColumns := []string{"No", "Nama berkas", "Deskripsi", "Versi", "File Lampiran", "Ukuran File"}
+	columnWidth := []float64{20, 50, 60, 20, 50, 30}
+
+	tableHeaders := helper.GenerateTableHeaders(tableColumns, columnWidth)
+
 	dataOrder := []string{"name", "description", "version", "file", "file_size"}
 	var exportedData [][]string
-
-	exportedData = append(exportedData, tableColumns)
 
 	for i, content := range filteredData {
 		var item []string
@@ -152,6 +154,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 			PapperWidth:     300,
 			Papperheight:    450,
 			PageOrientation: "l",
+			HeaderRows:      tableHeaders,
 		},
 	}
 

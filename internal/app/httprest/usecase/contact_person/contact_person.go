@@ -193,9 +193,12 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 		exportedData = append(exportedData, item)
 	}
 
-	var exportedDataStr [][]string
+	tableColumn := []string{"No", "Nama"}
+	columnWidth := []float64{20, 80}
 
-	exportedDataStr = append(exportedDataStr, []string{"No", "Nama"})
+	tableHeaders := helper.GenerateTableHeaders(tableColumn, columnWidth)
+
+	var exportedDataStr [][]string
 
 	exportedDataMap := helper.ConvertToMap(exportedData)
 
@@ -212,8 +215,10 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 	exportConfig := helper.ExportTableToFileProps{
 		Filename:    "company division",
 		ExcelConfig: &helper.ExportToExcelConfig{},
-		PdfConfig:   &helper.PdfTableOptions{},
-		Data:        exportedDataStr,
+		PdfConfig: &helper.PdfTableOptions{
+			HeaderRows: tableHeaders,
+		},
+		Data: exportedDataStr,
 	}
 	errorExport := helper.ExportTableToFile(c, exportConfig)
 	if errorExport != nil {
@@ -350,7 +355,6 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
 	var exportedField, tableHeader []string
 	var columnWidths []float64
-	var tableHeaders []helper.TableHeader
 
 	exportTitle := "CONTACT PERSON "
 	exportedField = []string{
@@ -372,6 +376,8 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"Email"}
 
 	columnWidths = []float64{20, 40, 60, 60, 50, 40, 60}
+
+	tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
 
 	for i, header := range tableHeader {
 		item := helper.TableHeader{
@@ -456,16 +462,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 
 		columnWidths = []float64{20, 40, 50, 40, 60, 60, 50, 40, 60}
 
-		var tableHeaders []helper.TableHeader
-
-		for i, header := range tableHeader {
-			item := helper.TableHeader{
-				Title: header,
-				Width: columnWidths[i],
-			}
-
-			tableHeaders = append(tableHeaders, item)
-		}
+		tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
 
 		pdfConfig.HeaderRows = tableHeaders
 		excelConfig.HeaderText = []string{exportTitle + " " + company_type}
