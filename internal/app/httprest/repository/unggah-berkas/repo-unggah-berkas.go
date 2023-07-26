@@ -92,6 +92,7 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 			"company_code",
 			"company_name",
 			"file_name",
+			"id",
 		},
 	}
 

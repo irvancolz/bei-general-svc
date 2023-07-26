@@ -193,9 +193,12 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 		exportedData = append(exportedData, item)
 	}
 
-	var exportedDataStr [][]string
+	tableColumn := []string{"No", "Nama"}
+	columnWidth := []float64{20, 80}
 
-	exportedDataStr = append(exportedDataStr, []string{"No", "Nama"})
+	tableHeaders := helper.GenerateTableHeaders(tableColumn, columnWidth)
+
+	var exportedDataStr [][]string
 
 	exportedDataMap := helper.ConvertToMap(exportedData)
 
@@ -212,8 +215,10 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 	exportConfig := helper.ExportTableToFileProps{
 		Filename:    "company division",
 		ExcelConfig: &helper.ExportToExcelConfig{},
-		PdfConfig:   &helper.PdfTableOptions{},
-		Data:        exportedDataStr,
+		PdfConfig: &helper.PdfTableOptions{
+			HeaderRows: tableHeaders,
+		},
+		Data: exportedDataStr,
 	}
 	errorExport := helper.ExportTableToFile(c, exportConfig)
 	if errorExport != nil {
@@ -349,6 +354,7 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
 	var exportedField, tableHeader []string
+	var columnWidths []float64
 
 	exportTitle := "CONTACT PERSON "
 	exportedField = []string{
@@ -369,11 +375,27 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"No Tel. Kantor",
 		"Email"}
 
+	columnWidths = []float64{20, 40, 60, 60, 50, 40, 60}
+
+	tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
+
+	for i, header := range tableHeader {
+		item := helper.TableHeader{
+			Title: header,
+			Width: columnWidths[i],
+		}
+
+		tableHeaders = append(tableHeaders, item)
+	}
+
 	excelConfig := helper.ExportToExcelConfig{
 		CollumnStart: "b",
 	}
 	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU",
+		HeaderTitle:  "CONTACT PERSON ANGGOTA BURSA / PARTISIPAN / PJ SPPA / DU",
+		HeaderRows:   tableHeaders,
+		PapperWidth:  500,
+		Papperheight: 300,
 	}
 
 	var dataToExported [][]string
@@ -389,14 +411,32 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+
+		companyCode := func() string {
+			if len(memberStructList) <= 0 {
+				return ""
+			}
+			return memberStructList[0].Company_code
+		}()
+
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", companyCode), fmt.Sprintf("Nama Perusahaan :	%s", companyCode)}
+		pdfConfig.HeaderRows = tableHeaders
 	} else if len(company_id) > 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyID([]string{company_id})
 		if errorGetMember != nil {
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+
+		companyCode := func() string {
+			if len(memberStructList) <= 0 {
+				return ""
+			}
+			return memberStructList[0].Company_code
+		}()
+
+		pdfConfig.HeaderRows = tableHeaders
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", companyCode), fmt.Sprintf("Nama Perusahaan :	%s", companyCode)}
 	} else if len(company_type) >= 0 {
 		exportedField = []string{
 			"company_code",
@@ -420,6 +460,11 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			"No Tel. Kantor",
 			"Email"}
 
+		columnWidths = []float64{20, 40, 50, 40, 60, 60, 50, 40, 60}
+
+		tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
+
+		pdfConfig.HeaderRows = tableHeaders
 		excelConfig.HeaderText = []string{exportTitle + " " + company_type}
 		memberList, errorGetMember := u.GetMemberByCompanyType(company_type)
 		if errorGetMember != nil {
@@ -427,8 +472,6 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		}
 		memberStructList = append(memberStructList, memberList...)
 	}
-
-	dataToExported = append(dataToExported, tableHeader)
 
 	for i, member := range memberStructList {
 		var memberData []string

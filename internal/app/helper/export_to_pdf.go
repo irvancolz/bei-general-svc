@@ -12,11 +12,30 @@ import (
 	"github.com/johnfercher/maroto/pkg/color"
 )
 
+type TableHeader struct {
+	Title    string
+	Width    float64
+	Children []TableHeader
+}
+
+func (t TableHeader) GetWidth(props []TableHeader) float64 {
+	var result float64
+	if len(t.Children) <= 0 {
+		return t.Width
+	}
+
+	for _, header := range props {
+		result += header.GetWidth(header.Children)
+	}
+
+	return result
+}
+
 type PdfTableOptions struct {
 	// default is "Bursa Effek Indonesia"
 	HeaderTitle string
 	// specify each collumn name
-	HeaderRows []string
+	HeaderRows []TableHeader
 	// "A3", "A4", "Legal", "Letter", "A5" default is "A4"
 	PageSize string
 	// path to logo default is globe idx
@@ -41,6 +60,8 @@ type fpdfPageProperties struct {
 	pageTopPadding   float64
 	headerHeight     float64
 	currentY         float64
+	currentX         float64
+	lineHeight       float64
 }
 
 func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *PdfTableOptions) (string, error) {
@@ -68,22 +89,41 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pdf.AddPage()
 
 	pageWidth, pageHeight := pdf.GetPageSize()
-
-	columnsWidth := func() float64 {
-		result := (pageWidth - pageProps.pageLeftPadding - pageProps.pageRightpadding) / float64(len(data[0]))
-
-		if result <= 20 {
-			return 20
-		}
-
-		return result
-	}()
-
 	currentY := pageProps.headerHeight + 10
 	lineHeight := float64(6)
+	pageProps.lineHeight = lineHeight
+	pageProps.currentY = currentY
+
+	var columnWidth []float64
+	for _, header := range props.HeaderRows {
+		columnWidth = append(columnWidth, header.GetWidth(header.Children))
+	}
+
+	var totalWidth int
+	for _, col := range columnWidth {
+		totalWidth += int(col)
+	}
+
+	// centering the table
+	tableMarginX := func() float64 {
+		if totalWidth < int(pageWidth)-int(pageProps.pageLeftPadding)-int(pageProps.pageRightpadding) {
+			return (pageWidth - float64(totalWidth)) / 2
+		}
+
+		return pageProps.pageLeftPadding
+	}()
+
+	currentX := tableMarginX
+	pageProps.currentX = currentX
+	pdf.SetLeftMargin(currentX)
+	// drawTableHeader
+
+	drawTableHeader(pdf, props.HeaderRows, &pageProps)
+	currentY = pageProps.currentY
 
 	for r, rows := range data {
-		maxColHeight := getHighestCol(pdf, columnsWidth, rows)
+		currentX = tableMarginX
+		maxColHeight := getHighestCol(pdf, columnWidth, rows)
 
 		// reset properties when add page
 		if currentY+float64(maxColHeight) > pageHeight-30 {
@@ -96,27 +136,30 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		pdf.SetTextColor(0, 0, 0)
 		pdf.SetFillColor(240, 240, 240)
 
-		if r == 0 {
-			pdf.SetFontStyle("B")
-			pdf.SetTextColor(255, 255, 255)
-			pdf.SetFillColor(50, 117, 168)
-		}
-
-		currentX := pageProps.pageLeftPadding
-
 		if r%2 != 0 {
 			pdf.SetAlpha(0, "Normal")
 		}
 
 		currRowsheight := float64(maxColHeight) * lineHeight
 
-		pdf.Rect(currentX, currentY, (pageWidth - pageProps.pageLeftPadding - pageProps.pageRightpadding), currRowsheight, "F")
+		// draw bg
+		pdf.Rect(currentX, currentY, float64(totalWidth), currRowsheight, "F")
 		pdf.SetAlpha(1, "Normal")
 
 		pdf.SetX(currentX)
 		pdf.SetY(currentY)
 
 		for colNumber, col := range rows {
+
+			// prevent out of index panic
+			currColWidth := func() float64 {
+				if colNumber > len(columnWidth)-1 {
+					return 20
+				}
+
+				return columnWidth[colNumber]
+			}()
+
 			pdf.SetY(currentY)
 			pdf.SetX(currentX)
 
@@ -128,11 +171,11 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 			}
 			pdf.SetAlpha(1, "Normal")
 
-			splittedtext := pdf.SplitLines([]byte(col), columnsWidth)
+			splittedtext := pdf.SplitLines([]byte(col), currColWidth)
 			for _, text := range splittedtext {
-				pdf.CellFormat(columnsWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(col))
+				pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(col))
 			}
-			currentX += columnsWidth
+			currentX += currColWidth
 		}
 
 		currentY += float64(maxColHeight) * lineHeight
@@ -291,11 +334,11 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 	})
 }
 
-func getHighestCol(pdf *fpdf.Fpdf, colWidth float64, data []string) int {
+func getHighestCol(pdf *fpdf.Fpdf, colWidth []float64, data []string) int {
 	result := 0
 
-	for _, text := range data {
-		currTextHeight := pdf.SplitLines([]byte(text), colWidth)
+	for i, text := range data {
+		currTextHeight := pdf.SplitLines([]byte(text), colWidth[i])
 		if len(currTextHeight) > result {
 			result = len(currTextHeight)
 		}
@@ -364,4 +407,79 @@ func (opt *PdfTableOptions) getHeaderTitle() string {
 		return "Bursa Efek Indonesia"
 	}
 	return opt.HeaderTitle
+}
+
+func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageProperties) {
+	if len(headers) <= 0 {
+		return
+	}
+
+	currentX := pageProps.currentX
+	lineHeight := pageProps.lineHeight
+	currentY := pageProps.currentY
+
+	pdf.SetFontStyle("B")
+	pdf.SetTextColor(255, 255, 255)
+	pdf.SetFillColor(50, 117, 168)
+
+	// get how high this row are
+	var headerTexts []string
+	var headerWidths []float64
+	for _, header := range headers {
+		headerTexts = append(headerTexts, header.Title)
+		headerWidths = append(headerWidths, header.GetWidth(header.Children))
+	}
+
+	maxColHeight := getHighestCol(pdf, headerWidths, headerTexts)
+	currRowsheight := float64(maxColHeight) * lineHeight
+
+	var totalWidth int
+	for _, col := range headerWidths {
+		totalWidth += int(col)
+	}
+	// draw bg
+	pdf.Rect(currentX, currentY, float64(totalWidth), currRowsheight, "F")
+
+	for _, header := range headers {
+		pdf.SetLeftMargin(currentX)
+		pdf.SetY(currentY)
+		curColWidth := header.GetWidth(header.Children)
+
+		splittedtext := pdf.SplitLines([]byte(header.Title), curColWidth)
+		for _, text := range splittedtext {
+			pdf.CellFormat(curColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(header.Title))
+		}
+
+		// pdf.CellFormat(curColWidth, lineHeight, string(header.Title), "", 2, "C", false, 0, getLink(header.Title))
+
+		currentX += curColWidth
+		if len(header.Children) > 0 {
+			currentY += lineHeight
+		}
+
+		pageProps.currentY = currentY
+		drawTableHeader(pdf, header.Children, pageProps)
+		pageProps.currentX = currentX
+	}
+	pageProps.currentY += float64(maxColHeight * int(lineHeight))
+
+}
+
+func GenerateTableHeaders(titles []string, widths []float64) []TableHeader {
+	var result []TableHeader
+
+	for i, title := range titles {
+		item := TableHeader{
+			Title: title,
+			Width: func() float64 {
+				if i >= len(widths) {
+					return 20
+				}
+				return widths[i]
+			}(),
+		}
+		result = append(result, item)
+	}
+
+	return result
 }

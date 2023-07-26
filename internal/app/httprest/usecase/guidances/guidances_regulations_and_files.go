@@ -59,9 +59,11 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"User",
 		"Link",
 	}
+	columnWidth := []float64{20, 40, 40, 60, 80, 20, 20, 40, 60}
+
+	tableheaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
-	exportedData = append(exportedData, columnHeaders)
 	for i, item := range sortedData {
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
@@ -77,8 +79,7 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 			HeaderText: []string{"Management Berkas "},
 		},
 		PdfConfig: &helper.PdfTableOptions{
-			PapperWidth:     300,
-			Papperheight:    450,
+			HeaderRows:      tableheaders,
 			PageOrientation: "l",
 		},
 	}

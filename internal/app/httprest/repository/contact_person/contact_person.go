@@ -657,7 +657,7 @@ func (r *repository) GetCompanyType(id string) string {
 	errorResults := searchResults.Scan(&results)
 	if errorResults != nil {
 		log.Println("failed to get company type :", errorResults)
-		return results.String
+		return ""
 	}
 
 	return results.String
