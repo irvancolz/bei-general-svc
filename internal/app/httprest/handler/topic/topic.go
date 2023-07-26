@@ -32,23 +32,16 @@ func NewHandler() Handler {
 }
 
 func (m *handler) GetAll(c *gin.Context) {
-	keyword := c.Query("keyword")
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	status := c.Query("status")
-	name := c.Query("name")
-	companyName := c.Query("company_name")
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
-	userId, _ := c.Get("user_id")
 
-	data, err := m.tp.GetAll(keyword, status, name, companyName, startDate, endDate, userId.(string), page, limit)
+	data, err := m.tp.GetAll(c)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
-	totalData, totalPage, err := m.tp.GetTotal(keyword, status, name, companyName, startDate, endDate, userId.(string), page, limit)
+	totalData, totalPage, err := m.tp.GetTotal(c)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
@@ -203,14 +196,7 @@ func (m *handler) ArchiveTopicToFAQ(c *gin.Context) {
 }
 
 func (m *handler) ExportTopic(c *gin.Context) {
-	keyword := c.Query("keyword")
-	status := c.Query("status")
-	name := c.Query("name")
-	companyName := c.Query("company_name")
-	startDate := c.Query("start_date")
-	userId, _ := c.Get("user_id")
-
-	err := m.tp.ExportTopic(c, keyword, status, name, companyName, startDate, userId.(string))
+	err := m.tp.ExportTopic(c)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return

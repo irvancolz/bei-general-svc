@@ -17,8 +17,8 @@ import (
 )
 
 type Repository interface {
-	GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error)
+	GetAll(c *gin.Context) ([]*model.Topic, error)
+	GetTotal(c *gin.Context) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
@@ -38,7 +38,17 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
+func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
+	keyword := c.Query("keyword")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	status := c.Query("status")
+	name := c.Query("name")
+	companyName := c.Query("company_name")
+	startDate := c.Query("start_date")
+	userId, _ := c.Get("user_id")
+	userType, _ := c.Get("type")
+
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
@@ -47,7 +57,7 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId + `'))`
+	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
 
 	if keyword != "" {
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
@@ -71,6 +81,12 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 		startDate = parseTime(startDate)
 
 		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+	}
+
+	if userType.(string) == "External" {
+		companyCode, _ := c.Get("company_code")
+
+		query += ` AND t.company_code = '` + companyCode.(string) + `'`
 	}
 
 	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, t.created_at DESC`
@@ -100,14 +116,23 @@ func (m *repository) GetAll(keyword, status, name, companyName, startDate, endDa
 	return listData, nil
 }
 
-func (m *repository) GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error) {
+func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
+	keyword := c.Query("keyword")
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	status := c.Query("status")
+	name := c.Query("name")
+	companyName := c.Query("company_name")
+	startDate := c.Query("start_date")
+	userId, _ := c.Get("user_id")
+	userType, _ := c.Get("type")
+
 	var totalData int
 
 	query := `SELECT COUNT(t.id)
 	FROM topics t
 	INNER JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId + `'))`
+	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
 
 	if keyword != "" {
 		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
@@ -131,6 +156,12 @@ func (m *repository) GetTotal(keyword, status, name, companyName, startDate, end
 		startDate = parseTime(startDate)
 
 		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+	}
+
+	if userType.(string) == "External" {
+		companyCode, _ := c.Get("company_code")
+
+		query += ` AND t.company_code = '` + companyCode.(string) + `'`
 	}
 
 	err := m.DB.Get(&totalData, query)

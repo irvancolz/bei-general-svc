@@ -9,8 +9,8 @@ import (
 )
 
 type Usecase interface {
-	GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error)
-	GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error)
+	GetAll(c *gin.Context) ([]*model.Topic, error)
+	GetTotal(c *gin.Context) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
@@ -18,7 +18,7 @@ type Usecase interface {
 	CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error)
 	DeleteTopic(topicID string, c *gin.Context) (int64, error)
 	ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Context) (int64, error)
-	ExportTopic(c *gin.Context, keyword, status, name, companyName, startDate, userId string) error
+	ExportTopic(c *gin.Context) error
 }
 
 type usecase struct {
@@ -31,12 +31,12 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) ([]*model.Topic, error) {
-	return m.tpRepo.GetAll(keyword, status, name, companyName, startDate, endDate, userId, page, limit)
+func (m *usecase) GetAll(c *gin.Context) ([]*model.Topic, error) {
+	return m.tpRepo.GetAll(c)
 }
 
-func (m *usecase) GetTotal(keyword, status, name, companyName, startDate, endDate, userId string, page, limit int) (int, int, error) {
-	return m.tpRepo.GetTotal(keyword, status, name, companyName, startDate, endDate, userId, page, limit)
+func (m *usecase) GetTotal(c *gin.Context) (int, int, error) {
+	return m.tpRepo.GetTotal(c)
 }
 
 func (m *usecase) GetByID(topicID, keyword string) (*model.Topic, error) {
@@ -67,7 +67,7 @@ func (m *usecase) ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Contex
 	return m.tpRepo.ArchiveTopicToFAQ(topic, c)
 }
 
-func (m *usecase) ExportTopic(c *gin.Context, keyword, status, name, companyName, startDate, userId string) error {
+func (m *usecase) ExportTopic(c *gin.Context) error {
 	exportedField := []string{
 		"name",
 		"company",
@@ -88,7 +88,7 @@ func (m *usecase) ExportTopic(c *gin.Context, keyword, status, name, companyName
 	var topicList []*model.Topic
 	dataToExported = append(dataToExported, tableHeader)
 
-	topicList, _ = m.GetAll(keyword, status, name, companyName, startDate, "", userId, 0, 0)
+	topicList, _ = m.GetAll(c)
 
 	for _, data := range topicList {
 		topic := model.TopicExport{
