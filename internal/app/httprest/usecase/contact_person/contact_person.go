@@ -405,14 +405,32 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+
+		companyCode := func() string {
+			if len(memberStructList) <= 0 {
+				return ""
+			}
+			return memberStructList[0].Company_code
+		}()
+
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", companyCode), fmt.Sprintf("Nama Perusahaan :	%s", companyCode)}
+		pdfConfig.HeaderRows = tableHeaders
 	} else if len(company_id) > 0 {
 		memberList, errorGetMember := u.GetMemberByCompanyID([]string{company_id})
 		if errorGetMember != nil {
 			return errorGetMember
 		}
 		memberStructList = append(memberStructList, memberList...)
-		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", memberStructList[0].Company_code), fmt.Sprintf("Nama Perusahaan :	%s", memberStructList[0].Company_name)}
+
+		companyCode := func() string {
+			if len(memberStructList) <= 0 {
+				return ""
+			}
+			return memberStructList[0].Company_code
+		}()
+
+		pdfConfig.HeaderRows = tableHeaders
+		excelConfig.HeaderText = []string{exportTitle + u.Repository.GetCompanyType(company_id), fmt.Sprintf("Kode :	%s", companyCode), fmt.Sprintf("Nama Perusahaan :	%s", companyCode)}
 	} else if len(company_type) >= 0 {
 		exportedField = []string{
 			"company_code",
