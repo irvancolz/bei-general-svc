@@ -59,7 +59,7 @@ func (m *repository) CreateLogSystem(logSystem model.CreateLogSystem, c *gin.Con
 
 	logSystem.IP = getClientIpAddress(c.Request)
 
-	query := `INSERT INTO log_systems (menu, action, user_name, ip, browser, created_by, created_at) VALUES (:menu, :action, :user_name, :ip, :browser, :created_by, :created_at)`
+	query := `INSERT INTO log_systems (modul, sub_modul, action, detail, user_name, ip, browser, created_by, created_at) VALUES (:modul, :sub_modul, :action, :detail, :user_name, :ip, :browser, :created_by, :created_at)`
 
 	result, err := m.DB.NamedExec(query, &logSystem)
 	if err != nil {
