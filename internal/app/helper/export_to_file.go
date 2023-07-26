@@ -20,6 +20,10 @@ type ExportTableToFileProps struct {
 	ExcelConfig *ExportToExcelConfig
 	// if not specified meant the file format is unsupported
 	PdfConfig *PdfTableOptions
+	// if not specified meant the file format is unsupported
+	TxtConfig bool
+	// if not specified meant the file format is unsupported
+	CsvConfig bool
 }
 
 // export file to desired file extensions

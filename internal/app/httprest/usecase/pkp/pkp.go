@@ -71,8 +71,20 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Sumber Informasi Tambahan",
 	}
 
+	columnWidth := []float64{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60}
+
+	var tableHeaders []helper.TableHeader
+
+	for i, col := range columnHeaders {
+		header := helper.TableHeader{
+			Title: col,
+			Width: columnWidth[i],
+		}
+		tableHeaders = append(tableHeaders, header)
+	}
+
 	var exportedData [][]string
-	exportedData = append(exportedData, columnHeaders)
+	// exportedData = append(exportedData, columnHeaders)
 	for i, item := range sortedData {
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
@@ -90,6 +102,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		PdfConfig: &helper.PdfTableOptions{
 			PapperWidth:  630,
 			Papperheight: 300,
+			HeaderRows:   tableHeaders,
 		},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
