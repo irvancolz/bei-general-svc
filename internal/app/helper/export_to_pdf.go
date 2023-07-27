@@ -124,30 +124,29 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	for r, rows := range data {
 		currentX = tableMarginX
 		maxColHeight := getHighestCol(pdf, columnWidth, rows)
+		currRowsheight := float64(maxColHeight) * lineHeight
 
-		// reset properties when add page
-		if currentY+float64(maxColHeight) > pageHeight-30 {
-			pdf.AddPage()
-			pdf.SetPage(pdf.PageNo() + 1)
-			currentY = pageProps.headerHeight + 10
-		}
+		curRowsBgHeight := func() float64 {
+			if currentY+currRowsheight > pageHeight-30 {
+				return pageHeight - 30 - currentY
+			}
+			return currRowsheight
+		}()
 
 		pdf.SetFontStyle("")
 		pdf.SetTextColor(0, 0, 0)
 		pdf.SetFillColor(240, 240, 240)
+		pdf.SetX(currentX)
+		pdf.SetY(currentY)
 
+		// draw bg
 		if r%2 != 0 {
 			pdf.SetAlpha(0, "Normal")
 		}
 
-		currRowsheight := float64(maxColHeight) * lineHeight
-
 		// draw bg
-		pdf.Rect(currentX, currentY, float64(totalWidth), currRowsheight, "F")
+		pdf.Rect(currentX, currentY, float64(totalWidth), curRowsBgHeight, "F")
 		pdf.SetAlpha(1, "Normal")
-
-		pdf.SetX(currentX)
-		pdf.SetY(currentY)
 
 		for colNumber, col := range rows {
 
@@ -163,22 +162,47 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 			pdf.SetY(currentY)
 			pdf.SetX(currentX)
 
+			// column border
 			pdf.SetAlpha(.25, "Normal")
-			pdf.Line(currentX, currentY, currentX, currentY+currRowsheight)
+			pdf.Line(currentX, currentY, currentX, currentY+curRowsBgHeight)
 			if colNumber == len(rows)-1 {
-				pdf.Line(pageWidth-pageProps.pageRightpadding, currentY, pageWidth-pageProps.pageRightpadding, currentY+currRowsheight)
-
+				pdf.Line(pageWidth-pageProps.pageRightpadding, currentY, pageWidth-pageProps.pageRightpadding, currentY+curRowsBgHeight)
 			}
 			pdf.SetAlpha(1, "Normal")
 
 			splittedtext := pdf.SplitLines([]byte(col), currColWidth)
+			lastRowY := currentY
 			for _, text := range splittedtext {
+
+				// reset properties when add page
+				if lastRowY+float64(lineHeight) > pageHeight-30 {
+					pdf.AddPage()
+					pdf.SetPage(pdf.PageNo() + 1)
+					currentY = pageProps.headerHeight + 10
+					lastRowY = currentY
+					// draw bg
+					if r%2 != 0 {
+						pdf.SetAlpha(0, "Normal")
+					}
+					pdf.Rect(tableMarginX, currentY, float64(totalWidth), currRowsheight-curRowsBgHeight, "F")
+					pdf.SetAlpha(1, "Normal")
+				}
+
+				pdf.SetY(lastRowY)
+				pdf.SetX(currentX)
+
 				pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(col))
+				lastRowY += lineHeight
 			}
 			currentX += currColWidth
+
 		}
 
-		currentY += float64(maxColHeight) * lineHeight
+		if pdf.PageNo() != 1 && currentY == pageProps.headerHeight+10 {
+			currentY += currRowsheight - curRowsBgHeight
+		} else {
+			currentY += float64(maxColHeight) * lineHeight
+		}
 		pageProps.currentY = currentY
 
 	}
@@ -278,7 +302,7 @@ func drawFooter(pdf *fpdf.Fpdf) {
 
 		// current Time
 		pdf.SetFont("Times", "", 10)
-		pdf.SetX(0)
+		pdf.SetLeftMargin(0)
 		pdf.SetY(pageHeight - float64(footerHeight))
 		footerDate := func() string {
 			return time.Now().Format("02/01/2006") + " - Page " + fmt.Sprintf("%v", pdf.PageNo()) + " Of " + fmt.Sprintf("%v", pdf.PageCount())
@@ -449,8 +473,6 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 		for _, text := range splittedtext {
 			pdf.CellFormat(curColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(header.Title))
 		}
-
-		// pdf.CellFormat(curColWidth, lineHeight, string(header.Title), "", 2, "C", false, 0, getLink(header.Title))
 
 		currentX += curColWidth
 		if len(header.Children) > 0 {
