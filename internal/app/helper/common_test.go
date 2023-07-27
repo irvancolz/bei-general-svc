@@ -3,6 +3,7 @@ package helper
 import (
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestIsArray(t *testing.T) {
@@ -129,4 +130,11 @@ func TestGenerateParams(t *testing.T) {
 
 	filteredParameter := generateFilterParameter(exportedData)
 	t.Log(filteredParameter)
+}
+
+func TestGetLocalTime(t *testing.T) {
+	utc := time.Date(2022, 01, 02, 00, 00, 00, 00, time.UTC)
+	jktTime := GetWIBLocalTime(&utc)
+	t.Log(jktTime)
+
 }
