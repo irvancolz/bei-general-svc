@@ -315,9 +315,9 @@ func ExportAnnouncementsToExcel(filename string, data model.Announcement) (strin
 	_ = excelFile.SetCellStyle(currentSheet, "B9", "B9", contentStyleId)
 
 	_ = excelFile.SetCellValue(currentSheet, "B2", "PENGUMUMAN")
-	_ = excelFile.SetCellValue(currentSheet, "B4", "Jenis Informasi :"+data.InformationType)
+	_ = excelFile.SetCellValue(currentSheet, "B4", "Jenis Informasi :"+data.Information_Type)
 	_ = excelFile.SetCellValue(currentSheet, "B5", "dibuat oleh :"+data.Creator)
-	_ = excelFile.SetCellValue(currentSheet, "B6", "dibuat pada :"+data.EffectiveDate.Format("15-06-2006"))
+	_ = excelFile.SetCellValue(currentSheet, "B6", "dibuat pada :"+time.Unix(data.Effective_Date, 0).Format("15-06-2006"))
 	_ = excelFile.SetCellValue(currentSheet, "B9", data.Regarding)
 
 	result := generateFileNames(filenames, "_", time.Now()) + ".xlsx"

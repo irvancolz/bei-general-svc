@@ -17,12 +17,12 @@ import (
 
 type Repository interface {
 	GetByID(id string, c *gin.Context) (*model.Announcement, error)
-	GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error)
+	GetAllAnnouncement(c *gin.Context) ([]model.Announcement, error)
 	Create(an model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement, c *gin.Context) (int64, error)
 	Delete(id string, c *gin.Context) (int64, error)
 	GetAllANWithFilter(keyword []string) ([]*model.Announcement, error)
-	GetAllANWithSearch(InformationType string, keyword string, startDate string, endDate string) ([]*model.Announcement, error)
+	GetAllANWithSearch(Information_Type string, keyword string, startDate string, endDate string) ([]*model.Announcement, error)
 }
 
 type repository struct {
@@ -35,11 +35,7 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAllANWithSearch(InformationType string, keyword string, startDate string, endDate string) ([]*model.Announcement, error) {
-	// var querySelect = `
-	// select z.* from (select an.id, an.code, an.type, an.status, an.license, from announcements an where an.is_deleted = false)  as z
-	// where z.code ilike '%` + keyword + `%'
-	// or z.name ilike '%` + keyword + `%'`
+func (m *repository) GetAllANWithSearch(Information_Type string, keyword string, startDate string, endDate string) ([]*model.Announcement, error) {
 	var querySelect = ` 
 		select a.id, 
 		a.information_type, 
@@ -54,10 +50,9 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 		and (a.effective_date between  $2 AND $3 ) 
 		and a.deleted_by is null
 	`
-	// TO_TIMESTAMP ($2,'YYYY-MM-DD') AND TO_TIMESTAMP ($3,'YYYY-MM-DD')
 
 	var listData = []*model.Announcement{}
-	selDB, err := m.DB.Query(querySelect, InformationType, parseTime(startDate), parseTime(endDate))
+	selDB, err := m.DB.Query(querySelect, Information_Type, parseTime(startDate), parseTime(endDate))
 	if err != nil {
 		log.Println("time ", startDate, endDate)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllANWithSearch] ", err)
@@ -67,8 +62,8 @@ func (m *repository) GetAllANWithSearch(InformationType string, keyword string, 
 		an := model.Announcement{}
 		err = selDB.Scan(
 			&an.ID,
-			&an.InformationType,
-			&an.EffectiveDate,
+			&an.Information_Type,
+			&an.Effective_Date,
 			&an.Regarding,
 			&an.Type,
 		)
@@ -125,7 +120,6 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 		or x.license ilike '%` + keyword[1] + `%' 
 		or x.operational_status ilike '%` + keyword[1] + `%' `
 		query = twoKeywords
-		// log.Println(query)
 	} else if len(keyword) == 3 {
 		oneKeyword = `
 	select z.* from (
@@ -164,48 +158,40 @@ func (m *repository) GetAllANWithFilter(keyword []string) ([]*model.Announcement
 		query = querySelect
 	}
 	var listData = []*model.Announcement{}
-	selDB, err := m.DB.Query(query)
+	selDB, err := m.DB.Queryx(query)
 	if err != nil {
 		return nil, errors.New("not found")
 	}
 	for selDB.Next() {
-		an := model.Announcement{}
-		err = selDB.Scan(
-			&an.ID,
-			&an.InformationType,
-			&an.EffectiveDate,
-			&an.Regarding,
-		)
+		an := model.UpdateAnnouncement{}
+		err = selDB.StructScan(&an)
 		if err != nil {
 			return nil, errors.New("not found")
 		}
-		listData = append(listData, &an)
+
+		result := model.Announcement{}
+		listData = append(listData, &result)
 	}
 	return listData, nil
 }
 
-func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
+func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, error) {
 	userType, _ := c.Get("type")
 	ExternalType, _ := c.Get("external_type")
 	filterQuery := ""
 	if strings.ToLower(userType.(string)) == "internal" {
 		filterQuery = "where deleted_by IS NULL"
 	} else {
-		str, _ := ExternalType.(*string)
-		if strings.ToLower(*str) == "ab" {
-			filterQuery = "where information_type in ('SEMUA','AB') and deleted_by IS NULL"
-		} else if strings.ToLower(*str) == "participant" {
-			filterQuery = "where information_type in ('SEMUA','PARTICIPANT') and deleted_by IS NULL "
-		} else if strings.ToLower(*str) == "pjsppa" {
-			filterQuery = "where information_type in ('SEMUA','PJSPPA') and deleted_by IS NULL "
+		str, _ := ExternalType.(string)
+		if ExternalType != "" {
+			filterQuery = "where lower(information_type) in (lower('SEMUA'), lower(" + str + ")) and deleted_by IS NULL "
 		} else {
 			filterQuery = "where information_type in ('SEMUA') and deleted_by IS NULL "
-
 		}
 	}
 
-	result := []*model.Announcement{}
-	query := `
+	result := []model.Announcement{}
+	getAllQuery := `
 	SELECT 
 	id,
 	information_type,
@@ -215,6 +201,15 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 	type
    FROM announcements
 	` + filterQuery + `;`
+
+	serchQueryConfig := helper.SearchQueryGenerator{
+		TableName: "announcements",
+		ColumnScanned: []string{
+			"regarding",
+		},
+	}
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllQuery)
+
 	rows, err := m.DB.Query(query)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", err)
@@ -222,23 +217,33 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, 
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var item model.Announcement
+		var item model.UpdateAnnouncement
 		var userId string
+		var anEffectiveDate time.Time
 		err := rows.Scan(
 			&item.ID,
-			&item.InformationType,
-			&item.EffectiveDate,
+			&item.Information_Type,
+			&anEffectiveDate,
 			&item.Regarding,
 			&userId,
 			&item.Type,
 		)
-		item.Creator = utilities.GetUserNameByID(c, userId)
+
+		announcement := model.Announcement{
+			ID:               item.ID,
+			Information_Type: item.Information_Type,
+			Regarding:        item.Regarding,
+			Type:             item.Type,
+			Creator:          userId,
+		}
+		announcement.Effective_Date = anEffectiveDate.Unix()
 
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetAllAnnouncement] ", err)
 			return nil, errors.New("failed when retrieving data")
 		}
-		result = append(result, &item)
+
+		result = append(result, announcement)
 	}
 
 	return result, nil
@@ -263,8 +268,8 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 
 	if err := m.DB.QueryRow(query, id).Scan(
 		&item.ID,
-		&item.InformationType,
-		&item.EffectiveDate,
+		&item.Information_Type,
+		&item.Effective_Date,
 		&creatorId,
 		&item.Type,
 		&item.Regarding,
@@ -279,7 +284,7 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 }
 
 func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("user_id")
+	userName, _ := c.Get("name_user")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	CreatedAt := t.Format("2006-01-02 15:04:05")
 	query := `
@@ -294,15 +299,15 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		type
 	)
 	VALUES ($1, $2, $3, $4, $5, false, $6);`
-	EffectiveDate := an.EffectiveDate
-	EffectiveDateParse, _ := time.Parse(time.RFC3339, EffectiveDate)
+	Effective_Date := an.Effective_Date
+	Effective_DateParse, _ := time.Parse(time.RFC3339, Effective_Date)
 	selDB, err := m.DB.Exec(
 		query,
-		an.InformationType,
-		EffectiveDateParse,
+		an.Information_Type,
+		Effective_DateParse,
 		an.Regarding,
 		CreatedAt,
-		userId,
+		userName,
 		an.Type)
 	if err != nil {
 		return 0, err
@@ -332,8 +337,8 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 	selDB, err := m.DB.Exec(
 		query,
 		an.ID,
-		an.InformationType,
-		an.EffectiveDate,
+		an.Information_Type,
+		an.Effective_Date,
 		an.Regarding,
 		updated_at,
 		userId,

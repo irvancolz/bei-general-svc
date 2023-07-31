@@ -28,6 +28,13 @@ func NewUsecase() UploadFileUsecaseInterface {
 func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadFileResponse, error) {
 
 	result := &model.UploadFileResponse{}
+	cleanDisk := func(file string) {
+		errRemoveFile := os.Remove(file)
+		if errRemoveFile != nil {
+			log.Println("failed to cleanup directory : ", errRemoveFile)
+			return
+		}
+	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -64,10 +71,12 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 
 	minioClient, errorCreateMinionConn := helper.InitMinio()
 	if errorCreateMinionConn != nil {
+		cleanDisk(file.Filename)
 		return nil, errorCreateMinionConn
 	}
 	_, errorUploadToMinio := helper.UploadToMinio(minioClient, c, minioSaveConfig)
 	if errorUploadToMinio != nil {
+		cleanDisk(file.Filename)
 		return nil, errorUploadToMinio
 	}
 
@@ -76,12 +85,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 	result.Filepath = props.GenerateFilePath(newFileName)
 
 	// cleanup
-	errRemoveFile := os.Remove(file.Filename)
-	if errRemoveFile != nil {
-		log.Println("failed to cleanup directory : ", err)
-		return nil, errRemoveFile
-	}
-
+	cleanDisk(file.Filename)
 	return result, nil
 }
 

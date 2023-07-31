@@ -82,10 +82,21 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 		columnWidthInt = append(columnWidthInt, int(width))
 	}
 
+	dataOrder := []string{"type", "company_code", "company_name", "created_at", "is_uploaded"}
+	var exportedData [][]string
+
+	for _, content := range filteredData {
+		var item []string
+		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		exportedData = append(exportedData, item)
+	}
+
 	exportConfig := helper.ExportTableToFileProps{
 		Filename:    "Unggah Data",
 		Headers:     txtFileHeaders,
 		ColumnWidth: columnWidthInt,
+		Data:        exportedData,
 		ExcelConfig: &helper.ExportToExcelConfig{},
 		PdfConfig: &helper.PdfTableOptions{
 			HeaderRows: helper.GenerateTableHeaders(collumnName, columnWidthFloat),

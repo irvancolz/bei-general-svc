@@ -79,7 +79,10 @@ func (m *handler) GetAllAnnouncement(c *gin.Context) {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+
+	if !c.Writer.Written() {
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+	}
 }
 
 func (m *handler) Create(c *gin.Context) {
