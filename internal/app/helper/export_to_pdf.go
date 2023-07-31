@@ -34,7 +34,7 @@ func (t TableHeader) GetWidth(props []TableHeader) float64 {
 type PdfTableOptions struct {
 	// default is "Bursa Effek Indonesia"
 	HeaderTitle string
-	// specify each collumn name
+	// specify each collumn name and size
 	HeaderRows []TableHeader
 	// "A3", "A4", "Legal", "Letter", "A5" default is "A4"
 	PageSize string

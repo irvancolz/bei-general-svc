@@ -14,8 +14,10 @@ type ExportTableToFileProps struct {
 	Filename string
 	// the table data
 	Data [][]string
-	// data showed on the top table collumn
-	Headers []string
+	// data showed on the top table collumn for txt files
+	Headers [][]string
+	// specify each co width
+	ColumnWidth []int
 	// if not specified meant the file format is unsupported
 	ExcelConfig *ExportToExcelConfig
 	// if not specified meant the file format is unsupported
@@ -46,7 +48,13 @@ func ExportTableToFile(c *gin.Context, props ExportTableToFileProps) error {
 	} else if strings.EqualFold("csv", fileType) {
 		filePath, errorPath = ExportTableToCsv(props.Filename, props.Data)
 	} else if strings.EqualFold("txt", fileType) {
-		filePath, errorPath = ExportTableToTxt(props.Filename, props.Data)
+		txtConfig := ExportTableToTxtProps{
+			Filename:    props.Filename,
+			Data:        props.Data,
+			Header:      props.Headers,
+			ColumnWidth: props.ColumnWidth,
+		}
+		filePath, errorPath = ExportTableToTxt(txtConfig)
 	} else {
 		return errors.New("unsupported file type")
 	}

@@ -35,7 +35,6 @@ func (m *usecase) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, err
 	return m.anRepo.GetAllAnnouncement(c)
 }
 func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
-	// ab := model.CreateAnnouncement
 	return m.anRepo.Create(an, c)
 }
 func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
