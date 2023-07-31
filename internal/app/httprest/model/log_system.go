@@ -4,7 +4,7 @@ import "time"
 
 type LogSystem struct {
 	ID                 string    `json:"id" db:"id"`
-	Modul              string    `json:"modul" db:"modul"`
+	Modul              string    `json:"modul" db:"modul" binding:"required"`
 	SubModul           string    `json:"sub_modul" db:"sub_modul"`
 	Action             string    `json:"action" db:"action"`
 	Detail             string    `json:"detail" db:"detail"`
