@@ -30,7 +30,7 @@ func NewRepository() Repository {
 func (m *repository) GetAll() ([]*model.LogSystem, error) {
 	var listData = []*model.LogSystem{}
 
-	query := `SELECT * FROM log_systems`
+	query := `SELECT id, COALESCE(NULLIF(modul, ''), '') modul, COALESCE(NULLIF(sub_modul, ''), '') sub_modul, COALESCE(NULLIF(action, ''), '') action, COALESCE(NULLIF(detail, ''), '') detail,  user_name, ip, browser, created_by, created_at FROM log_systems`
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
