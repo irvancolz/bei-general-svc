@@ -61,7 +61,16 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 	}
 	columnWidth := []float64{20, 40, 40, 60, 80, 20, 20, 40, 60}
 
+	var columnWidthInINT []int
+
+	for _, width := range columnWidth {
+		columnWidthInINT = append(columnWidthInINT, int(width))
+	}
+
 	tableheaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
 
 	var exportedData [][]string
 	for i, item := range sortedData {
@@ -72,9 +81,10 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		exportedData = append(exportedData, exportedRows)
 	}
 	exportTableProps := helper.ExportTableToFileProps{
-		Filename: "Management Berkas",
-		Data:     exportedData,
-		Headers:  columnHeaders,
+		Filename:    "Management Berkas",
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInINT,
 		ExcelConfig: &helper.ExportToExcelConfig{
 			HeaderText: []string{"Management Berkas "},
 		},

@@ -70,6 +70,44 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 		dataToConverted = append(dataToConverted, item)
 	}
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+
+	collumnName := []string{"Jenis Lampiran", "Kode", "Nama", "Tanggal", "Status"}
+	columnWidthFloat := []float64{50, 20, 50, 40, 30}
+	var columnWidthInt []int
+
+	var txtFileHeaders [][]string
+	txtFileHeaders = append(txtFileHeaders, collumnName)
+
+	for _, width := range columnWidthFloat {
+		columnWidthInt = append(columnWidthInt, int(width))
+	}
+
+	dataOrder := []string{"type", "company_code", "company_name", "created_at", "is_uploaded"}
+	var exportedData [][]string
+
+	for _, content := range filteredData {
+		var item []string
+		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		exportedData = append(exportedData, item)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename:    "Unggah Data",
+		Headers:     txtFileHeaders,
+		ColumnWidth: columnWidthInt,
+		Data:        exportedData,
+		ExcelConfig: &helper.ExportToExcelConfig{},
+		PdfConfig: &helper.PdfTableOptions{
+			HeaderRows: helper.GenerateTableHeaders(collumnName, columnWidthFloat),
+		},
+	}
+
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return nil, errorExport
+	}
+
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 	return &paginatedData, nil
 }

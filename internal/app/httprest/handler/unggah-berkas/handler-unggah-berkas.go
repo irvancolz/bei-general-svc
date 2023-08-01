@@ -46,8 +46,9 @@ func (h *handler) GetUploadedFiles(c *gin.Context) {
 		model.GenerateReadErrorResponse(c, errorResults)
 		return
 	}
-
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, results))
+	if !c.Writer.Written() {
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, results))
+	}
 }
 func (h *handler) DeleteUploadedFiles(c *gin.Context) {
 	id := c.Query("id")

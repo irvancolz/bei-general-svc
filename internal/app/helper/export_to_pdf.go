@@ -34,7 +34,7 @@ func (t TableHeader) GetWidth(props []TableHeader) float64 {
 type PdfTableOptions struct {
 	// default is "Bursa Effek Indonesia"
 	HeaderTitle string
-	// specify each collumn name
+	// specify each collumn name and size
 	HeaderRows []TableHeader
 	// "A3", "A4", "Legal", "Letter", "A5" default is "A4"
 	PageSize string
@@ -125,12 +125,17 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		currentX = tableMarginX
 		maxColHeight := getHighestCol(pdf, columnWidth, rows)
 		currRowsheight := float64(maxColHeight) * lineHeight
-
-		curRowsBgHeight := func() float64 {
+		currPageRowHeight := func() float64 {
 			if currentY+currRowsheight > pageHeight-30 {
 				return pageHeight - 30 - currentY
 			}
 			return currRowsheight
+		}()
+		curRowsBgHeight := func() float64 {
+			if currentY+currPageRowHeight > pageHeight-30 {
+				return pageHeight - 30 - currentY
+			}
+			return currPageRowHeight
 		}()
 
 		pdf.SetFontStyle("")
@@ -166,7 +171,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 			pdf.SetAlpha(.25, "Normal")
 			pdf.Line(currentX, currentY, currentX, currentY+curRowsBgHeight)
 			if colNumber == len(rows)-1 {
-				pdf.Line(pageWidth-pageProps.pageRightpadding, currentY, pageWidth-pageProps.pageRightpadding, currentY+curRowsBgHeight)
+				pdf.Line(currentX+currColWidth, currentY, currentX+currColWidth, currentY+curRowsBgHeight)
 			}
 			pdf.SetAlpha(1, "Normal")
 
@@ -186,6 +191,14 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 					}
 					pdf.Rect(tableMarginX, currentY, float64(totalWidth), currRowsheight-curRowsBgHeight, "F")
 					pdf.SetAlpha(1, "Normal")
+
+					currPageRowHeight -= curRowsBgHeight
+					curRowsBgHeight = func() float64 {
+						if currentY+currPageRowHeight > pageHeight-30 {
+							return pageHeight - 30 - currentY
+						}
+						return currPageRowHeight
+					}()
 				}
 
 				pdf.SetY(lastRowY)
@@ -247,7 +260,7 @@ func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTab
 
 	pdf.SetFont("Arial", "B", 16)
 	pdf.SetY(currentY)
-	pdf.MultiCell(rowsWidth, lineHeight, fmt.Sprintf("Jenis informasi : %s", data.InformationType), "", "", false)
+	pdf.MultiCell(rowsWidth, lineHeight, fmt.Sprintf("Jenis informasi : %s", data.Information_Type), "", "", false)
 
 	currentY += lineHeight
 	pdf.SetY(currentY)
@@ -255,7 +268,7 @@ func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTab
 	pdf.SetFont("Arial", "I", 12)
 	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat oleh : %s", data.Creator), "", 0, "", false, 0, "")
 
-	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat pada : %s", data.EffectiveDate.Format("15-06-2006")), "", 0, "", false, 0, "")
+	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat pada : %s", time.Unix(data.Effective_Date, 0).Format("15-06-2006")), "", 0, "", false, 0, "")
 
 	currentY += lineHeight + 10
 	pdf.SetFont("Arial", "", 12)

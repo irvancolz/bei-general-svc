@@ -71,12 +71,14 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Sumber Informasi Tambahan",
 	}
 
-	columnWidth := []float64{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60}
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
 
+	columnWidth := []float64{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60}
 	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
-	// exportedData = append(exportedData, columnHeaders)
+	exportedData = append(exportedData, columnHeaders)
 	for i, item := range sortedData {
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
@@ -87,7 +89,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	exportTableProps := helper.ExportTableToFileProps{
 		Filename: "PKP",
 		Data:     exportedData,
-		Headers:  columnHeaders,
+		Headers:  tablesColumns,
 		ExcelConfig: &helper.ExportToExcelConfig{
 			HeaderText: []string{"Pertanyaan Keluhan Pelanggan"},
 		},
@@ -96,6 +98,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 			Papperheight: 300,
 			HeaderRows:   tableHeaders,
 		},
+		ColumnWidth: []int{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
 	if errorExport != nil {

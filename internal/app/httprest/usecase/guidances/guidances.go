@@ -127,10 +127,13 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 	}
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
 
-	tableColumns := []string{"No", "Nama berkas", "Deskripsi", "Versi", "File Lampiran", "Ukuran File"}
+	columnHeaders := []string{"No", "Nama berkas", "Deskripsi", "Versi", "File Lampiran", "Ukuran File"}
 	columnWidth := []float64{20, 50, 60, 20, 50, 30}
 
-	tableHeaders := helper.GenerateTableHeaders(tableColumns, columnWidth)
+	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
 
 	dataOrder := []string{"name", "description", "version", "file", "file_size"}
 	var exportedData [][]string
@@ -143,10 +146,16 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 		exportedData = append(exportedData, item)
 	}
 
+	var columnWidthInINT []int
+	for _, width := range columnWidth {
+		columnWidthInINT = append(columnWidthInINT, int(width))
+	}
+
 	exportConfig := helper.ExportTableToFileProps{
-		Filename: "guidances",
-		Data:     exportedData,
-		Headers:  tableColumns,
+		Filename:    "guidances",
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInINT,
 		ExcelConfig: &helper.ExportToExcelConfig{
 			HeaderText: []string{"Buku Petunjuk"},
 		},

@@ -196,6 +196,14 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 	tableColumn := []string{"No", "Nama"}
 	columnWidth := []float64{20, 80}
 
+	var tableTxtCol [][]string
+	var tableTxtWidth []int
+
+	tableTxtCol = append(tableTxtCol, tableColumn)
+	for _, width := range columnWidth {
+		tableTxtWidth = append(tableTxtWidth, int(width))
+	}
+
 	tableHeaders := helper.GenerateTableHeaders(tableColumn, columnWidth)
 
 	var exportedDataStr [][]string
@@ -218,7 +226,9 @@ func (u *usecase) GetAllDivision(c *gin.Context) ([]model.DivisionNameResponse, 
 		PdfConfig: &helper.PdfTableOptions{
 			HeaderRows: tableHeaders,
 		},
-		Data: exportedDataStr,
+		Data:        exportedDataStr,
+		Headers:     tableTxtCol,
+		ColumnWidth: tableTxtWidth,
 	}
 	errorExport := helper.ExportTableToFile(c, exportConfig)
 	if errorExport != nil {
@@ -481,11 +491,22 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		dataToExported = append(dataToExported, memberData)
 	}
 
+	var tablesColumns [][]string
+	var ColumnWidtINT []int
+
+	for _, width := range columnWidths {
+		ColumnWidtINT = append(ColumnWidtINT, int(width))
+	}
+
+	tablesColumns = append(tablesColumns, tableHeader)
+
 	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
 		Filename:    "contact_person_members",
 		Data:        dataToExported,
+		Headers:     tablesColumns,
 		ExcelConfig: &excelConfig,
 		PdfConfig:   &pdfConfig,
+		ColumnWidth: ColumnWidtINT,
 	})
 	if errorCreateFile != nil {
 		return errorCreateFile

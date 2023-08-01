@@ -9,7 +9,7 @@ import (
 )
 
 type Usecase interface {
-	GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error)
+	GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse, error)
 	Detail(id string, c *gin.Context) (*model.Announcement, error)
 	Create(ab model.CreateAnnouncement, c *gin.Context) (int64, error)
 	Update(ab model.UpdateAnnouncement, c *gin.Context) (int64, error)
@@ -31,11 +31,57 @@ func DetailUseCase() Usecase {
 func (m *usecase) Detail(id string, c *gin.Context) (*model.Announcement, error) {
 	return m.anRepo.GetByID(id, c)
 }
-func (m *usecase) GetAllAnnouncement(c *gin.Context) ([]*model.Announcement, error) {
-	return m.anRepo.GetAllAnnouncement(c)
+func (m *usecase) GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse, error) {
+	dataStruct, errorData := m.anRepo.GetAllAnnouncement(c)
+	if errorData != nil {
+		return nil, errorData
+	}
+	var dataToConverted []interface{}
+	for _, item := range dataStruct {
+		dataToConverted = append(dataToConverted, item)
+	}
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"effective_date"})
+
+	columnHeaders := []string{"Jenis Information", "Perihal", "Tanggal Efektif"}
+	columnWidth := []float64{30, 60, 50}
+	var columnWidthInt []int
+
+	for _, width := range columnWidth {
+		columnWidthInt = append(columnWidthInt, int(width))
+	}
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
+
+	dataOrder := []string{"information_type", "regarding", "effective_date"}
+	var exportedData [][]string
+
+	for _, content := range filteredData {
+		var item []string
+		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		exportedData = append(exportedData, item)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename:    "Announcements",
+		ExcelConfig: &helper.ExportToExcelConfig{},
+		PdfConfig: &helper.PdfTableOptions{
+			HeaderRows: helper.GenerateTableHeaders(columnHeaders, columnWidth),
+		},
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInt,
+	}
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return nil, errorExport
+	}
+
+	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
+	return &paginatedData, nil
 }
 func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
-	// ab := model.CreateAnnouncement
 	return m.anRepo.Create(an, c)
 }
 func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
