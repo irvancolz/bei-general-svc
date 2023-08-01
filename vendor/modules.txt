@@ -120,7 +120,7 @@ github.com/richardlehane/msoleps/types
 github.com/rs/xid
 # github.com/ruudk/golang-pdf417 v0.0.0-20201230142125-a7e3863a1245
 ## explicit; go 1.15
-# github.com/shohiebsense/gojsontoxml v1.0.0
+# github.com/shohiebsense/gojsontoxml v1.0.2
 ## explicit; go 1.20
 github.com/shohiebsense/gojsontoxml
 # github.com/sirupsen/logrus v1.9.3
