@@ -11,9 +11,53 @@ import (
 )
 
 
+var uppercaseAcronym = map[string]string{
+	"ID": "Id",
+}
+
+//https://github.com/iancoleman/strcase
+func toCamelInitCase(s string, initCase bool) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return s
+	}
+	if a, ok := uppercaseAcronym[s]; ok {
+		s = a
+	}
+
+	n := strings.Builder{}
+	n.Grow(len(s))
+	capNext := initCase
+	for i, v := range []byte(s) {
+		vIsCap := v >= 'A' && v <= 'Z'
+		vIsLow := v >= 'a' && v <= 'z'
+		if capNext {
+			if vIsLow {
+				v += 'A'
+				v -= 'a'
+			}
+		} else if i == 0 {
+			if vIsCap {
+				v += 'a'
+				v -= 'A'
+			}
+		}
+		if vIsCap || vIsLow {
+			n.WriteByte(v)
+			capNext = false
+		} else if vIsNum := v >= '0' && v <= '9'; vIsNum {
+			n.WriteByte(v)
+			capNext = true
+		} else {
+			capNext = v == '_' || v == ' ' || v == '-' || v == '.'
+		}
+	}
+	return n.String()
+}
+
 //and other special characters that might break it, a bit lazy to handle the edge cases :)
 func getSafeKey(key string) string {
-	return strings.Replace(key, ":", "", -1)
+	return toCamelInitCase(strings.Replace(key, ":", "", -1), true) 
 }
 
 func parseXml(doc *etree.Document, obj *etree.Element, data map[string]interface{}) {
@@ -90,11 +134,16 @@ func parseSliceOfString(obj *etree.Element, key string, data []string) {
 	}
 }
 
-func JsonToXml(data map[string]interface{}) ([]byte, error) {
+func JsonToXml(data map[string]interface{}, rootName string) ([]byte, error) {
 
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	element := doc.CreateElement("Object")
+	var element *etree.Element
+	if (len(rootName) == 0) {
+		element = doc.CreateElement("Object")
+	} else {
+		element = doc.CreateElement(rootName)
+	}
 	parseXml(doc, element, data)
 	doc.Indent(2)
 	
