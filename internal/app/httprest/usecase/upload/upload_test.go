@@ -26,9 +26,9 @@ func TestCheckExtensions(t *testing.T) {
 func TestGenerateFilename(t *testing.T) {
 	config := UploadFileConfig{}
 	name := "test file.pdf"
-	mockTime, _ := time.Parse("2006-01-02", "2006-01-02")
+	mockTime := time.Date(2022, 05, 22, 07, 06, 22, 000, time.UTC)
 	result := config.GenerateFilename(name, mockTime)
-	if result != "2006-01-02 07-00_test_file.pdf" {
+	if result != "2022-05-22 14-06-22.000_test_file.pdf" {
 		t.Log(result)
 		t.Error("the file name generated didnt fullfilled the requirements")
 	}
@@ -37,7 +37,7 @@ func TestGenerateFilename(t *testing.T) {
 
 func TestGetFilePath(t *testing.T) {
 	path := "http://localhost:9011/api/uploaded/test/2023-05-07_15-20-21_dashboard.pdf"
-	expected := "uploaded/test/2023-05-07_15-20-21_dashboard.pdf"
+	expected := "2023-05-07_15-20-21_dashboard.pdf"
 	result := GetFilePath(path)
 	if result != filepath.FromSlash(expected) {
 		t.Log(result)
