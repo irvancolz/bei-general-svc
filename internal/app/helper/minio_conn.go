@@ -46,10 +46,31 @@ func UploadToMinio(client *minio.Client, c context.Context, props UploadToMinioP
 	}
 
 	if !isBucketExists {
+
+		policy := `{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Effect": "Allow",
+					"Principal": "*",
+					"Action": "s3:GetObject",
+					"Resource": [
+						"arn:aws:s3:::` + props.BucketName + `/*"
+					]
+				}
+			]
+		}`
+
 		errCreateBucket := client.MakeBucket(c, props.BucketName, minio.MakeBucketOptions{Region: "us-east-1", ObjectLocking: true})
 		if errCreateBucket != nil {
 			log.Println("failed to create new bucket :", errCreateBucket)
 			return nil, errCreateBucket
+		}
+
+		errSetBucketPolicy := client.SetBucketPolicy(c, props.BucketName, policy)
+		if errSetBucketPolicy != nil {
+			log.Println("failed to set bucket to public access :", errSetBucketPolicy)
+			return nil, errSetBucketPolicy
 		}
 	}
 

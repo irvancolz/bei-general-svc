@@ -200,7 +200,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 	created_by,
 	type
    FROM announcements
-	` + filterQuery + `;`
+	` + filterQuery
 
 	serchQueryConfig := helper.SearchQueryGenerator{
 		TableName: "announcements",
@@ -212,6 +212,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 
 	rows, err := m.DB.Query(query)
 	if err != nil {
+		log.Println(query)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [sqlQuery] [GetAllAnnouncement] ", err)
 		return nil, errors.New("list announcement not found")
 	}
