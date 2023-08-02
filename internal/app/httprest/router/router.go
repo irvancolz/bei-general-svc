@@ -74,6 +74,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.POST("/upload-user-file", upload.UploadUser)
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
+		WithoutCheckPermission.GET("/check-is-file-exists", upload.IsFileExists)
 	}
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
@@ -109,8 +110,6 @@ func Routes() *gin.Engine {
 		pkpRoute.POST("/create-pkp", pkp.CreatePKuser)
 		pkpRoute.PUT("/update-pkp", pkp.UpdatePKuser)
 		pkpRoute.DELETE("/delete-pkp", pkp.Delete)
-		// pkpRoute.GET("/get-pkp-by-filter", pkp.GetAllWithFilter)
-		// pkpRoute.GET("/get-pkp-by-search", pkp.GetAllWithSearch)
 	}
 
 	parameterAdminRoute := v3noauth.Group("").Use(globalRepo.Authentication(&ParameterAdmin))

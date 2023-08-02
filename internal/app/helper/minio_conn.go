@@ -111,3 +111,11 @@ func DeleteFileInMinio(client *minio.Client, c context.Context, props UploadToMi
 
 	return nil
 }
+
+func CheckIsObjExists(client *minio.Client, c context.Context, props UploadToMinioProps) error {
+	_, errGetStat := client.StatObject(c, props.BucketName, props.FileSavedName, minio.StatObjectOptions{})
+	if errGetStat != nil {
+		log.Println("failed to get obj stat :", errGetStat)
+	}
+	return errGetStat
+}

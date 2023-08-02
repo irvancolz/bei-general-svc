@@ -17,6 +17,7 @@ type UploadFileUsecaseInterface interface {
 	Upload(c *gin.Context, props UploadFileConfig) (*model.UploadFileResponse, error)
 	Download(c *gin.Context, path string) error
 	DeleteFile(c *gin.Context, props UploadFileConfig, slug string) error
+	IsFileExists(c *gin.Context, slug string) error
 }
 
 type usecase struct{}
@@ -189,6 +190,28 @@ func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string
 
 	// err := os.Remove(fileLocation)
 	err := helper.DeleteFileInMinio(minioClient, c, minioSaveConfig)
+	if err != nil {
+		log.Println("failed to remove file : ", err)
+		return err
+	}
+
+	return nil
+}
+
+func (u *usecase) IsFileExists(c *gin.Context, slug string) error {
+
+	fileLocation := GetFilePath(slug)
+	minioSaveConfig := helper.UploadToMinioProps{
+		BucketName:    GetFilesBucket(slug),
+		FileSavedName: fileLocation,
+	}
+
+	minioClient, errorCreateMinionConn := helper.InitMinio()
+	if errorCreateMinionConn != nil {
+		return errorCreateMinionConn
+	}
+
+	err := helper.CheckIsObjExists(minioClient, c, minioSaveConfig)
 	if err != nil {
 		log.Println("failed to remove file : ", err)
 		return err
