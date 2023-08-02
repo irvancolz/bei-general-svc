@@ -97,7 +97,7 @@ func DeleteFileInMinio(client *minio.Client, c context.Context, props UploadToMi
 		ForceDelete: false,
 	}
 
-	errGetFile := GetFileFromMinio(client, c, props)
+	errGetFile := CheckIsObjExists(client, c, props)
 	if errGetFile != nil {
 		return errGetFile
 	}
