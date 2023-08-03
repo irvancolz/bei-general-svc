@@ -252,6 +252,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 
 func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, error) {
 	var creatorId string
+	var efectiveDateTime time.Time
 	query := `
 		SELECT 
 		id,
@@ -270,16 +271,18 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 	if err := m.DB.QueryRow(query, id).Scan(
 		&item.ID,
 		&item.Information_Type,
-		&item.Effective_Date,
+		&efectiveDateTime,
 		&creatorId,
 		&item.Type,
 		&item.Regarding,
 	); err != nil {
+		log.Println(query)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetByID] ", err)
 		return nil, errors.New("announcement Not Found")
 	}
 
 	item.Creator = utilities.GetUserNameByID(c, creatorId)
+	item.Effective_Date = efectiveDateTime.Unix()
 
 	return item, nil
 }
