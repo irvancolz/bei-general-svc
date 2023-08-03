@@ -78,7 +78,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
-	exportedData = append(exportedData, columnHeaders)
+
 	for i, item := range sortedData {
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
