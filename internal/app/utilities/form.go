@@ -53,7 +53,7 @@ func UpdateFormAttachmentFileStatus(c *gin.Context, filename string) {
 	data, err := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		log.Println("failed toto delete attachment, an error occured when try to delete data")
+		log.Println("failed to delete attachment, an error occured when try to delete data")
 		return
 	}
 
