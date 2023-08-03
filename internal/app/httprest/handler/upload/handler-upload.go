@@ -20,6 +20,7 @@ type UploadFileHandlreInterface interface {
 	Remove(c *gin.Context)
 	UploadParameterAdminFile(c *gin.Context)
 	UploadParameterAdminImage(c *gin.Context)
+	IsFileExists(c *gin.Context)
 }
 
 type handler struct {
@@ -176,4 +177,16 @@ func (h *handler) Remove(c *gin.Context) {
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.DELETESUCCESS_200, nil, "berhasil menghapus file"))
+}
+
+func (h *handler) IsFileExists(c *gin.Context) {
+	slug := c.Query("path")
+
+	errorResult := h.Usecase.IsFileExists(c, slug)
+	if errorResult != nil {
+		model.GenerateReadErrorResponse(c, errorResult)
+		return
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, "file ada dalam penyimpanan"))
 }
