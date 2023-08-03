@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -48,7 +48,7 @@ func GetAllRole(c *gin.Context) (*APIResponse, error) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][ReadAll]", err)
@@ -95,7 +95,7 @@ func GetParameterAdminImageExtension(c *gin.Context) (*APIResponseInterface, err
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Println("[AQI] [err] [GetRequest][ReadAll]", err)
@@ -143,7 +143,7 @@ func GetUserNameByID(c *gin.Context, id string) string {
 	}
 
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
 		log.Println("failed to get user detail, an error occured when try to get data")

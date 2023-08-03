@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -47,7 +47,7 @@ func GetLatestABCompanies(c *gin.Context) ([]model.ContactPersonSyncCompaniesRes
 	}
 
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
 		log.Println("failed to get anggota bursa companies from ab list, error occured when try to get data")
@@ -95,7 +95,7 @@ func GetLatestParticipantCompanies(c *gin.Context) ([]model.ContactPersonSyncCom
 	}
 
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
 		log.Println("failed to get anggota bursa companies from ab list, error occured when try to get data")
@@ -143,7 +143,7 @@ func GetLatestPJSPPACompanies(c *gin.Context) ([]model.ContactPersonSyncCompanie
 	}
 
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
 		log.Println("failed to get anggota bursa companies from ab list, error occured when try to get data")
