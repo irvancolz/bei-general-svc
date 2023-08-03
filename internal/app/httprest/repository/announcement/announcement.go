@@ -285,7 +285,7 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 }
 
 func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
-	userName, _ := c.Get("name_user")
+	userId, _ := c.Get("user_id")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	CreatedAt := t.Format("2006-01-02 15:04:05")
 	query := `
@@ -308,7 +308,7 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		Effective_DateParse,
 		an.Regarding,
 		CreatedAt,
-		userName,
+		userId,
 		an.Type)
 	if err != nil {
 		return 0, err
