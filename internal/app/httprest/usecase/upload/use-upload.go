@@ -3,6 +3,7 @@ package upload
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/app/utilities"
 	"errors"
 	"log"
 	"os"
@@ -168,6 +169,7 @@ func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string
 	}
 
 	fileLocation := GetFilePath(slug)
+	bucketName := GetFilesBucket(slug)
 	prohibitedExt := []string{".go", ".env", ".dev", ".yml", ".sql"}
 
 	// get file extension from filename
@@ -179,7 +181,7 @@ func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string
 	}
 
 	minioSaveConfig := helper.UploadToMinioProps{
-		BucketName:    GetFilesBucket(slug),
+		BucketName:    bucketName,
 		FileSavedName: fileLocation,
 	}
 
@@ -188,11 +190,14 @@ func (u *usecase) DeleteFile(c *gin.Context, props UploadFileConfig, slug string
 		return errorCreateMinionConn
 	}
 
-	// err := os.Remove(fileLocation)
 	err := helper.DeleteFileInMinio(minioClient, c, minioSaveConfig)
 	if err != nil {
 		log.Println("failed to remove file : ", err)
 		return err
+	}
+
+	if strings.EqualFold(bucketName, "form") {
+		utilities.UpdateFormAttachmentFileStatus(c, fileLocation)
 	}
 
 	return nil
