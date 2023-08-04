@@ -41,5 +41,5 @@ func (c *UploadFileConfig) CheckFileSize(size int64) bool {
 }
 
 func (c *UploadFileConfig) GenerateFilePath(filename string) string {
-	return fmt.Sprintf("http://%s/%s/%s", c.Host, c.Directory, filename)
+	return fmt.Sprintf("http://%s/%s/%s", c.Host, strings.ToLower(c.Directory), filename)
 }

@@ -66,7 +66,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 	}
 
 	minioSaveConfig := helper.UploadToMinioProps{
-		BucketName:     props.Directory,
+		BucketName:     strings.ToLower(props.Directory),
 		FileOriginName: file.Filename,
 		FileSavedName:  newFileName,
 	}

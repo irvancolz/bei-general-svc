@@ -127,7 +127,7 @@ func (h *handler) UploadGuidebook(c *gin.Context) {
 func (h *handler) UploadParameterAdminImage(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:      os.Getenv("MINIO_ENDPOINT"),
-		Directory: "ParameterAdmin",
+		Directory: "parameteradmin",
 		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
@@ -142,7 +142,7 @@ func (h *handler) UploadParameterAdminImage(c *gin.Context) {
 func (h *handler) UploadParameterAdminFile(c *gin.Context) {
 	config := usecase.UploadFileConfig{
 		Host:      os.Getenv("MINIO_ENDPOINT"),
-		Directory: "ParameterAdmin",
+		Directory: "parameteradmin",
 		MaxSize:   10240000, // 10mb max
 	}
 	result, error_result := h.Usecase.Upload(c, config)
