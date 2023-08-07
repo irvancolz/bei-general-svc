@@ -140,12 +140,15 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 		mapKeys := GetMapKeys(maps)
 		var isMatched []bool
 		for key := range querries {
-			if IsContains(mapKeys, key) {
-				isMatched = append(isMatched, IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
-			} else if IsContains(timeField, key) {
+			if IsContains(timeField, key) {
 				isMatched = append(isMatched, ConvertUnixStrToDateString(querries[key][0], "") == ConvertUnixToDateString(maps[key].(int64), ""))
 			} else if IsContains(rangeTimeParams, key) {
 				isMatched = append(isMatched, CheckIsOnSpecifiedTimeRange(c, key, maps[getBaseTimeRange(key)].(int64)))
+			} else if IsContains(mapKeys, key) && IsString(maps[key]) {
+				// convert current obj props value to double quoted str then remove the quote to be compared with current params given
+				isMatched = append(isMatched, IsContains(querries[key], strings.ReplaceAll(strconv.Quote(maps[key].(string)), `"`, "")))
+			} else if IsContains(mapKeys, key) {
+				isMatched = append(isMatched, IsContains(querries[key], fmt.Sprintf("%v", maps[key])))
 			} else {
 				isMatched = append(isMatched, true)
 			}
