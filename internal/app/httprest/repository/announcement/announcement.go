@@ -287,12 +287,18 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 	return item, nil
 }
 
+func IsExternalUser(c *gin.Context) bool {
+	userType, _ := c.Get("type")
+	return strings.EqualFold(userType.(string), "external")
+}
+
 func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
 	userId, _ := c.Get("user_id")
-	userType, _ := c.Get("group_type")
-	if !strings.EqualFold(userType.(string), "internal") {
-		return 0, errors.New("seems like you're dont have permission to create announcement")
+
+	if !IsExternalUser(c) {
+		return 0, errors.New("you dont have permission to create announcement")
 	}
+
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	CreatedAt := t.Format("2006-01-02 15:04:05")
 	query := `
@@ -331,6 +337,11 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 
 func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
 	userId, _ := c.Get("user_id")
+
+	if !IsExternalUser(c) {
+		return 0, errors.New("you dont have permission to edit announcement")
+	}
+
 	query := `
 	UPDATE
 		announcements SET
