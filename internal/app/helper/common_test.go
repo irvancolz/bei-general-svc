@@ -133,8 +133,12 @@ func TestGenerateParams(t *testing.T) {
 }
 
 func TestGetLocalTime(t *testing.T) {
-	utc := time.Date(2022, 01, 02, 00, 00, 00, 00, time.UTC)
+	utc := time.Date(2022, 01, 02, 11, 00, 00, 00, time.UTC)
 	jktTime := GetWIBLocalTime(&utc)
 	t.Log(jktTime)
+}
 
+func TestGenerateHumanDate(t *testing.T) {
+	utc := time.Date(2022, 01, 02, 11, 20, 00, 00, time.UTC)
+	t.Log(ConvertTimeToHumanDate(utc))
 }
