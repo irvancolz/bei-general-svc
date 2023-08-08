@@ -228,3 +228,19 @@ func ReadExcelTable(filenames string, tablerowStartIndex int) ([][]string, error
 
 	return result[tablerowStartIndex:], errorReadFile
 }
+
+func ConvertTimeToHumanDate(date time.Time) string {
+	baseDate := date.Format(time.DateOnly)
+	baseTime := date.Format(time.TimeOnly)
+	formatedTime := strings.Join(strings.Split(baseTime, ":")[:2], ":")
+	splittedDate := strings.Split(baseDate, "-")
+	monthInInt, _ := strconv.Atoi(splittedDate[1])
+	monthName := time.Month(monthInInt)
+	monthDate := splittedDate[2]
+	yearDate := splittedDate[0]
+	splittedDate[0] = monthDate
+	splittedDate[1] = monthName.String()
+	splittedDate[2] = yearDate
+
+	return strings.Join([]string(splittedDate), " ") + " (" + formatedTime + ")"
+}
