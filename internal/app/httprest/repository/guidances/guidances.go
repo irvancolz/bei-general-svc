@@ -173,6 +173,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 			"link",
 			"file",
 			"file_group",
+			"owner",
 		},
 	}
 	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
