@@ -4,6 +4,8 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	an "be-idx-tsg/internal/app/httprest/repository/announcement"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,8 +44,8 @@ func (m *usecase) GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse
 	}
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"effective_date"})
 
-	columnHeaders := []string{"Jenis Information", "Perihal", "Tanggal Efektif"}
-	columnWidth := []float64{30, 60, 50}
+	columnHeaders := []string{"Jenis Information", "Perihal", "Waktu", "Tanggal Efektif"}
+	columnWidth := []float64{30, 60, 30, 50}
 	var columnWidthInt []int
 
 	for _, width := range columnWidth {
@@ -59,6 +61,15 @@ func (m *usecase) GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse
 	for _, content := range filteredData {
 		var item []string
 		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		for i, content := range item {
+			if i == 2 {
+				unixTime, _ := strconv.Atoi(content)
+				dateToFormat := time.Unix(int64(unixTime), 0)
+				item[i] = helper.GetTimeAndMinuteOnly(dateToFormat)
+				item = append(item, helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo))
+			}
+		}
 
 		exportedData = append(exportedData, item)
 	}

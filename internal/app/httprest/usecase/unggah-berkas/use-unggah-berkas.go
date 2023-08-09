@@ -5,6 +5,8 @@ import (
 	repo "be-idx-tsg/internal/app/httprest/repository/unggah-berkas"
 	"be-idx-tsg/internal/app/httprest/usecase/upload"
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -38,18 +40,29 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 	companyName, _ := c.Get("company_name")
 	companyCode, _ := c.Get("company_code")
 	companyId, _ := c.Get("company_id")
+	userType, _ := c.Get("type")
 
 	createNewArgs := repo.UploadNewFilesProps{
-		Type:         props.Type,
-		Company_code: companyCode.(string),
-		Company_name: companyName.(string),
-		Company_id:   companyId.(string),
-		File_Name:    props.File_Name,
-		File_Path:    props.File_Path,
-		File_Size:    props.File_Size,
-		Is_Uploaded:  true,
-		Created_by:   userName.(string),
-		Created_at:   time.Now().Unix(),
+		Type: props.Type,
+		Company_code: func() string {
+			if strings.EqualFold(userType.(string), "internal") {
+				return "BEI"
+			}
+			return companyCode.(string)
+		}(),
+		Company_name: func() string {
+			if strings.EqualFold(userType.(string), "internal") {
+				return "BURSA EFEK INDONESIA"
+			}
+			return companyName.(string)
+		}(),
+		Company_id:  companyId.(string),
+		File_Name:   props.File_Name,
+		File_Path:   props.File_Path,
+		File_Size:   props.File_Size,
+		Is_Uploaded: true,
+		Created_by:  userName.(string),
+		Created_at:  time.Now().Unix(),
 	}
 
 	if props.File_Size <= 0 || props.File_Path == "" {
@@ -88,6 +101,14 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 	for _, content := range filteredData {
 		var item []string
 		item = append(item, helper.MapToArray(content, dataOrder)...)
+
+		for i, content := range item {
+			if helper.IsContains([]int{3}, i) {
+				unixTime, _ := strconv.Atoi(content)
+				dateToFormat := time.Unix(int64(unixTime), 0)
+				item[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo) + " - " + helper.GetTimeAndMinuteOnly(dateToFormat)
+			}
+		}
 
 		exportedData = append(exportedData, item)
 	}

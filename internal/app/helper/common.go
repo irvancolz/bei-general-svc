@@ -229,18 +229,47 @@ func ReadExcelTable(filenames string, tablerowStartIndex int) ([][]string, error
 	return result[tablerowStartIndex:], errorReadFile
 }
 
-func ConvertTimeToHumanDate(date time.Time) string {
-	baseDate := date.Format(time.DateOnly)
-	baseTime := date.Format(time.TimeOnly)
-	formatedTime := strings.Join(strings.Split(baseTime, ":")[:2], ":")
-	splittedDate := strings.Split(baseDate, "-")
-	monthInInt, _ := strconv.Atoi(splittedDate[1])
-	monthName := time.Month(monthInInt)
-	monthDate := splittedDate[2]
-	yearDate := splittedDate[0]
-	splittedDate[0] = monthDate
-	splittedDate[1] = monthName.String()
-	splittedDate[2] = yearDate
+var MonthFullNameInIndo [12]string = [12]string{
+	"Januari",
+	"Februari",
+	"Maret",
+	"April",
+	"Mei",
+	"Juni",
+	"Juli",
+	"Agustus",
+	"September",
+	"Oktober",
+	"November",
+	"Desember",
+}
 
-	return strings.Join([]string(splittedDate), " ") + " (" + formatedTime + ")"
+var MonthShortNameInIndo [12]string = [12]string{
+	"Jan",
+	"Feb",
+	"Mar",
+	"Apr",
+	"Mei",
+	"Jun",
+	"Jul",
+	"Agt",
+	"Sep",
+	"Okt",
+	"Nov",
+	"Des",
+}
+
+func ConvertTimeToHumanDateOnly(baseDate time.Time, monthProvider [12]string) string {
+	dateOnlyTime := strings.Split(baseDate.Format(time.DateOnly), "-")
+	year := dateOnlyTime[0]
+	month := dateOnlyTime[1]
+	monthInt, _ := strconv.Atoi(month)
+	date := dateOnlyTime[2]
+	monthInStr := monthProvider[monthInt-1]
+
+	return date + " " + monthInStr + " " + year
+}
+
+func GetTimeAndMinuteOnly(baseDate time.Time) string {
+	return strings.Join(strings.Split(baseDate.Format(time.TimeOnly), ":")[:2], ":")
 }
