@@ -8,6 +8,7 @@ CREATE TABLE public.announcements (
 	information_type text NULL,
 	effective_date timestamptz NULL,
 	regarding text NULL,
+	form_value_id text NULL,
 	created_by text NULL,
 	created_at timestamptz NULL,
 	updated_by text NULL,
