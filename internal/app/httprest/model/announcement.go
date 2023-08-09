@@ -16,7 +16,7 @@ type CreateAnnouncement struct {
 	Information_Type string    `json:"information_type" binding:"required,oneof='INTERNAL BURSA' 'AB' 'PARTICIPANT' 'PJSPPA' 'SEMUA' "`
 	Effective_Date   time.Time `json:"effective_date" binding:"required"`
 	Regarding        string    `json:"regarding" binding:"required"`
-	Type             string    `json:"type" binding:"required"`
+	Type             string    `json:"type"`
 	Form_Value_Id    string    `json:"form_value_id"`
 }
 
@@ -25,6 +25,6 @@ type UpdateAnnouncement struct {
 	Information_Type string    `json:"information_type" binding:"required,oneof='INTERNAL BURSA' 'AB' 'PARTICIPANT' 'PJSPPA' 'SEMUA' "`
 	Effective_Date   time.Time `json:"effective_date" binding:"required"`
 	Regarding        string    `json:"regarding" binding:"required"`
-	Type             string    `json:"type" binding:"required"`
+	Type             string    `json:"type"`
 	Form_Value_Id    string    `json:"form_value_id"`
 }
