@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -77,6 +78,19 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
 		exportedRows = append(exportedRows, helper.MapToArray(item, exportedFields)...)
+
+		dataType := exportedRows[1]
+
+		exportedRows[1] = func() string {
+			if strings.EqualFold(dataType, "guidebook") {
+				return "Buku Petunjuk"
+			}
+			if strings.EqualFold(dataType, "regulation") {
+				return "Peraturan & Regulasi"
+			}
+
+			return "File"
+		}()
 
 		exportedData = append(exportedData, exportedRows)
 	}
