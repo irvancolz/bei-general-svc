@@ -138,7 +138,29 @@ func TestGetLocalTime(t *testing.T) {
 	t.Log(jktTime)
 }
 
-func TestGenerateHumanDate(t *testing.T) {
-	utc := time.Date(2022, 01, 02, 11, 20, 00, 00, time.UTC)
-	t.Log(ConvertTimeToHumanDate(utc))
+func TestGenerateDateOnlyWithFullMonth(t *testing.T) {
+	time := time.Date(2022, 12, 02, 11, 20, 00, 00, time.UTC)
+	result := ConvertTimeToHumanDateOnly(time, MonthFullNameInIndo)
+	if result != "02 Desember 2022" {
+		t.Log(result)
+		t.Error()
+	}
+}
+
+func TestGenerateDateOnlyWithShortMonth(t *testing.T) {
+	time := time.Date(2022, 12, 02, 11, 20, 00, 00, time.UTC)
+	result := ConvertTimeToHumanDateOnly(time, MonthShortNameInIndo)
+	if result != "02 Des 2022" {
+		t.Log(result)
+		t.Error()
+	}
+}
+
+func TestGenerateTimeOnly(t *testing.T) {
+	time := time.Date(2022, 12, 02, 11, 20, 00, 00, time.UTC)
+	result := GetTimeAndMinuteOnly(time)
+	if result != "11:20" {
+		t.Log(result)
+		t.Error()
+	}
 }

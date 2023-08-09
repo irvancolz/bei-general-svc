@@ -5,6 +5,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	pkp "be-idx-tsg/internal/app/httprest/repository/pkp"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -83,6 +84,13 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		var exportedRows []string
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
 		exportedRows = append(exportedRows, helper.MapToArray(item, exportedFields)...)
+		for i, content := range exportedRows {
+			if helper.IsContains([]int{4, 6, 11}, i) {
+				unixTime, _ := strconv.Atoi(content)
+				dateToFormat := time.Unix(int64(unixTime), 0)
+				exportedRows[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthShortNameInIndo) + " (" + helper.GetTimeAndMinuteOnly(dateToFormat) + ")"
+			}
+		}
 
 		exportedData = append(exportedData, exportedRows)
 	}
