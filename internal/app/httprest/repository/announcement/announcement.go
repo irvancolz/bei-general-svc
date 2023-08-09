@@ -260,6 +260,7 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 		effective_date,
 		created_by,
 		type,
+		coalesce(form_value_id,''),
 		regarding
 		FROM announcements
 		WHERE id = $1 
@@ -274,6 +275,7 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 		&efectiveDateTime,
 		&creatorId,
 		&item.Type,
+		&item.Form_Value_Id,
 		&item.Regarding,
 	); err != nil {
 		log.Println(query)
@@ -295,7 +297,7 @@ func IsExternalUser(c *gin.Context) bool {
 func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
 	userId, _ := c.Get("user_id")
 
-	if !IsExternalUser(c) {
+	if IsExternalUser(c) {
 		return 0, errors.New("you dont have permission to create announcement")
 	}
 
@@ -310,19 +312,20 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		created_at, 
 		created_by,
 		is_deleted,
-		type
+		type,
+		form_value_id
 	)
-	VALUES ($1, $2, $3, $4, $5, false, $6);`
-	Effective_Date := an.Effective_Date
-	Effective_DateParse, _ := time.Parse(time.RFC3339, Effective_Date)
+	VALUES ($1, $2, $3, $4, $5, false, $6, $7);`
+
 	selDB, err := m.DB.Exec(
 		query,
 		an.Information_Type,
-		Effective_DateParse,
+		an.Effective_Date,
 		an.Regarding,
 		CreatedAt,
 		userId,
-		an.Type)
+		an.Type,
+		an.Form_Value_Id)
 	if err != nil {
 		return 0, err
 	}
@@ -338,7 +341,7 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
 	userId, _ := c.Get("user_id")
 
-	if !IsExternalUser(c) {
+	if IsExternalUser(c) {
 		return 0, errors.New("you dont have permission to edit announcement")
 	}
 
@@ -350,7 +353,8 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		regarding = $4,
 		updated_at = $5, 
 		updated_by = $6,
-		type = $7
+		type = $7,
+		form_value_id = $8
 	WHERE id = $1 AND is_deleted = false;`
 	updated_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	selDB, err := m.DB.Exec(
@@ -362,6 +366,7 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		updated_at,
 		userId,
 		an.Type,
+		an.Form_Value_Id,
 	)
 	if err != nil {
 		return 0, err
