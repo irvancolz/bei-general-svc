@@ -32,7 +32,7 @@ func (c *UploadFileConfig) CheckFileExt(fileext string) bool {
 func (c *UploadFileConfig) GenerateFilename(filename string, date time.Time) string {
 	nameSlice := strings.Split(filename, " ")
 	t := helper.GetWIBLocalTime(&date)
-	currentTimestr := t.Format("2006-01-02 15-04-05.000")
+	currentTimestr := t.Format("2006-01-02 15-04-05.000000000")
 	uuid := uuid.New().String()
 	nameSlice = append([]string{currentTimestr, uuid}, nameSlice...)
 	return strings.Join(nameSlice, "_")  
