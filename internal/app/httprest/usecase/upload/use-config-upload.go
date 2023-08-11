@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"github.com/google/uuid"
 )
 
 type UploadFileConfig struct {
@@ -31,9 +32,10 @@ func (c *UploadFileConfig) CheckFileExt(fileext string) bool {
 func (c *UploadFileConfig) GenerateFilename(filename string, date time.Time) string {
 	nameSlice := strings.Split(filename, " ")
 	t := helper.GetWIBLocalTime(&date)
-	currentTimestr := t.Format("2006-01-02 15-04-05.000")
-	nameSlice = append([]string{currentTimestr}, nameSlice...)
-	return strings.Join(nameSlice, "_")
+	currentTimestr := t.Format("2006-01-02 15-04-05.000000000")
+	uuid := uuid.New().String()
+	nameSlice = append([]string{currentTimestr, uuid}, nameSlice...)
+	return strings.Join(nameSlice, "_")  
 }
 
 func (c *UploadFileConfig) CheckFileSize(size int64) bool {
