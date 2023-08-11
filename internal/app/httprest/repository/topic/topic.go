@@ -60,33 +60,49 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
 
 	if keyword != "" {
-		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
-		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
-		OR t.created_at::text ILIKE '%` + keyword + `%')`
+		keywords := strings.Split(keyword, ",")
+
+		for _, v := range keywords {
+			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
+			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
+			OR t.created_at::text ILIKE '%` + v + `%')`
+		}
 	}
 
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
-		query += ` AND t.status = '` + status + `'`
+		statuses := strings.Split(status, ",")
+
+		for _, v := range statuses {
+			query += ` OR t.status = '` + v + `'`
+		}
 	}
 
 	if name != "" {
-		query += ` AND tp.user_full_name = '` + name + `'`
+		names := strings.Split(name, ",")
+
+		for _, v := range names {
+			query += ` OR tp.user_full_name = '` + v + `'`
+		}
 	}
 
 	if companyName != "" {
-		query += ` AND tp.company_name = '` + companyName + `'`
+		companyNames := strings.Split(companyName, ",")
+
+		for _, v := range companyNames {
+			query += ` OR tp.company_name = '` + v + `'`
+		}
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+		query += ` OR t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
 	if userType.(string) == "External" {
-		companyCode, _ := c.Get("company_code")
+		companyID, _ := c.Get("company_id")
 
-		query += ` AND t.company_code = '` + companyCode.(string) + `'`
+		query += ` AND tp.company_id = '` + companyID.(string) + `'`
 	}
 
 	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, t.created_at DESC`
@@ -135,33 +151,49 @@ func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
 	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
 
 	if keyword != "" {
-		query += ` AND (tp.message ILIKE '%` + keyword + `%' OR tp.company_name ILIKE '%` + keyword + `%'
-		OR tp.user_full_name ILIKE '%` + keyword + `%' OR t.status ILIKE '%` + keyword + `%'
-		OR t.created_at::text ILIKE '%` + keyword + `%')`
+		keywords := strings.Split(keyword, ",")
+
+		for _, v := range keywords {
+			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
+			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
+			OR t.created_at::text ILIKE '%` + v + `%')`
+		}
 	}
 
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
-		query += ` AND t.status = '` + status + `'`
+		statuses := strings.Split(status, ",")
+
+		for _, v := range statuses {
+			query += ` OR t.status = '` + v + `'`
+		}
 	}
 
 	if name != "" {
-		query += ` AND tp.user_full_name = '` + name + `'`
+		names := strings.Split(name, ",")
+
+		for _, v := range names {
+			query += ` OR tp.user_full_name = '` + v + `'`
+		}
 	}
 
 	if companyName != "" {
-		query += ` AND tp.company_name = '` + companyName + `'`
+		companyNames := strings.Split(companyName, ",")
+
+		for _, v := range companyNames {
+			query += ` OR tp.company_name = '` + v + `'`
+		}
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+		query += ` OR t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
 	if userType.(string) == "External" {
-		companyCode, _ := c.Get("company_code")
+		companyID, _ := c.Get("company_id")
 
-		query += ` AND t.company_code = '` + companyCode.(string) + `'`
+		query += ` AND tp.company_id = '` + companyID.(string) + `'`
 	}
 
 	err := m.DB.Get(&totalData, query)
