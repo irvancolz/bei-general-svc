@@ -65,7 +65,8 @@ func (m *usecase) GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse
 		for i, content := range item {
 			if i == 2 {
 				unixTime, _ := strconv.Atoi(content)
-				dateToFormat := time.Unix(int64(unixTime), 0)
+				dateTime := time.Unix(int64(unixTime), 0)
+				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				item[i] = helper.GetTimeAndMinuteOnly(dateToFormat)
 				item = append(item, helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo))
 			}
