@@ -105,7 +105,8 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 		for i, content := range item {
 			if helper.IsContains([]int{3}, i) {
 				unixTime, _ := strconv.Atoi(content)
-				dateToFormat := time.Unix(int64(unixTime), 0)
+				dateTime := time.Unix(int64(unixTime), 0)
+				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				item[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo) + " - " + helper.GetTimeAndMinuteOnly(dateToFormat)
 			}
 		}

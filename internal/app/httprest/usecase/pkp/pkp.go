@@ -87,7 +87,8 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		for i, content := range exportedRows {
 			if helper.IsContains([]int{4, 6, 11}, i) {
 				unixTime, _ := strconv.Atoi(content)
-				dateToFormat := time.Unix(int64(unixTime), 0)
+				dateTime := time.Unix(int64(unixTime), 0)
+				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				exportedRows[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthShortNameInIndo) + " (" + helper.GetTimeAndMinuteOnly(dateToFormat) + ")"
 			}
 		}
