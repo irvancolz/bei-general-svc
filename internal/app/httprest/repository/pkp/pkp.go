@@ -55,7 +55,13 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		deleted_at AS DeletedAt
 	FROM pkp 
 	WHERE deleted_by IS NULL
-	AND deleted_at IS NULL`
+	AND deleted_at IS NULL
+	ORDER BY
+	CASE
+		WHEN updated_at IS NOT NULL 
+			THEN updated_at
+		ELSE created_at
+	END DESC`
 
 	searchQueryConfig := helper.SearchQueryGenerator{
 		ColumnScanned: []string{
