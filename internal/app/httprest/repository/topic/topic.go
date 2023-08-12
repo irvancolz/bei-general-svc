@@ -72,31 +72,26 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		statuses := strings.Split(status, ",")
 
-		for _, v := range statuses {
-			query += ` OR t.status = '` + v + `'`
-		}
+		query += " AND t.status IN ('" + strings.Join(statuses, "','") + "')"
 	}
 
 	if name != "" {
 		names := strings.Split(name, ",")
 
-		for _, v := range names {
-			query += ` OR tp.user_full_name = '` + v + `'`
-		}
+		query += " AND tp.user_full_name IN ('" + strings.Join(names, "','") + "')"
+
 	}
 
 	if companyName != "" {
 		companyNames := strings.Split(companyName, ",")
 
-		for _, v := range companyNames {
-			query += ` OR tp.company_name = '` + v + `'`
-		}
+		query += " AND tp.company_name IN ('" + strings.Join(companyNames, "','") + "')"
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` OR t.created_at::TEXT LIKE '` + startDate + `%'`
+		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
 	if userType.(string) == "External" {
@@ -163,31 +158,26 @@ func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		statuses := strings.Split(status, ",")
 
-		for _, v := range statuses {
-			query += ` OR t.status = '` + v + `'`
-		}
+		query += " AND t.status IN ('" + strings.Join(statuses, "','") + "')"
 	}
 
 	if name != "" {
 		names := strings.Split(name, ",")
 
-		for _, v := range names {
-			query += ` OR tp.user_full_name = '` + v + `'`
-		}
+		query += " AND tp.user_full_name IN ('" + strings.Join(names, "','") + "')"
+
 	}
 
 	if companyName != "" {
 		companyNames := strings.Split(companyName, ",")
 
-		for _, v := range companyNames {
-			query += ` OR tp.company_name = '` + v + `'`
-		}
+		query += " AND tp.company_name IN ('" + strings.Join(companyNames, "','") + "')"
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` OR t.created_at::TEXT LIKE '` + startDate + `%'`
+		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
 	}
 
 	if userType.(string) == "External" {
