@@ -191,8 +191,20 @@ func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	var data model.Topic
 
-	query := fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
-	err := m.DB.Get(&data, query)
+	var isDeleted bool
+
+	query := fmt.Sprintf(`SELECT is_deleted FROM topics WHERE id = '%s'`, topicID)
+	err := m.DB.Get(&isDeleted, query)
+	if err != nil {
+		return &data, errors.New("not found")
+	}
+
+	if isDeleted {
+		return &data, errors.New("Percakapan telah dihapus")
+	}
+
+	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	err = m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("not found")
 	}
