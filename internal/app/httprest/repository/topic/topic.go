@@ -446,20 +446,7 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 }
 
 func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) {
-	var data model.Topic
-
-	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topicID)
-
-	err := m.DB.Get(&data, query)
-	if err != nil {
-		return 0, err
-	}
-
 	userId, _ := c.Get("user_id")
-
-	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
-		return 0, errors.New("forbidden")
-	}
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 
@@ -469,9 +456,9 @@ func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) 
 		DeletedBy: userId.(string),
 	}
 
-	query = `UPDATE topics SET is_deleted = true, deleted_by = :deleted_by, deleted_at = :deleted_at WHERE id = :id`
+	query := `UPDATE topics SET is_deleted = true, deleted_by = :deleted_by, deleted_at = :deleted_at WHERE id = :id`
 
-	_, err = m.DB.NamedExec(query, &topic)
+	_, err := m.DB.NamedExec(query, &topic)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [DeleteTopic] ", err)
 		return 0, nil
@@ -491,27 +478,14 @@ func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) 
 }
 
 func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.Context) (int64, error) {
-	var data model.Topic
-
-	query := fmt.Sprintf(`SELECT created_by, COALESCE(handler_id, uuid_nil()) AS handler_id FROM topics WHERE id = '%s'`, topicFAQ.ID)
-
-	err := m.DB.Get(&data, query)
-	if err != nil {
-		return 0, errors.New("not found")
-	}
-
 	userId, _ := c.Get("user_id")
-
-	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
-		return 0, errors.New("forbidden")
-	}
 
 	topicFAQ.CreatedBy = userId.(string)
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topicFAQ.CreatedAt = t.Format("2006-01-02 15:04:05")
 
-	query = `INSERT INTO faqs (question, answer, created_by, created_at) VALUES (:question, :answer, :created_by, :created_at)`
+	query := `INSERT INTO faqs (question, answer, created_by, created_at) VALUES (:question, :answer, :created_by, :created_at)`
 
 	result, err := m.DB.NamedExec(query, &topicFAQ)
 	if err != nil {

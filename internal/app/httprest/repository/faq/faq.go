@@ -134,22 +134,13 @@ func (m *repository) DeleteFAQ(faqID string, c *gin.Context) (int64, error) {
 
 	userId, _ := c.Get("user_id")
 
-	var count int
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM faqs WHERE id = '%s' AND created_by = '%s'`, faqID, userId)
-
-	err := m.DB.Get(&count, query)
-	if err != nil || count == 0 {
-		return 0, errors.New("forbidden")
-	}
-
 	topic := model.DeleteFAQ{
 		ID:        faqID,
 		DeletedAt: t.Format("2006-01-02 15:04:05"),
 		DeletedBy: userId.(string),
 	}
 
-	query = `UPDATE faqs SET is_deleted = true, deleted_by = :deleted_by, deleted_at = :deleted_at WHERE id = :id`
+	query := `UPDATE faqs SET is_deleted = true, deleted_by = :deleted_by, deleted_at = :deleted_at WHERE id = :id`
 
 	result, err := m.DB.NamedExec(query, &topic)
 	if err != nil {
