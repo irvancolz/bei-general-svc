@@ -87,9 +87,23 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		return listData, err
 	}
 
-	for i, data := range listData {
-		if data.Handler_ID == "00000000-0000-0000-0000-000000000000" {
+	for i := range listData {
+		if listData[i].Handler_ID == "00000000-0000-0000-0000-000000000000" {
 			listData[i].Handler_ID = ""
+		}
+
+		if listData[i].Status == "DRAFT" {
+			continue
+		}
+
+		if listData[i].Status == "SUDAH TERJAWAB" {
+			listData[i].Status = "SELESAI TERJAWAB"
+			continue
+		}
+
+		if listData[i].Status == "BELUM TERJAWAB" && listData[i].Handler_ID != "" {
+			listData[i].Status = "SUDAH TERJAWAB"
+			continue
 		}
 	}
 

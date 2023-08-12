@@ -18,7 +18,7 @@ type Topic struct {
 	User_Full_Name    string         `json:"user_full_name,omitempty" db:"user_full_name"`
 	Company_Code      string         `json:"company_code,omitempty" db:"company_code"`
 	Company_Name      string         `json:"company_name,omitempty" db:"company_name"`
-	Status            TopicStatus    `json:"status" db:"status"`
+	Status            string         `json:"status" db:"status"`
 	Handler_ID        string         `json:"handler_id" db:"handler_id"`
 	Handler_Name      *string        `json:"handler_name" db:"handler_name"`
 	Handler_User_Type string         `json:"handler_user_type,omitempty" db:"handler_user_type"`
