@@ -38,7 +38,15 @@ func (m *repository) GetAll(keyword, userId string) ([]*model.FAQ, error) {
 	query := `SELECT id, created_by, created_at, question, answer, status, order_num FROM faqs WHERE is_deleted = false AND (status = 'PUBLISHED' OR (status = 'DRAFT' AND created_by = '` + userId + `'))`
 
 	if keyword != "" {
-		query += ` AND (question ILIKE '%` + keyword + `%' OR answer ILIKE '%` + keyword + `%')`
+		keywords := strings.Split(keyword, ",")
+
+		var filterQuery []string
+
+		for _, v := range keywords {
+			filterQuery = append(filterQuery, `question ILIKE '%`+v+`%' OR answer ILIKE '%`+v+`%'`)
+		}
+
+		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
 	}
 
 	query += ` ORDER BY order_num ASC`
@@ -65,19 +73,12 @@ func (m *repository) CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool
 
 	faq.Status = model.PublishedFAQ
 
-	query := `SELECT COALESCE(MAX(order_num), 0) + 1 AS max FROM faqs`
-
-	err := m.DB.Get(&faq.OrderNum, query)
-	if err != nil {
-		return 0, err
-	}
-
 	if isDraft {
 		faq.Status = model.DraftFAQ
-		faq.OrderNum = 0
 	}
+	faq.OrderNum = 0
 
-	query = `INSERT INTO faqs (question, answer, status, created_by, created_at, order_num) VALUES (:question, :answer, :status, :created_by, :created_at, :order_num)`
+	query := `INSERT INTO faqs (question, answer, status, created_by, created_at, order_num) VALUES (:question, :answer, :status, :created_by, :created_at, :order_num)`
 
 	result, err := m.DB.NamedExec(query, &faq)
 	if err != nil {
