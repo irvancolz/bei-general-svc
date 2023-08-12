@@ -47,7 +47,9 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 
 	query := `SELECT 
 	t.id, t.created_by, t.created_at, COALESCE(tp3.created_at, COALESCE(t.updated_at, t.created_at)) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
-	t.company_code, t.company_name, tp.user_full_name, tp.message
+	t.company_code, t.company_name, tp.user_full_name, tp.message,
+	CASE WHEN tp.company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END AS creator_user_type,
+	CASE WHEN tp3.company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END AS handler_user_type
 	FROM topics t
 	LEFT JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
@@ -81,7 +83,6 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
-		log.Println(query)
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [GetAll] ", err)
 		return listData, err
 	}
@@ -186,7 +187,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		data.Handler_ID = ""
 	}
 
-	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = '%s'`, topicID)
+	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at, CASE WHEN company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END as user_type FROM topic_messages WHERE topic_id = '%s'`, topicID)
 
 	if keyword != "" {
 		query += ` AND (message ILIKE '%` + keyword + `%' OR company_name ILIKE '%` + keyword + `%' OR user_full_name ILIKE '%` + keyword + `%' OR created_at::text ILIKE '%` + keyword + `%')`
