@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	tp "be-idx-tsg/internal/app/httprest/repository/topic"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,21 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, nil)
+
+	startDate := c.Query("start_date")
+
+	if startDate != "" {
+		var temp []map[string]interface{}
+
+		for _, data := range filteredData {
+			if parseTime(startDate) == data["created_at"].(time.Time).Format("2006-02-02") {
+				temp = append(temp, data)
+			}
+		}
+
+		filteredData = temp
+	}
 
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 
@@ -93,7 +108,21 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData, _ := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	filteredData, _ := helper.HandleDataFiltering(c, dataToConverted, nil)
+
+	startDate := c.Query("start_date")
+
+	if startDate != "" {
+		var temp []map[string]interface{}
+
+		for _, data := range filteredData {
+			if parseTime(startDate) == data["created_at"].(time.Time).Format("2006-02-02") {
+				temp = append(temp, data)
+			}
+		}
+
+		filteredData = temp
+	}
 
 	columnHeaders := []string{"Nama", "Nama Perusahaan", "Pertanyaan", "Waktu Pertanyaan", "Status"}
 	columnWidth := []float64{30, 30, 60, 40, 20}
@@ -144,4 +173,28 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 	}
 
 	return nil
+}
+
+func parseTime(input string) string {
+	// parse input string menjadi time.Time object
+	t, err := time.Parse(time.RFC3339Nano, input)
+	if err != nil {
+		log.Println("error parsing time:", err)
+		return ""
+	}
+
+	// set timezone yang diinginkan
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		log.Println("error loading location:", err)
+		return ""
+	}
+
+	// konversi time.Time object ke timezone yang diinginkan
+	t = t.In(location)
+
+	// format output string
+	output := t.Format("2006-01-02")
+
+	return output
 }
