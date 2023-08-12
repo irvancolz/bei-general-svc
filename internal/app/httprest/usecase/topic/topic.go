@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	tp "be-idx-tsg/internal/app/httprest/repository/topic"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +43,7 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 		dataToConverted = append(dataToConverted, item)
 	}
 
-	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"createdat", "updatedat"})
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
 
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 
@@ -82,24 +83,17 @@ func (m *usecase) ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Contex
 }
 
 func (m *usecase) ExportTopic(c *gin.Context) error {
-	dataStruct, errorData := m.tpRepo.GetAll(c)
-	if errorData != nil {
-		return errorData
+	results, errorResults := m.tpRepo.GetAll(c)
+	if errorResults != nil {
+		return errorResults
 	}
 
-	var dataToConverted []map[string]interface{}
-
-	for _, data := range dataStruct {
-		topic := map[string]interface{}{
-			"name":    data.User_Full_Name,
-			"company": data.Company_Name,
-			"message": data.Message,
-			"date":    data.Created_At.Format("2 Jan 2006 - 15:04"),
-			"status":  string(data.Status),
-		}
-
-		dataToConverted = append(dataToConverted, topic)
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
 	}
+
+	filteredData, _ := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
 
 	columnHeaders := []string{"Nama", "Nama Perusahaan", "Pertanyaan", "Waktu Pertanyaan", "Status"}
 	columnWidth := []float64{30, 30, 60, 40, 20}
@@ -113,12 +107,20 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	exportedFields := []string{"name", "company", "message", "date", "status"}
+	exportedFields := []string{"user_full_name", "company_name", "message", "created_at", "status"}
 	var exportedData [][]string
 
-	for _, content := range dataToConverted {
+	for _, content := range filteredData {
 		var item []string
 		item = append(item, helper.MapToArray(content, exportedFields)...)
+
+		for i, content := range item {
+			if i == 3 {
+				date, _ := time.Parse("2006-01-02 15:04:05", content[0:19])
+
+				item[i] = date.Format("2 Jan 2006 - 15:04")
+			}
+		}
 
 		exportedData = append(exportedData, item)
 	}
