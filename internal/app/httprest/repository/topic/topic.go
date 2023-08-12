@@ -39,6 +39,7 @@ func NewRepository() Repository {
 }
 
 func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
+	keyword := c.Query("keyword")
 	userId, _ := c.Get("user_id")
 	userType, _ := c.Get("type")
 
@@ -55,6 +56,16 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		SELECT id FROM topic_messages tp4 WHERE tp4.topic_id = t.id AND tp4.created_by = COALESCE(t.handler_id, uuid_nil()) ORDER BY created_at DESC LIMIT 1
 	) 
 	WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
+
+	if keyword != "" {
+		keywords := strings.Split(keyword, ",")
+
+		for _, v := range keywords {
+			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
+			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
+			OR t.created_at::text ILIKE '%` + v + `%')`
+		}
+	}
 
 	if userType.(string) == "External" {
 		companyID, _ := c.Get("company_id")
