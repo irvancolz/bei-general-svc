@@ -68,57 +68,63 @@ func (m *usecase) ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Contex
 }
 
 func (m *usecase) ExportTopic(c *gin.Context) error {
-	exportedField := []string{
-		"name",
-		"company",
-		"message",
-		"date",
-		"status",
+	dataStruct, errorData := m.tpRepo.GetAll(c)
+	if errorData != nil {
+		return errorData
 	}
 
-	tableHeader := []string{
-		"Nama",
-		"Nama Perusahaan",
-		"Pertanyaan",
-		"Waktu Pertanyaan",
-		"Status",
-	}
+	var dataToConverted []map[string]interface{}
 
-	var dataToExported [][]string
-	var topicList []*model.Topic
-	dataToExported = append(dataToExported, tableHeader)
-
-	topicList, _ = m.GetAll(c)
-
-	for _, data := range topicList {
-		topic := model.TopicExport{
-			Name:    data.UserFullName,
-			Company: data.CompanyName,
-			Message: data.Message,
-			Date:    data.CreatedAt.Format("2 Jan 2006 - 15:04"),
-			Status:  string(data.Status),
+	for _, data := range dataStruct {
+		topic := map[string]interface{}{
+			"name":    data.UserFullName,
+			"company": data.CompanyName,
+			"message": data.Message,
+			"date":    data.CreatedAt.Format("2 Jan 2006 - 15:04"),
+			"status":  string(data.Status),
 		}
 
-		var topicData []string
-		topicData = append(topicData, helper.StructToArray(topic, exportedField)...)
-
-		dataToExported = append(dataToExported, topicData)
+		dataToConverted = append(dataToConverted, topic)
 	}
 
-	excelConfig := helper.ExportToExcelConfig{
-		CollumnStart: "b",
+	columnHeaders := []string{"Nama", "Nama Perusahaan", "Pertanyaan", "Waktu Pertanyaan", "Status"}
+	columnWidth := []float64{30, 30, 60, 40, 20}
+
+	var columnWidthInt []int
+
+	for _, width := range columnWidth {
+		columnWidthInt = append(columnWidthInt, int(width))
 	}
-	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "Pertanyaan Jawaban",
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
+
+	exportedFields := []string{"name", "company", "message", "date", "status"}
+	var exportedData [][]string
+
+	for _, content := range dataToConverted {
+		var item []string
+		item = append(item, helper.MapToArray(content, exportedFields)...)
+
+		exportedData = append(exportedData, item)
 	}
-	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
-		Filename:    "pertanyaan_jawaban",
-		Data:        dataToExported,
-		ExcelConfig: &excelConfig,
-		PdfConfig:   &pdfConfig,
-	})
-	if errorCreateFile != nil {
-		return errorCreateFile
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename: "Pertanyaan Jawaban",
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Pertanyaan Jawaban"},
+		},
+		PdfConfig: &helper.PdfTableOptions{
+			HeaderRows: helper.GenerateTableHeaders(columnHeaders, columnWidth),
+		},
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInt,
+	}
+
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return errorExport
 	}
 
 	return nil
