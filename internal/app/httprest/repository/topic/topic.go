@@ -17,7 +17,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(c *gin.Context) ([]*model.Topic, error)
+	GetAll(c *gin.Context) ([]model.Topic, error)
 	GetTotal(c *gin.Context) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
@@ -38,18 +38,11 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
-	keyword := c.Query("keyword")
-	page, _ := strconv.Atoi(c.Query("page"))
-	limit, _ := strconv.Atoi(c.Query("limit"))
-	status := c.Query("status")
-	name := c.Query("name")
-	companyName := c.Query("company_name")
-	startDate := c.Query("start_date")
+func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 	userId, _ := c.Get("user_id")
 	userType, _ := c.Get("type")
 
-	var listData = []*model.Topic{}
+	var listData = []model.Topic{}
 
 	query := `SELECT 
 	t.id, t.created_by, t.created_at, COALESCE(tp3.created_at, COALESCE(t.updated_at, t.created_at)) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
@@ -69,53 +62,7 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 		query += ` AND tp.company_id = '` + companyID.(string) + `'`
 	}
 
-	if keyword != "" {
-		keywords := strings.Split(keyword, ",")
-
-		for _, v := range keywords {
-			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
-			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
-			OR t.created_at::text ILIKE '%` + v + `%')`
-		}
-	}
-
-	var queryFilter []string
-
-	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
-		statuses := strings.Split(status, ",")
-
-		queryFilter = append(queryFilter, "t.status IN ('"+strings.Join(statuses, "','")+"')")
-	}
-
-	if name != "" {
-		names := strings.Split(name, ",")
-
-		queryFilter = append(queryFilter, "tp.user_full_name IN ('"+strings.Join(names, "','")+"')")
-	}
-
-	if companyName != "" {
-		companyNames := strings.Split(companyName, ",")
-
-		queryFilter = append(queryFilter, "tp.company_name IN ('"+strings.Join(companyNames, "','")+"')")
-	}
-
-	if startDate != "" {
-		startDate = parseTime(startDate)
-
-		queryFilter = append(queryFilter, `t.created_at::TEXT LIKE '`+startDate+`%'`)
-	}
-
-	if len(queryFilter) > 0 {
-		query += ` AND (` + strings.Join(queryFilter, " OR ") + ")"
-	}
-
 	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, t.created_at DESC`
-
-	if page > 0 && limit > 0 {
-		offset := (page - 1) * limit
-
-		query += ` OFFSET ` + strconv.Itoa(offset) + ` LIMIT ` + strconv.Itoa(limit)
-	}
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
@@ -125,12 +72,9 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 	}
 
 	for i, data := range listData {
-		if data.HandlerID == "00000000-0000-0000-0000-000000000000" {
-			listData[i].HandlerID = ""
+		if data.Handler_ID == "00000000-0000-0000-0000-000000000000" {
+			listData[i].Handler_ID = ""
 		}
-
-		listData[i].FormattedCreatedAt = listData[i].CreatedAt.Format("2006-01-02 15:04")
-		listData[i].FormattedUpdatedAt = listData[i].UpdatedAt.Format("2006-01-02 15:04")
 	}
 
 	return listData, nil
@@ -219,11 +163,9 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		return &data, errors.New("not found")
 	}
 
-	if data.HandlerID == "00000000-0000-0000-0000-000000000000" {
-		data.HandlerID = ""
+	if data.Handler_ID == "00000000-0000-0000-0000-000000000000" {
+		data.Handler_ID = ""
 	}
-
-	data.FormattedCreatedAt = data.CreatedAt.Format("2006-01-02 15:04")
 
 	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at FROM topic_messages WHERE topic_id = '%s'`, topicID)
 
@@ -264,16 +206,16 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 		return 0, errors.New("not found")
 	}
 
-	if data.HandlerID != "00000000-0000-0000-0000-000000000000" {
+	if data.Handler_ID != "00000000-0000-0000-0000-000000000000" {
 		return 0, errors.New("forbidden")
 	}
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topic.UpdatedAt = t.Format("2006-01-02 15:04:05")
 
-	handlerId, _ := c.Get("user_id")
-	topic.HandlerID = handlerId.(string)
-	topic.UpdatedBy = handlerId.(string)
+	handler_Id, _ := c.Get("user_id")
+	topic.HandlerID = handler_Id.(string)
+	topic.UpdatedBy = handler_Id.(string)
 
 	name, _ := c.Get("name")
 	topic.HandlerName = name.(string)
@@ -304,7 +246,7 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 
 	userId, _ := c.Get("user_id")
 
-	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
+	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
 		return 0, errors.New("forbidden")
 	}
 
@@ -414,7 +356,7 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 
 	userId, _ := c.Get("user_id")
 
-	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
+	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
 		return 0, errors.New("forbidden")
 	}
 
@@ -445,10 +387,10 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 		return 0, err
 	}
 
-	recipientID := data.CreatedBy
+	recipientID := data.Created_By
 	title := fmt.Sprintf("%s \u0020 telah membalas jawaban pertanyaan anda", name.(string))
-	if userId.(string) == data.CreatedBy {
-		recipientID = data.HandlerID
+	if userId.(string) == data.Created_By {
+		recipientID = data.Handler_ID
 		title = fmt.Sprintf("%s \u0020 telah membalas pertanyaan anda", name.(string))
 	}
 
@@ -481,7 +423,7 @@ func (m *repository) DeleteTopic(topicID string, c *gin.Context) (int64, error) 
 
 	userId, _ := c.Get("user_id")
 
-	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
+	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
 		return 0, errors.New("forbidden")
 	}
 
@@ -526,7 +468,7 @@ func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.
 
 	userId, _ := c.Get("user_id")
 
-	if userId.(string) != data.CreatedBy && userId.(string) != data.HandlerID {
+	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
 		return 0, errors.New("forbidden")
 	}
 

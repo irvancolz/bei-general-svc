@@ -11,20 +11,18 @@ const (
 )
 
 type Topic struct {
-	ID                 string         `json:"id" db:"id"`
-	CreatedBy          string         `json:"created_by" db:"created_by"`
-	CreatedAt          time.Time      `json:"-" db:"created_at"`
-	FormattedCreatedAt string         `json:"created_at"`
-	UpdatedAt          time.Time      `json:"-" db:"updated_at"`
-	FormattedUpdatedAt string         `json:"updated_at"`
-	UserFullName       string         `json:"user_full_name,omitempty" db:"user_full_name"`
-	CompanyCode        string         `json:"company_code,omitempty" db:"company_code"`
-	CompanyName        string         `json:"company_name,omitempty" db:"company_name"`
-	Status             TopicStatus    `json:"status" db:"status"`
-	HandlerID          string         `json:"handler_id" db:"handler_id"`
-	HandlerName        *string        `json:"handler_name" db:"handler_name"`
-	Message            string         `json:"message" db:"message"`
-	Messages           []TopicMessage `json:"messages"`
+	ID             string         `json:"id" db:"id"`
+	Created_By     string         `json:"created_by" db:"created_by"`
+	Created_At     time.Time      `json:"created_at" db:"created_at"`
+	Updated_At     time.Time      `json:"updated_at" db:"updated_at"`
+	User_Full_Name string         `json:"user_full_name,omitempty" db:"user_full_name"`
+	Company_Code   string         `json:"company_code,omitempty" db:"company_code"`
+	Company_Name   string         `json:"company_name,omitempty" db:"company_name"`
+	Status         TopicStatus    `json:"status" db:"status"`
+	Handler_ID     string         `json:"handler_id" db:"handler_id"`
+	Handler_Name   *string        `json:"handler_name" db:"handler_name"`
+	Message        string         `json:"message" db:"message"`
+	Messages       []TopicMessage `json:"messages"`
 }
 
 type TopicExport struct {

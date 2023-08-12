@@ -9,7 +9,7 @@ import (
 )
 
 type Usecase interface {
-	GetAll(c *gin.Context) ([]*model.Topic, error)
+	GetAll(c *gin.Context) (*helper.PaginationResponse, error)
 	GetTotal(c *gin.Context) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
@@ -31,8 +31,22 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(c *gin.Context) ([]*model.Topic, error) {
-	return m.tpRepo.GetAll(c)
+func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
+	results, errorResults := m.tpRepo.GetAll(c)
+	if errorResults != nil {
+		return nil, errorResults
+	}
+
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
+	}
+
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"createdat", "updatedat"})
+
+	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
+
+	return &paginatedData, nil
 }
 
 func (m *usecase) GetTotal(c *gin.Context) (int, int, error) {
@@ -77,10 +91,10 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 
 	for _, data := range dataStruct {
 		topic := map[string]interface{}{
-			"name":    data.UserFullName,
-			"company": data.CompanyName,
+			"name":    data.User_Full_Name,
+			"company": data.Company_Name,
 			"message": data.Message,
-			"date":    data.CreatedAt.Format("2 Jan 2006 - 15:04"),
+			"date":    data.Created_At.Format("2 Jan 2006 - 15:04"),
 			"status":  string(data.Status),
 		}
 
