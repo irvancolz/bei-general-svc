@@ -49,7 +49,7 @@ func (m *repository) GetAll(keyword, userId string) ([]*model.FAQ, error) {
 		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
 	}
 
-	query += ` ORDER BY order_num, created_at ASC`
+	query += ` ORDER BY order_num ASC, created_at DESC`
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
