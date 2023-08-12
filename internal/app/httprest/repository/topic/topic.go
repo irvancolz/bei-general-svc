@@ -79,7 +79,7 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		query += ` AND tp.company_id = '` + companyID.(string) + `'`
 	}
 
-	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 WHEN status = 'BELUM TERJAWAB' OR handler_id IS NULL THEN 2 WHEN status = 'SUDAH TERJAWAB' THEN 3 ElSE 4 END, t.created_at DESC`
+	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 WHEN status = 'BELUM TERJAWAB' AND handler_id IS NULL THEN 2 ELSE 3 END, t.created_at DESC`
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
