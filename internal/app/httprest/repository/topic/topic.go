@@ -60,11 +60,15 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 	if keyword != "" {
 		keywords := strings.Split(keyword, ",")
 
+		var filterQuery []string
+
 		for _, v := range keywords {
-			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
-			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
-			OR t.created_at::text ILIKE '%` + v + `%')`
+			filterQuery = append(filterQuery, `tp.message ILIKE '%`+v+`%' OR tp.company_name ILIKE '%`+v+`%'
+			OR tp.user_full_name ILIKE '%`+v+`%' OR t.status ILIKE '%`+v+`%'
+			OR t.created_at::text ILIKE '%`+v+`%'`)
 		}
+
+		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
 	}
 
 	if userType.(string) == "External" {
@@ -112,11 +116,15 @@ func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
 	if keyword != "" {
 		keywords := strings.Split(keyword, ",")
 
+		var filterQuery []string
+
 		for _, v := range keywords {
-			query += ` AND (tp.message ILIKE '%` + v + `%' OR tp.company_name ILIKE '%` + v + `%'
-			OR tp.user_full_name ILIKE '%` + v + `%' OR t.status ILIKE '%` + v + `%'
-			OR t.created_at::text ILIKE '%` + v + `%')`
+			filterQuery = append(filterQuery, `tp.message ILIKE '%`+v+`%' OR tp.company_name ILIKE '%`+v+`%'
+			OR tp.user_full_name ILIKE '%`+v+`%' OR t.status ILIKE '%`+v+`%'
+			OR t.created_at::text ILIKE '%`+v+`%'`)
 		}
+
+		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
 	}
 
 	if userType.(string) == "External" {
