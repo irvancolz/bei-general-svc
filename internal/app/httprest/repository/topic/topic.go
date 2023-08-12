@@ -52,12 +52,22 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 	var listData = []*model.Topic{}
 
 	query := `SELECT 
-	t.id, t.created_by, t.created_at, COALESCE(t.updated_at, CURRENT_TIMESTAMP) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
+	t.id, t.created_by, t.created_at, COALESCE(tp3.created_at, COALESCE(t.updated_at, t.created_at)) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
 	t.company_code, t.company_name, tp.user_full_name, tp.message
 	FROM topics t
-	INNER JOIN topic_messages tp ON tp.id = (
+	LEFT JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
+	) 
+	LEFT JOIN topic_messages tp3 ON tp3.id = (
+		SELECT id FROM topic_messages tp4 WHERE tp4.topic_id = t.id AND tp4.created_by = COALESCE(t.handler_id, uuid_nil()) ORDER BY created_at DESC LIMIT 1
+	) 
+	WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
+
+	if userType.(string) == "External" {
+		companyID, _ := c.Get("company_id")
+
+		query += ` AND tp.company_id = '` + companyID.(string) + `'`
+	}
 
 	if keyword != "" {
 		keywords := strings.Split(keyword, ",")
@@ -69,35 +79,34 @@ func (m *repository) GetAll(c *gin.Context) ([]*model.Topic, error) {
 		}
 	}
 
+	var queryFilter []string
+
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		statuses := strings.Split(status, ",")
 
-		query += " AND t.status IN ('" + strings.Join(statuses, "','") + "')"
+		queryFilter = append(queryFilter, "t.status IN ('"+strings.Join(statuses, "','")+"')")
 	}
 
 	if name != "" {
 		names := strings.Split(name, ",")
 
-		query += " AND tp.user_full_name IN ('" + strings.Join(names, "','") + "')"
-
+		queryFilter = append(queryFilter, "tp.user_full_name IN ('"+strings.Join(names, "','")+"')")
 	}
 
 	if companyName != "" {
 		companyNames := strings.Split(companyName, ",")
 
-		query += " AND tp.company_name IN ('" + strings.Join(companyNames, "','") + "')"
+		queryFilter = append(queryFilter, "tp.company_name IN ('"+strings.Join(companyNames, "','")+"')")
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+		queryFilter = append(queryFilter, `t.created_at::TEXT LIKE '`+startDate+`%'`)
 	}
 
-	if userType.(string) == "External" {
-		companyID, _ := c.Get("company_id")
-
-		query += ` AND tp.company_id = '` + companyID.(string) + `'`
+	if len(queryFilter) > 0 {
+		query += ` AND (` + strings.Join(queryFilter, " OR ") + ")"
 	}
 
 	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ElSE 2 END, t.created_at DESC`
@@ -155,35 +164,40 @@ func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
 		}
 	}
 
+	if userType.(string) == "External" {
+		companyID, _ := c.Get("company_id")
+
+		query += ` AND tp.company_id = '` + companyID.(string) + `'`
+	}
+
+	var queryFilter []string
+
 	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
 		statuses := strings.Split(status, ",")
 
-		query += " AND t.status IN ('" + strings.Join(statuses, "','") + "')"
+		queryFilter = append(queryFilter, "t.status IN ('"+strings.Join(statuses, "','")+"')")
 	}
 
 	if name != "" {
 		names := strings.Split(name, ",")
 
-		query += " AND tp.user_full_name IN ('" + strings.Join(names, "','") + "')"
-
+		queryFilter = append(queryFilter, "tp.user_full_name IN ('"+strings.Join(names, "','")+"')")
 	}
 
 	if companyName != "" {
 		companyNames := strings.Split(companyName, ",")
 
-		query += " AND tp.company_name IN ('" + strings.Join(companyNames, "','") + "')"
+		queryFilter = append(queryFilter, "tp.company_name IN ('"+strings.Join(companyNames, "','")+"')")
 	}
 
 	if startDate != "" {
 		startDate = parseTime(startDate)
 
-		query += ` AND t.created_at::TEXT LIKE '` + startDate + `%'`
+		queryFilter = append(queryFilter, `t.created_at::TEXT LIKE '`+startDate+`%'`)
 	}
 
-	if userType.(string) == "External" {
-		companyID, _ := c.Get("company_id")
-
-		query += ` AND tp.company_id = '` + companyID.(string) + `'`
+	if len(queryFilter) > 0 {
+		query += ` AND (` + strings.Join(queryFilter, " OR ") + ")"
 	}
 
 	err := m.DB.Get(&totalData, query)
@@ -556,4 +570,18 @@ func parseTime(input string) string {
 	output := t.Format("2006-01-02")
 
 	return output
+}
+
+func removeDuplicates(slice []string) []string {
+	seen := make(map[string]bool)
+	result := []string{}
+
+	for _, item := range slice {
+		if !seen[item] {
+			seen[item] = true
+			result = append(result, item)
+		}
+	}
+
+	return result
 }
