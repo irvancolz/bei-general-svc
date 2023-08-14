@@ -122,8 +122,18 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 
 			UpdatedBy: item.UpdatedBy.String,
 			DeletedBy: item.DeletedBy.String,
-			UpdatedAt: item.UpdatedAt.Time.Unix(),
-			DeletedAt: item.DeletedAt.Time.Unix(),
+			UpdatedAt: func() int64 {
+				if item.UpdatedBy.Valid {
+					return item.UpdatedAt.Time.Unix()
+				}
+				return 0
+			}(),
+			DeletedAt: func() int64 {
+				if item.DeletedBy.Valid {
+					return item.DeletedAt.Time.Unix()
+				}
+				return 0
+			}(),
 		}
 
 		result = append(result, data)
