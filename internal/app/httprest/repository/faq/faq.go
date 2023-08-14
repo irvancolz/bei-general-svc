@@ -4,7 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -18,6 +17,7 @@ type Repository interface {
 	GetAll(keyword, userId string) ([]*model.FAQ, error)
 	CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool) (int64, error)
 	DeleteFAQ(faqID string, c *gin.Context) (int64, error)
+	UpdateFAQ(faq model.UpdateFAQ, c *gin.Context) (int64, error)
 	UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error)
 	UpdateOrderFAQ(faqs []model.UpdateFAQOrder, c *gin.Context) (int64, error)
 }
@@ -49,7 +49,7 @@ func (m *repository) GetAll(keyword, userId string) ([]*model.FAQ, error) {
 		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
 	}
 
-	query += ` ORDER BY order_num ASC, created_at DESC`
+	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ELSE 2 END, order_num ASC, created_at DESC`
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
@@ -94,29 +94,35 @@ func (m *repository) CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool
 func (m *repository) UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (int64, error) {
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	faq.UpdatedAt = t.Format("2006-01-02 15:04:05")
+	faq.CreatedAt = t.Format("2006-01-02 15:04:05")
+
+	userId, _ := c.Get("user_id")
+	faq.UpdatedBy = userId.(string)
+	faq.CreatedBy = userId.(string)
+
+	faq.Status = model.PublishedFAQ
+
+	query := `UPDATE faqs SET status = :status, question = :question, answer = :answer, created_by = :created_by, created_at = :created_at, updated_by = :updated_by, updated_at = :updated_at WHERE id = :id`
+
+	result, err := m.DB.NamedExec(query, &faq)
+	if err != nil {
+		log.Println("[AQI-debug] [err] [repository] [FAQ] [sqlQuery] [UpdateStatusFAQ] ", err)
+		return 0, nil
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+
+	return rowsAffected, nil
+}
+
+func (m *repository) UpdateFAQ(faq model.UpdateFAQ, c *gin.Context) (int64, error) {
+	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
+	faq.UpdatedAt = t.Format("2006-01-02 15:04:05")
 
 	userId, _ := c.Get("user_id")
 	faq.UpdatedBy = userId.(string)
 
-	faq.Status = model.PublishedFAQ
-
-	var count int
-
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM faqs WHERE id = '%s' AND created_by = '%s'`, faq.ID, userId)
-
-	err := m.DB.Get(&count, query)
-	if err != nil || count == 0 {
-		return 0, errors.New("forbidden")
-	}
-
-	query = `SELECT MAX(order_num) + 1 AS max FROM faqs`
-
-	err = m.DB.Get(&faq.OrderNum, query)
-	if err != nil {
-		return 0, err
-	}
-
-	query = `UPDATE faqs SET status = :status, question = :question, answer = :answer, updated_by = :updated_by, updated_at = :updated_at, order_num = :order_num WHERE id = :id`
+	query := `UPDATE faqs SET question = :question, answer = :answer, updated_by = :updated_by, updated_at = :updated_at WHERE id = :id`
 
 	result, err := m.DB.NamedExec(query, &faq)
 	if err != nil {
