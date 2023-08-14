@@ -196,7 +196,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	query := fmt.Sprintf(`SELECT is_deleted FROM topics WHERE id = '%s'`, topicID)
 	err := m.DB.Get(&isDeleted, query)
 	if err != nil {
-		return &data, errors.New("not found")
+		return &data, errors.New("Percakapan tidak tersedia")
 	}
 
 	if isDeleted {
@@ -206,7 +206,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err = m.DB.Get(&data, query)
 	if err != nil {
-		return &data, errors.New("not found")
+		return &data, errors.New("Percakapan tidak tersedia")
 	}
 
 	if data.Handler_ID == "00000000-0000-0000-0000-000000000000" {
@@ -249,7 +249,7 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
-		return 0, errors.New("not found")
+		return 0, errors.New("Percakapan tidak tersedia")
 	}
 
 	if data.Handler_ID != "00000000-0000-0000-0000-000000000000" {
@@ -287,7 +287,7 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
-		return 0, errors.New("not found")
+		return 0, errors.New("Percakapan tidak tersedia")
 	}
 
 	userId, _ := c.Get("user_id")
@@ -397,7 +397,7 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
-		return 0, errors.New("not found")
+		return 0, errors.New("Percakapan tidak tersedia")
 	}
 
 	userId, _ := c.Get("user_id")
