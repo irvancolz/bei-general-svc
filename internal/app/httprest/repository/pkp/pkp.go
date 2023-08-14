@@ -55,8 +55,9 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 		deleted_at AS DeletedAt
 	FROM pkp 
 	WHERE deleted_by IS NULL
-	AND deleted_at IS NULL
-	ORDER BY
+	AND deleted_at IS NULL`
+
+	orderQuery := ` ORDER BY
 	CASE
 		WHEN updated_at IS NOT NULL 
 			THEN updated_at
@@ -80,9 +81,11 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 	}
 
 	getAllQuery := searchQueryConfig.GenerateGetAllDataQuerry(c, query)
+	getAllQuery += orderQuery
 
 	rows, err := m.DB.Queryx(getAllQuery)
 	if err != nil {
+		log.Println(getAllQuery)
 		log.Println("[AQI-debug] [err] [repository] [PKuser] [sqlQuery] [GetAllPKuser] ", err)
 		return nil, err
 	}
