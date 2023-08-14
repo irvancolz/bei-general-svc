@@ -55,6 +55,7 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		tp.user_full_name,
 		tp.message,
 		t.user_type AS creator_user_type,
+		COALESCE(t.external_type, '') AS creator_external_type,
 		CASE WHEN handler_id IS NULL THEN '' ELSE 'Internal' END AS handler_user_type
 	FROM topics t
 	LEFT JOIN topic_messages tp ON tp.id = (
@@ -116,7 +117,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		return &data, errors.New("Percakapan telah dihapus")
 	}
 
-	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name, user_type AS creator_user_type, COALESCE(external_type, '') AS creator_external_type, CASE WHEN handler_id IS NULL THEN '' ELSE 'Internal' END AS handler_user_type FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err = m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("Percakapan tidak tersedia")
