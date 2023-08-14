@@ -24,6 +24,7 @@ func InitMinio() (*minio.Client, error) {
 	})
 
 	if err != nil {
+		log.Println(minoEndpointPath)
 		log.Println("failed to connect to minio server :", err)
 		return nil, err
 	}
