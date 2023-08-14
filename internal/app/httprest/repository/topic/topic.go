@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
-	"strconv"
 	"strings"
 	"time"
 
@@ -18,7 +16,6 @@ import (
 
 type Repository interface {
 	GetAll(c *gin.Context) ([]model.Topic, error)
-	GetTotal(c *gin.Context) (int, int, error)
 	GetByID(topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
@@ -46,18 +43,26 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 	var listData = []model.Topic{}
 
 	query := `SELECT 
-	t.id, t.created_by, t.created_at, COALESCE(tp3.created_at, COALESCE(t.updated_at, t.created_at)) AS updated_at, t.status, COALESCE(t.handler_id, uuid_nil()) AS handler_id, t.handler_name,
-	t.company_code, t.company_name, tp.user_full_name, tp.message,
-	CASE WHEN tp.company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END AS creator_user_type,
-	CASE WHEN tp3.company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END AS handler_user_type
+		t.id,
+		t.created_by,
+		t.created_at,
+		COALESCE(t.updated_at, CURRENT_TIMESTAMP) AS updated_at,
+		t.status,
+		COALESCE(t.handler_id, uuid_nil()) AS handler_id,
+		t.handler_name,
+		t.company_code,
+		t.company_name,
+		tp.user_full_name,
+		tp.message,
+		t.user_type AS creator_user_type,
+		COALESCE(t.external_type, '') AS creator_external_type,
+		CASE WHEN handler_id IS NULL THEN '' ELSE 'Internal' END AS handler_user_type
 	FROM topics t
 	LEFT JOIN topic_messages tp ON tp.id = (
 		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) 
-	LEFT JOIN topic_messages tp3 ON tp3.id = (
-		SELECT id FROM topic_messages tp4 WHERE tp4.topic_id = t.id AND tp4.created_by = COALESCE(t.handler_id, uuid_nil()) ORDER BY created_at DESC LIMIT 1
-	) 
-	WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
+	)
+	WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'SELESAI TERJAWAB', 'BELUM TERJAWAB') 
+		OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
 
 	if keyword != "" {
 		keywords := strings.Split(keyword, ",")
@@ -75,11 +80,12 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 
 	if userType.(string) == "External" {
 		companyID, _ := c.Get("company_id")
+		externalType, _ := c.Get("external_type")
 
-		query += ` AND tp.company_id = '` + companyID.(string) + `'`
+		query += ` AND t.company_id = '` + companyID.(string) + `' AND t.user_type = '` + userType.(string) + `' AND external_type = '` + *externalType.(*string) + `'`
 	}
 
-	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 WHEN status = 'BELUM TERJAWAB' AND handler_id IS NULL THEN 2 WHEN status = 'SUDAH TERJAWAB' THEN 4 ELSE 3 END, t.created_at DESC`
+	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 WHEN status = 'BELUM TERJAWAB' AND handler_id IS NULL THEN 2 WHEN status = 'SUDAH TERJAWAB' THEN 3 WHEN status = 'SELESAI TERJAWAB' THEN 4 END, t.created_at DESC`
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
@@ -91,101 +97,9 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		if listData[i].Handler_ID == "00000000-0000-0000-0000-000000000000" {
 			listData[i].Handler_ID = ""
 		}
-
-		if listData[i].Status == "DRAFT" {
-			continue
-		}
-
-		if listData[i].Status == "SUDAH TERJAWAB" {
-			listData[i].Status = "SELESAI TERJAWAB"
-			continue
-		}
-
-		if listData[i].Status == "BELUM TERJAWAB" && listData[i].Handler_ID != "" {
-			listData[i].Status = "SUDAH TERJAWAB"
-			continue
-		}
 	}
 
 	return listData, nil
-}
-
-func (m *repository) GetTotal(c *gin.Context) (int, int, error) {
-	keyword := c.Query("keyword")
-	limit, _ := strconv.Atoi(c.Query("limit"))
-	status := c.Query("status")
-	name := c.Query("name")
-	companyName := c.Query("company_name")
-	startDate := c.Query("start_date")
-	userId, _ := c.Get("user_id")
-	userType, _ := c.Get("type")
-
-	var totalData int
-
-	query := `SELECT COUNT(t.id)
-	FROM topics t
-	INNER JOIN topic_messages tp ON tp.id = (
-		SELECT id FROM topic_messages tp2 WHERE tp2.topic_id = t.id ORDER BY created_at LIMIT 1
-	) WHERE t.is_deleted = false AND (t.status IN ('SUDAH TERJAWAB', 'BELUM TERJAWAB') OR (t.status = 'DRAFT' AND t.created_by = '` + userId.(string) + `'))`
-
-	if keyword != "" {
-		keywords := strings.Split(keyword, ",")
-
-		var filterQuery []string
-
-		for _, v := range keywords {
-			filterQuery = append(filterQuery, `tp.message ILIKE '%`+v+`%' OR tp.company_name ILIKE '%`+v+`%'
-			OR tp.user_full_name ILIKE '%`+v+`%' OR t.status ILIKE '%`+v+`%'
-			OR t.created_at::text ILIKE '%`+v+`%'`)
-		}
-
-		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
-	}
-
-	if userType.(string) == "External" {
-		companyID, _ := c.Get("company_id")
-
-		query += ` AND tp.company_id = '` + companyID.(string) + `'`
-	}
-
-	var queryFilter []string
-
-	if status == "BELUM TERJAWAB" || status == "SUDAH TERJAWAB" || status == "DRAFT" {
-		statuses := strings.Split(status, ",")
-
-		queryFilter = append(queryFilter, "t.status IN ('"+strings.Join(statuses, "','")+"')")
-	}
-
-	if name != "" {
-		names := strings.Split(name, ",")
-
-		queryFilter = append(queryFilter, "tp.user_full_name IN ('"+strings.Join(names, "','")+"')")
-	}
-
-	if companyName != "" {
-		companyNames := strings.Split(companyName, ",")
-
-		queryFilter = append(queryFilter, "tp.company_name IN ('"+strings.Join(companyNames, "','")+"')")
-	}
-
-	if startDate != "" {
-		startDate = parseTime(startDate)
-
-		queryFilter = append(queryFilter, `t.created_at::TEXT LIKE '`+startDate+`%'`)
-	}
-
-	if len(queryFilter) > 0 {
-		query += ` AND (` + strings.Join(queryFilter, " OR ") + ")"
-	}
-
-	err := m.DB.Get(&totalData, query)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	totalPage := int(math.Ceil(float64(totalData) / float64(limit)))
-
-	return totalData, totalPage, nil
 }
 
 func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
@@ -203,7 +117,7 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 		return &data, errors.New("Percakapan telah dihapus")
 	}
 
-	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
+	query = fmt.Sprintf(`SELECT id, created_by, created_at, status, COALESCE(handler_id, uuid_nil()) AS handler_id, handler_name, company_code, company_name, user_type AS creator_user_type, COALESCE(external_type, '') AS creator_external_type, CASE WHEN handler_id IS NULL THEN '' ELSE 'Internal' END AS handler_user_type FROM topics WHERE id = '%s' AND is_deleted = false`, topicID)
 	err = m.DB.Get(&data, query)
 	if err != nil {
 		return &data, errors.New("Percakapan tidak tersedia")
@@ -266,7 +180,9 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 	name, _ := c.Get("name")
 	topic.HandlerName = name.(string)
 
-	query = `UPDATE topics SET handler_id = :handler_id, handler_name = :handler_name, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
+	topic.Status = model.AnsweredTopic
+
+	query = `UPDATE topics SET status = :status, handler_id = :handler_id, handler_name = :handler_name, updated_at = :updated_at, updated_by = :updated_by WHERE id = :topic_id`
 
 	result, err := m.DB.NamedExec(query, &topic)
 
@@ -301,7 +217,7 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	topic.UpdatedAt = t.Format("2006-01-02 15:04:05")
 
-	topic.Status = model.AnsweredTopic
+	topic.Status = model.DoneTopic
 	if strings.Contains(c.FullPath(), "publish") {
 		topic.Status = model.NotAnsweredTopic
 	}
@@ -346,6 +262,12 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 	companyId, _ := c.Get("company_id")
 	topic.CompanyID = companyId.(string)
 
+	userType, _ := c.Get("type")
+	topic.UserType = userType.(string)
+
+	externalType, _ := c.Get("external_type")
+	topic.ExternalType = externalType.(*string)
+
 	companyCode, _ := c.Get("company_code")
 	topic.CompanyCode = companyCode.(string)
 	if topic.CompanyCode == "" {
@@ -365,7 +287,7 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 		topic.CompanyID = "00000000-0000-0000-0000-000000000000"
 	}
 
-	query := `INSERT INTO topics (status, created_by, created_at, company_code, company_name) VALUES (:status, :created_by, :created_at, :company_code, :company_name) RETURNING id AS topic_id`
+	query := `INSERT INTO topics (status, created_by, created_at, company_code, company_name, company_id, user_type, external_type) VALUES (:status, :created_by, :created_at, :company_code, :company_name, :company_id, :user_type, :external_type) RETURNING id AS topic_id`
 	row, err := m.DB.NamedQuery(query, topic)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateTopicWithMessage] ", err)
@@ -431,6 +353,23 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateMessage] ", err)
 		return 0, err
+	}
+
+	if userId.(string) == data.Handler_ID {
+		topic := model.UpdateTopicStatus{
+			TopicID:   message.TopicID,
+			Status:    model.AnsweredTopic,
+			UpdatedBy: userId.(string),
+			UpdatedAt: t.Format("2006-01-02 15:04:05"),
+		}
+
+		query = `UPDATE topics SET status = :status, updated_by = :updated_by, updated_at = :updated_at WHERE id = :topic_id`
+
+		_, err := m.DB.NamedExec(query, &topic)
+		if err != nil {
+			log.Println("[AQI-debug] [err] [repository] [Topic] [sqlQuery] [CreateMessage] ", err)
+			return 0, err
+		}
 	}
 
 	recipientID := data.Created_By
@@ -532,18 +471,4 @@ func parseTime(input string) string {
 	output := t.Format("2006-01-02")
 
 	return output
-}
-
-func removeDuplicates(slice []string) []string {
-	seen := make(map[string]bool)
-	result := []string{}
-
-	for _, item := range slice {
-		if !seen[item] {
-			seen[item] = true
-			result = append(result, item)
-		}
-	}
-
-	return result
 }
