@@ -176,15 +176,15 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 			"owner",
 		},
 	}
-	orderQuery := `
+	orderQuery := ` ORDER BY
 		CASE
 			WHEN updated_at IS NOT NULL 
 				THEN updated_at
 			ELSE created_at
 		END DESC`
-	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry) + orderQuery
 
-	result_rows, error_rows := r.DB.Queryx(query + orderQuery)
+	result_rows, error_rows := r.DB.Queryx(query)
 	if error_rows != nil {
 		log.Println(query)
 		log.Println("failed to excecute script : ", error_rows)
