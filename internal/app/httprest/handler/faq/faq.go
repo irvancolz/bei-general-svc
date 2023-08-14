@@ -14,6 +14,7 @@ type Handler interface {
 	CreateFAQ(c *gin.Context)
 	DeleteFAQ(c *gin.Context)
 	UpdateStatusFAQ(c *gin.Context)
+	UpdateFAQ(c *gin.Context)
 	UpdateOrderFAQ(c *gin.Context)
 }
 
@@ -89,6 +90,25 @@ func (m *handler) UpdateStatusFAQ(c *gin.Context) {
 	}
 
 	data, err := m.faq.UpdateStatusFAQ(request, c)
+	if err != nil {
+		model.GenerateUpdateErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, data))
+}
+
+func (m *handler) UpdateFAQ(c *gin.Context) {
+	var (
+		request model.UpdateFAQ
+	)
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		model.GenerateInvalidJsonResponse(c, err)
+		return
+	}
+
+	data, err := m.faq.UpdateFAQ(request, c)
 	if err != nil {
 		model.GenerateUpdateErrorResponse(c, err)
 		return

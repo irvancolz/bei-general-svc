@@ -32,24 +32,16 @@ func NewHandler() Handler {
 }
 
 func (m *handler) GetAll(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Query("page"))
-	limit, _ := strconv.Atoi(c.Query("limit"))
-
 	data, err := m.tp.GetAll(c)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return
 	}
 
-	totalData, totalPage, err := m.tp.GetTotal(c)
-	if err != nil {
-		model.GenerateReadErrorResponse(c, err)
+	if !c.Writer.Written() {
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
 		return
 	}
-
-	var pagination = []any{data, totalData, page, limit, len(data), totalPage}
-
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, pagination...))
 }
 
 func (m *handler) GetById(c *gin.Context) {

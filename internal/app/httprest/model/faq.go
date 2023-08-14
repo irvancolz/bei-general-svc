@@ -21,20 +21,30 @@ type FAQ struct {
 }
 
 type CreateFAQ struct {
-	CreatedBy string    `db:"created_by"`
-	CreatedAt string    `db:"created_at"`
 	Status    FAQStatus `db:"status"`
 	Question  string    `json:"question" db:"question" binding:"required"`
 	Answer    string    `json:"answer" db:"answer" binding:"required"`
 	OrderNum  int       `db:"order_num"`
+	CreatedBy string    `db:"created_by"`
+	CreatedAt string    `db:"created_at"`
+}
+
+type UpdateFAQ struct {
+	ID        string `db:"id" json:"id" binding:"required"`
+	Question  string `json:"question" db:"question" binding:"required"`
+	Answer    string `json:"answer" db:"answer" binding:"required"`
+	UpdatedBy string `db:"updated_by"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 type UpdateFAQStatus struct {
-	ID        string    `db:"id" json:"id"`
+	ID        string    `db:"id" json:"id" binding:"required"`
 	Status    FAQStatus `db:"status"`
 	Question  string    `json:"question" db:"question" binding:"required"`
 	Answer    string    `json:"answer" db:"answer" binding:"required"`
 	OrderNum  int       `db:"order_num"`
+	CreatedBy string    `db:"created_by"`
+	CreatedAt string    `db:"created_at"`
 	UpdatedBy string    `db:"updated_by"`
 	UpdatedAt string    `db:"updated_at"`
 }
