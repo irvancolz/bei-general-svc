@@ -92,7 +92,7 @@ func HandleDataSorting(c *gin.Context, data []map[string]interface{}) []map[stri
 
 	if strings.EqualFold(sortOrder, "desc") {
 		sort.SliceStable(results, func(current, before int) bool {
-			return fmt.Sprintf("%v", results[current][sortedField]) > fmt.Sprintf("%v", results[before][sortedField])
+			return strings.ToLower(fmt.Sprintf("%v", results[current][sortedField])) > strings.ToLower(fmt.Sprintf("%v", results[before][sortedField]))
 		})
 		return results
 	}

@@ -68,7 +68,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Personel Follow Up",
 		"Lampiran",
 		"Waktu",
-		"User",
+		"Fullname",
 		"Sumber Informasi Tambahan",
 	}
 
