@@ -7,6 +7,7 @@ type TopicStatus string
 const (
 	NotAnsweredTopic TopicStatus = "BELUM TERJAWAB"
 	AnsweredTopic    TopicStatus = "SUDAH TERJAWAB"
+	DoneTopic        TopicStatus = "SELESAI TERJAWAB"
 	DraftTopic       TopicStatus = "DRAFT"
 )
 
@@ -56,15 +57,18 @@ type CreateTopicWithMessage struct {
 	CompanyName  string      `db:"company_name"`
 	TopicID      string      `db:"topic_id"`
 	UserFullName string      `db:"user_full_name"`
+	UserType     string      `db:"user_type"`
+	ExternalType *string     `db:"external_type"`
 	Message      string      `db:"message" json:"message" binding:"required"`
 }
 
 type UpdateTopicHandler struct {
-	TopicID     string `db:"topic_id" json:"topic_id"`
-	HandlerID   string `db:"handler_id"`
-	HandlerName string `db:"handler_name"`
-	UpdatedBy   string `db:"updated_by"`
-	UpdatedAt   string `db:"updated_at"`
+	TopicID     string      `db:"topic_id" json:"topic_id"`
+	Status      TopicStatus `db:"status"`
+	HandlerID   string      `db:"handler_id"`
+	HandlerName string      `db:"handler_name"`
+	UpdatedBy   string      `db:"updated_by"`
+	UpdatedAt   string      `db:"updated_at"`
 }
 
 type UpdateTopicStatus struct {
@@ -73,6 +77,12 @@ type UpdateTopicStatus struct {
 	Message   string      `db:"message" json:"message"`
 	UpdatedBy string      `db:"updated_by"`
 	UpdatedAt string      `db:"updated_at"`
+}
+
+type UpdateTopic struct {
+	ID        string `db:"id"`
+	UpdatedBy string `db:"updated_by"`
+	UpdatedAt string `db:"updated_at"`
 }
 
 type DeleteTopic struct {
