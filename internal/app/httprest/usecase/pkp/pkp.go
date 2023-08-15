@@ -65,7 +65,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Waktu Jawaban / Respon",
 		"Jawaban / Respon",
 		"Topik",
-		"Personel Follow Up",
+		"Personei Follow Up",
 		"Lampiran",
 		"Waktu",
 		"Fullname",
@@ -75,7 +75,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	columnWidth := []float64{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60}
+	columnWidth := []float64{20, 50, 40, 40, 30, 40, 30, 40, 40, 50, 40, 30, 40, 60}
 	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
