@@ -433,7 +433,7 @@ func drawFooter(pdf *fpdf.Fpdf) {
 		pdf.SetLeftMargin(0)
 		pdf.SetY(pageHeight - float64(footerHeight))
 		footerDate := func() string {
-			return time.Now().Format("02/01/2006") + " - Page " + fmt.Sprintf("%v", pdf.PageNo()) + " Of " + fmt.Sprintf("%v", pdf.PageCount())
+			return time.Now().Format("02/01/2006") + " - Page " + fmt.Sprintf("%v", pdf.PageNo())
 		}()
 		pdf.MultiCell(50, 8, footerDate, "", "C", false)
 
@@ -472,7 +472,8 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 		pdf.ImageOptions("internal/app/helper/icon-globe-idx.png", pageProps.pageLeftPadding, pageProps.pageTopPadding, headerImgHeight, headerImgHeight, false, fpdf.ImageOptions{}, 0, "")
 
 		// header title
-		pdf.SetLeftMargin((pageWidth - headerTitleWidth) / 2)
+		leftMargin := (pageWidth - headerTitleWidth) / 2
+		pdf.SetX(leftMargin)
 		pdf.SetFontSize(18)
 		pdf.SetFontStyle("B")
 		pdf.MultiCell(headerTitleWidth, 10, headerTitle, "", "C", false)
