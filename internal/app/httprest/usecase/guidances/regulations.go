@@ -12,7 +12,7 @@ import (
 type CreateNewRegulationsProps struct {
 	Name  string `json:"name" binding:"required"`
 	Owner string `json:"owner" binding:"required"`
-	Order int    `json:"order" binding:"required"`
+	Order int    `json:"order" binding:"min=1,required"`
 	Link  string `json:"link" binding:"required"`
 }
 
@@ -20,7 +20,7 @@ type UpdateExistingRegulationsProps struct {
 	Id    string `json:"id" binding:"required"`
 	Name  string `json:"name" binding:"required"`
 	Owner string `json:"owner" binding:"required"`
-	Order int    `json:"order" binding:"required"`
+	Order int    `json:"order" binding:"min=1,required"`
 	Link  string `json:"link" binding:"required"`
 }
 

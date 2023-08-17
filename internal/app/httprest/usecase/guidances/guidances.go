@@ -25,7 +25,7 @@ type CreateNewGuidanceAndFilesProps struct {
 	File_size   int64  `json:"file_size" binding:"required"`
 	File_path   string `json:"file_path" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
-	Order       int    `json:"order" binding:"required"`
+	Order       int    `json:"order" binding:"min=1,required"`
 }
 
 type UpdateExsistingGuidancesAndFilesProps struct {
@@ -37,7 +37,7 @@ type UpdateExsistingGuidancesAndFilesProps struct {
 	File_path   string `json:"file_path" binding:"required"`
 	File_size   int64  `json:"file_size" binding:"required"`
 	Version     string `json:"version" binding:"required,numeric"`
-	Order       int    `json:"order" binding:"required"`
+	Order       int    `json:"order" binding:"min=1,required"`
 }
 
 func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error {
