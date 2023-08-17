@@ -89,7 +89,7 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 				return "Peraturan & Regulasi"
 			}
 
-			return "File"
+			return "Daftar Berkas"
 		}()
 
 		exportedData = append(exportedData, exportedRows)
