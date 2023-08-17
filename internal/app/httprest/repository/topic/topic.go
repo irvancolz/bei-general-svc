@@ -75,7 +75,7 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 			OR t.created_at::text ILIKE '%`+v+`%'`)
 		}
 
-		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
+		query += `AND (` + strings.Join(filterQuery, " AND ") + ")"
 	}
 
 	if userType.(string) == "External" {
@@ -129,9 +129,17 @@ func (m *repository) GetByID(topicID, keyword string) (*model.Topic, error) {
 
 	query = fmt.Sprintf(`SELECT id, created_by, message, company_id, company_name, user_full_name, created_at, CASE WHEN company_id != '00000000-0000-0000-0000-000000000000' THEN 'External' ELSE 'Internal' END as user_type FROM topic_messages WHERE topic_id = '%s'`, topicID)
 
-	if keyword != "" {
-		query += ` AND (message ILIKE '%` + keyword + `%' OR company_name ILIKE '%` + keyword + `%' OR user_full_name ILIKE '%` + keyword + `%' OR created_at::text ILIKE '%` + keyword + `%')`
+	serchQueryConfig := helper.SearchQueryGenerator{
+		TableName: "topic_messages",
+		ColumnScanned: []string{
+			"message",
+			"company_name",
+			"user_full_name",
+			"created_at::text",
+		},
 	}
+
+	query = serchQueryConfig.GenerateGetAllDataByQueryKeyword(strings.Split(keyword, ","), query)
 
 	query += ` ORDER BY created_at ASC`
 
