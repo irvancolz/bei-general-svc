@@ -98,9 +98,9 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 			listData[i].Handler_ID = ""
 		}
 
-		listData[i].Created_At = listData[i].Time_Created_At.Unix()
+		listData[i].Created_At = listData[i].Time_Created_At.Format(time.RFC3339)
 
-		listData[i].Updated_At = listData[i].Time_Updated_At.Unix()
+		listData[i].Updated_At = listData[i].Time_Updated_At.Format(time.RFC3339)
 	}
 
 	return listData, nil
