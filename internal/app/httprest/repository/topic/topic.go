@@ -97,6 +97,10 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		if listData[i].Handler_ID == "00000000-0000-0000-0000-000000000000" {
 			listData[i].Handler_ID = ""
 		}
+
+		listData[i].Created_At = listData[i].Time_Created_At.Unix()
+
+		listData[i].Updated_At = listData[i].Time_Updated_At.Unix()
 	}
 
 	return listData, nil

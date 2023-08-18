@@ -51,7 +51,7 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 		var temp []map[string]interface{}
 
 		for _, data := range filteredData {
-			if parseTime(startDate) == data["created_at"].(time.Time).Format("2006-01-02") {
+			if parseTime(startDate) == data["time_created_at"].(time.Time).Format("2006-01-02") {
 				temp = append(temp, data)
 			}
 		}
@@ -111,7 +111,7 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 		var temp []map[string]interface{}
 
 		for _, data := range filteredData {
-			if parseTime(startDate) == data["created_at"].(time.Time).Format("2006-01-02") {
+			if parseTime(startDate) == data["time_created_at"].(time.Time).Format("2006-01-02") {
 				temp = append(temp, data)
 			}
 		}
