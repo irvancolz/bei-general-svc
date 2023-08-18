@@ -178,11 +178,6 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 	userType, _ := c.Get("type")
 	ExternalType, _ := c.Get("external_type")
 	filterQuery := ""
-	userId, _ := c.Get("user_id")
-
-	if strings.EqualFold(utilities.GetUserRoles(c, userId.(string)), "user ang") {
-		return nil, errors.New("you dont have permission to view announcement")
-	}
 
 	if strings.ToLower(userType.(string)) == "internal" {
 		filterQuery = "where deleted_by IS NULL"
@@ -256,14 +251,9 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 }
 
 func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, error) {
-	userId, _ := c.Get("user_id")
-	if strings.EqualFold(utilities.GetUserRoles(c, userId.(string)), "user ang") {
-		return nil, errors.New("you dont have permission to view announcement")
-	}
-
 	var creatorId string
 	var efectiveDateTime time.Time
-	query := `
+	query := ` 
 		SELECT 
 		id,
 		information_type,
