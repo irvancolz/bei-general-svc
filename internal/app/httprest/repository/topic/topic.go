@@ -98,13 +98,9 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 			listData[i].Handler_ID = ""
 		}
 
-		tca, _ := helper.TimeIn(listData[i].Time_Created_At, "")
+		listData[i].Created_At = listData[i].Time_Created_At.Unix()
 
-		listData[i].Created_At = tca.Unix()
-
-		tua, _ := helper.TimeIn(listData[i].Time_Updated_At, "")
-
-		listData[i].Updated_At = tua.Unix()
+		listData[i].Updated_At = listData[i].Time_Updated_At.Unix()
 	}
 
 	return listData, nil
