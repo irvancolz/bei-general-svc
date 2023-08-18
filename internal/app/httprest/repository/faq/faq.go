@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -37,17 +38,15 @@ func (m *repository) GetAll(keyword, userId string) ([]*model.FAQ, error) {
 
 	query := `SELECT id, created_by, created_at, question, answer, status, order_num FROM faqs WHERE is_deleted = false AND (status = 'PUBLISHED' OR (status = 'DRAFT' AND created_by = '` + userId + `'))`
 
-	if keyword != "" {
-		keywords := strings.Split(keyword, ",")
-
-		var filterQuery []string
-
-		for _, v := range keywords {
-			filterQuery = append(filterQuery, `question ILIKE '%`+v+`%' OR answer ILIKE '%`+v+`%'`)
-		}
-
-		query += `AND (` + strings.Join(filterQuery, " OR ") + ")"
+	serchQueryConfig := helper.SearchQueryGenerator{
+		TableName: "faqs",
+		ColumnScanned: []string{
+			"question",
+			"answer",
+		},
 	}
+
+	query = serchQueryConfig.GenerateGetAllDataByQueryKeyword(strings.Split(keyword, ","), query)
 
 	query += ` ORDER BY CASE WHEN status = 'DRAFT' THEN 1 ELSE 2 END, order_num ASC, created_at DESC`
 
@@ -122,7 +121,19 @@ func (m *repository) UpdateFAQ(faq model.UpdateFAQ, c *gin.Context) (int64, erro
 	userId, _ := c.Get("user_id")
 	faq.UpdatedBy = userId.(string)
 
-	query := `UPDATE faqs SET question = :question, answer = :answer, updated_by = :updated_by, updated_at = :updated_at WHERE id = :id`
+	var isDeleted bool
+
+	query := fmt.Sprintf(`SELECT is_deleted FROM faqs WHERE id = '%s'`, faq.ID)
+	err := m.DB.Get(&isDeleted, query)
+	if err != nil {
+		return 0, errors.New("FAQ tidak tersedia")
+	}
+
+	if isDeleted {
+		return 0, errors.New("FAQ yang anda simpan telah terhapus")
+	}
+
+	query = `UPDATE faqs SET question = :question, answer = :answer, updated_by = :updated_by, updated_at = :updated_at WHERE id = :id`
 
 	result, err := m.DB.NamedExec(query, &faq)
 	if err != nil {
