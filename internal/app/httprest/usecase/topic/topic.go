@@ -131,7 +131,7 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	exportedFields := []string{"user_full_name", "company_name", "message", "created_at", "status"}
+	exportedFields := []string{"user_full_name", "company_name", "message", "time_created_at", "status"}
 	var exportedData [][]string
 
 	for _, content := range filteredData {
