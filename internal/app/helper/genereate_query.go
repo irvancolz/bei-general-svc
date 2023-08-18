@@ -72,3 +72,10 @@ func (s *SearchQueryGenerator) GenerateGetAllDataQuerry(c *gin.Context, baseQuer
 	}
 	return baseQuery
 }
+
+func (s *SearchQueryGenerator) GenerateGetAllDataByQueryKeyword(queryParams []string, baseQuery string) string {
+	if len(queryParams) > 0 {
+		return baseQuery + s.GenerateSearchQuery(queryParams, "")
+	}
+	return baseQuery
+}
