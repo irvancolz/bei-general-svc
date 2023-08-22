@@ -60,3 +60,8 @@ func TestTimeConverter(t *testing.T) {
 		t.Error("the time results is not same")
 	}
 }
+
+func TestTrimText(t *testing.T) {
+	keywords := "search_topic"
+	t.Log(getFreeTextFilterBaseKeys(keywords))
+}
