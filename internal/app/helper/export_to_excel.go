@@ -330,7 +330,6 @@ func ExportAnnouncementsToExcel(filename string, data model.Announcement) (strin
 }
 
 func ReadFileExcel(filenames string) [][]string {
-	// var result [][]string
 
 	file, errorReadFile := excelize.OpenFile(filenames)
 	if errorReadFile != nil {
