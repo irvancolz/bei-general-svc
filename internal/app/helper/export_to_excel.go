@@ -328,3 +328,20 @@ func ExportAnnouncementsToExcel(filename string, data model.Announcement) (strin
 	}
 	return result, nil
 }
+
+func ReadFileExcel(filenames string) [][]string {
+
+	file, errorReadFile := excelize.OpenFile(filenames)
+	if errorReadFile != nil {
+		log.Println("failed open excel :", errorReadFile)
+		return nil
+	}
+
+	rows, errorReadRows := file.GetRows(file.GetSheetName(0))
+
+	if errorReadRows != nil {
+		log.Println("failed to read this rows :", errorReadRows)
+		return nil
+	}
+	return rows
+}

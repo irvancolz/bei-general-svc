@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,6 +24,29 @@ func ConvertUnixStrToDateString(unix string, format string) string {
 	return result
 }
 
+func generateFreeTextFilterKeywords(keys []string) []string {
+	result := []string{}
+
+	for _, key := range keys {
+		result = append(result, "search_"+key)
+	}
+
+	return result
+}
+
+func getFreeTextFilterBaseKeys(keyword string) string {
+	return strings.Join(strings.Split(keyword, "_")[1:], "_")
+}
+
+func IsContainedSubStr(list []string, str string) bool {
+	var result []bool
+	for _, substr := range list {
+		result = append(result, strings.Contains(strings.ToLower(str), strings.ToLower(substr)))
+	}
+
+	return !IsContains(result, false)
+}
+
 func ConvertUnixToDateString(unix int64, format string) string {
 	convertFormat := "2006-01-02"
 	if format != "" {
@@ -30,7 +54,6 @@ func ConvertUnixToDateString(unix int64, format string) string {
 	}
 
 	result := time.Unix(int64(unix), 0).Format(convertFormat)
-
 	return result
 }
 
@@ -131,6 +154,20 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 	rangeTimeParams := generateTimeRangeParamList(timeField)
 	results := ConvertToMap(data)
 	filteredParameterResults := generateFilterParameter(results)
+
+	freeTextFilterParameterKeys := func() []string {
+		result := []string{}
+
+		freeTextMapOrigin := reflect.ValueOf(filteredParameterResults).MapKeys()
+		for _, key := range freeTextMapOrigin {
+			result = append(result, key.String())
+		}
+
+		return result
+	}()
+
+	freeTextFilterKeys := generateFreeTextFilterKeywords(freeTextFilterParameterKeys)
+
 	if len(querries) <= 0 {
 		return results, filteredParameterResults
 	}
@@ -144,6 +181,8 @@ func HandleDataFiltering(c *gin.Context, data []interface{}, timeField []string)
 				isMatched = append(isMatched, ConvertUnixStrToDateString(querries[key][0], "") == ConvertUnixToDateString(maps[key].(int64), ""))
 			} else if IsContains(rangeTimeParams, key) {
 				isMatched = append(isMatched, CheckIsOnSpecifiedTimeRange(c, key, maps[getBaseTimeRange(key)].(int64)))
+			} else if IsContains(freeTextFilterKeys, key) {
+				isMatched = append(isMatched, IsContainedSubStr(querries[key], maps[getFreeTextFilterBaseKeys(key)].(string)))
 			} else if IsContains(mapKeys, key) && IsString(maps[key]) {
 				// convert current obj props value to double quoted str then remove the quote to be compared with current params given
 				isMatched = append(isMatched, IsContains(querries[key], strings.ReplaceAll(strconv.Quote(maps[key].(string)), `"`, "")))

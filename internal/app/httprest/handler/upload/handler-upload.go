@@ -66,9 +66,10 @@ func (h *handler) UploadUser(c *gin.Context) {
 
 func (h *handler) UploadReport(c *gin.Context) {
 	config := usecase.UploadFileConfig{
-		Host:      os.Getenv("MINIO_ENDPOINT"),
-		Directory: "report",
-		MaxSize:   10240000, // 10mb max
+		Host:       os.Getenv("MINIO_ENDPOINT"),
+		Directory:  "report",
+		MaxSize:    10240000, // 10mb max
+		Extensions: []string{".xlsx"},
 	}
 	result, error_result := h.Usecase.Upload(c, config)
 	if error_result != nil {
