@@ -17,6 +17,7 @@ type UnggahBerkasRepoInterface interface {
 	GetUploadedFilesPath(c *gin.Context, id string) (string, error)
 	DeleteUploadedFiles(props DeleteUploadedFilesProps) error
 	CheckFileAvaliability(id string) bool
+	CurrentFileUploadedOrderToday(reportType string) int
 }
 
 type repository struct {
@@ -169,4 +170,20 @@ func (r *repository) GetUploadedFilesPath(c *gin.Context, id string) (string, er
 	}
 
 	return result, nil
+}
+
+func (r *repository) CurrentFileUploadedOrderToday(reportType string) int {
+	query := `SELECT 
+		COUNT(created_at) 
+	FROM uploaded_files 
+	WHERE date_trunc('day', to_timestamp(created_at)) = date_trunc('day', NOW())
+	AND report_type = $1
+	GROUP BY date_trunc('day', to_timestamp(created_at))`
+	queryResult := r.DB.QueryRowx(query, reportType)
+	var result int
+	if err := queryResult.Scan(&result); err != nil {
+		log.Println("failed to get total uploaded files today :", err)
+		return 1
+	}
+	return result + 1
 }
