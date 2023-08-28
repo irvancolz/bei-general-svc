@@ -219,7 +219,17 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	currentX := pageProps.tableMarginX
 	currentY := pageProps.currentY
 	columnWidth := pageProps.colWidthList
-	curRowsBgHeight := pageProps.curRowsBgHeight
+	lineHeight := pageProps.lineHeight
+	pageHeight := pageProps.pageHeight
+	currPageRowHeight := pageProps.currPageRowHeight
+
+	curRowsBgHeight := func() float64 {
+		if pageProps.isNeedPageBreak(currentY+currPageRowHeight) && math.Floor((pageHeight-30-currentY)/lineHeight) != 0 {
+			return math.Abs(math.Floor((pageHeight-30-currentY)/lineHeight) * lineHeight)
+		}
+		return math.Abs(currPageRowHeight)
+	}()
+
 	var rowPageOrigin int
 	var rowYOrigin float64
 
@@ -229,12 +239,16 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	pdf.SetTextColor(0, 0, 0)
 	pdf.SetFillColor(240, 240, 240)
 
-	// draw bg
 	if pageProps.currRowsIndex%2 != 0 {
 		pdf.SetAlpha(0, "Normal")
 	}
 
-	if pageProps.newPageMargin == 0 && pageProps.curRowsBgHeight < pageProps.currRowsheight {
+	// do not remove , i forgot why it was here
+	// if pageProps.newPageMargin == 0 && pageProps.curRowsBgHeight < pageProps.currRowsheight {
+	// 	curRowsBgHeight = pageProps.currRowsheight
+	// }
+
+	if curRowsBgHeight > pageProps.currRowsheight {
 		curRowsBgHeight = pageProps.currRowsheight
 	}
 
