@@ -2,6 +2,7 @@ package router
 
 import (
 	Announcement "be-idx-tsg/internal/app/httprest/handler/announcement"
+	companyprofile "be-idx-tsg/internal/app/httprest/handler/company_profile"
 	contactPerson "be-idx-tsg/internal/app/httprest/handler/contact_person"
 	exporttofile "be-idx-tsg/internal/app/httprest/handler/export-to-file"
 	FAQ "be-idx-tsg/internal/app/httprest/handler/faq"
@@ -75,6 +76,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 		WithoutCheckPermission.GET("/check-is-file-exists", upload.IsFileExists)
+		WithoutCheckPermission.GET("/get-company-profile", companyprofile.GetCompanyProfile)
 	}
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
