@@ -17,6 +17,8 @@ WORKDIR /app
 
 COPY --from=builder /svc-general /svc-general
 
+COPY ./internal/app/helper/*.png /app/internal/app/helper/
+
 EXPOSE 8080
 
 ENTRYPOINT ["/svc-general"]
