@@ -87,8 +87,9 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 		return nil, errorUploadToMinio
 	}
 
-	result.FileName = file.Filename
+	result.FileName = newFileName
 	result.FileSize = file.Size
+	result.OgFileName = file.Filename
 	result.Filepath = props.GenerateFilePath(newFileName)
 
 	// cleanup
