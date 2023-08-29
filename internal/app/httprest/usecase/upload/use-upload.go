@@ -57,7 +57,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 	}
 
 	newFileName := props.GenerateFilename(file.Filename, time.Now())
-	
+
 	if len(newFileName) > 240 {
 		errorText := "failed to save file to server : file name is too long"
 		log.Println(errorText)
@@ -89,6 +89,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 
 	result.FileName = newFileName
 	result.FileSize = file.Size
+	result.OgFileName = file.Filename
 	result.Filepath = props.GenerateFilePath(newFileName)
 
 	// cleanup
