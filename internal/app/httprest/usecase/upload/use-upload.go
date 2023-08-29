@@ -57,7 +57,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 	}
 
 	newFileName := props.GenerateFilename(file.Filename, time.Now())
-	
+
 	if len(newFileName) > 240 {
 		errorText := "failed to save file to server : file name is too long"
 		log.Println(errorText)
@@ -87,7 +87,7 @@ func (u *usecase) Upload(c *gin.Context, props UploadFileConfig) (*model.UploadF
 		return nil, errorUploadToMinio
 	}
 
-	result.FileName = newFileName
+	result.FileName = file.Filename
 	result.FileSize = file.Size
 	result.Filepath = props.GenerateFilePath(newFileName)
 

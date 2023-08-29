@@ -146,8 +146,6 @@ func MapToArray(data map[string]interface{}, order []string) []string {
 	}
 	for _, orderValue := range order {
 		for key := range data {
-
-			// if key == orderValue {
 			if strings.EqualFold(key, orderValue) {
 				result = append(result, fmt.Sprintf("%v", data[key]))
 			}
