@@ -43,7 +43,6 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"category",
 		"name",
 		"description",
-		"file",
 		"version",
 		"order",
 		"created_by",
@@ -52,9 +51,8 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 	columnHeaders := []string{
 		"No",
 		"Kategori",
-		"Daftar Berkas",
-		"Deskripsi",
 		"Nama Berkas",
+		"Deskripsi",
 		"Versi",
 		"Urutan",
 		"User",
