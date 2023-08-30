@@ -120,7 +120,7 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 	}
 
 	columnHeaders := []string{"Nama", "Nama Perusahaan", "Pertanyaan", "Waktu Pertanyaan", "Status"}
-	columnWidth := []float64{30, 30, 60, 40, 20}
+	columnWidth := []float64{30, 30, 150, 40, 30}
 
 	var columnWidthInt []int
 
@@ -155,7 +155,9 @@ func (m *usecase) ExportTopic(c *gin.Context) error {
 			HeaderText: []string{"Pertanyaan Jawaban"},
 		},
 		PdfConfig: &helper.PdfTableOptions{
-			HeaderRows: helper.GenerateTableHeaders(columnHeaders, columnWidth),
+			PapperWidth:  315,
+			Papperheight: 445.5,
+			HeaderRows:   helper.GenerateTableHeaders(columnHeaders, columnWidth),
 		},
 		Data:        exportedData,
 		Headers:     tablesColumns,
