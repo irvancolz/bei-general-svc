@@ -77,6 +77,7 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 		WithoutCheckPermission.GET("/check-is-file-exists", upload.IsFileExists)
 		WithoutCheckPermission.GET("/get-company-profile", companyprofile.GetCompanyProfile)
+		WithoutCheckPermission.POST("/get-company-profile/xml", companyprofile.GetCompanyProfileXml)
 	}
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))

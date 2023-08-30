@@ -41,6 +41,17 @@ func generateErrorResponse(c *gin.Context, flag string, message string, http_cod
 		response)
 }
 
+func generateErrorResponseXml(c *gin.Context, flag string, message string, http_code int) {
+	response := BaseErrorResponse{
+		Code:    strconv.Itoa(http_code) + "-" + flag,
+		Message: message,
+	}
+
+	c.XML(http_code,
+		response)
+}
+
+
 func GenerateInvalidJsonResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_invalid_json_request, httpresponse.ERR_REQUESTBODY_400+". "+err.Error(), http.StatusBadRequest)
 }
@@ -71,6 +82,10 @@ func GenerateDeleteErrorResponse(c *gin.Context, err error) {
 
 func GenerateReadErrorResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_flow_read, httpresponse.READFAILED_400+". "+err.Error(), http.StatusBadRequest)
+}
+
+func GenerateReadErrorResponseXml(c *gin.Context, err error) {
+	generateErrorResponseXml(c, error_type_flow_read, httpresponse.READFAILED_400+". "+err.Error(), http.StatusBadRequest)
 }
 
 func GenerateInternalErrorResponse(c *gin.Context, err error) {
