@@ -56,30 +56,65 @@ type PdfTableOptions struct {
 }
 
 type fpdfPageProperties struct {
-	pageLeftPadding   float64
-	pageRightpadding  float64
-	pageTopPadding    float64
-	headerHeight      float64
-	currentY          float64
-	currentX          float64
-	lineHeight        float64
-	curColWidth       float64
-	colWidthList      []float64
-	totalColumn       int
-	curColIndex       int
-	pageHeight        float64
-	currRowsheight    float64
-	currPageRowHeight float64
-	curRowsBgHeight   float64
-	currRowsIndex     int
-	tableWidth        int
-	tableMarginX      float64
-	currpage          int
-	newPageMargin     float64
+	pageLeftPadding     float64
+	pageRightpadding    float64
+	pageTopPadding      float64
+	headerHeight        float64
+	footerHeight        float64
+	currentY            float64
+	currentX            float64
+	lineHeight          float64
+	curColWidth         float64
+	colWidthList        []float64
+	totalColumn         int
+	curColIndex         int
+	pageHeight          float64
+	currRowsheight      float64
+	currPageRowHeight   float64
+	curRowsBgHeight     float64
+	curRowsBgHeightLeft float64
+	currRowsIndex       int
+	tableWidth          int
+	tableMarginX        float64
+	currpage            int
+	currRowMaxPage      int
+	newPageMargin       float64
+	footerMarginTop     float64
+	footerSpace         float64
+	headerSpace         float64
+	headerMarginBottom  float64
+}
+
+// debugging helper, do not remove
+func (p fpdfPageProperties) logStat() {
+	log.Printf("value of currRowsIndex: %v", p.currRowsIndex)
+	log.Printf("value of currpage: %v", p.currpage)
+	log.Printf("value of currRowMaxPage: %v", p.currRowMaxPage)
+	// log.Printf("value of pageLeftPadding: %v", p.pageLeftPadding)
+	// log.Printf("value of pageRightpadding: %v", p.pageRightpadding)
+	// log.Printf("value of pageTopPadding: %v", p.pageTopPadding)
+	// log.Printf("value of headerHeight: %v", p.headerHeight)
+	log.Printf("value of currentY: %v", p.currentY)
+	// log.Printf("value of currentX: %v", p.currentX)
+	// log.Printf("value of lineHeight: %v", p.lineHeight)
+	// log.Printf("value of curColWidth: %v", p.curColWidth)
+	// log.Printf("value of colWidthList: %v", p.colWidthList)
+	log.Printf("value of totalColumn: %v", p.totalColumn)
+	// log.Printf("value of curColIndex: %v", p.curColIndex)
+	// log.Printf("value of pageHeight: %v", p.pageHeight)
+	log.Printf("value of currRowsheight: %v", p.currRowsheight)
+	log.Printf("value of curRowsBgHeightLeft: %v", p.curRowsBgHeightLeft)
+	log.Printf("value of currPageRowHeight: %v", p.currPageRowHeight)
+	log.Printf("value of curRowsBgHeight: %v", p.curRowsBgHeight)
+	// log.Printf("value of curRowsBgHeightLeft: %v", p.curRowsBgHeightLeft)
+	// log.Printf("value of tableWidth: %v", p.tableWidth)
+	// log.Printf("value of tableMarginX: %v", p.tableMarginX)
+	log.Printf("value of newPageMargin: %v", p.newPageMargin)
+	log.Println("========== border here ===================")
 }
 
 func (p fpdfPageProperties) isNeedPageBreak(coord float64) bool {
-	return coord > p.pageHeight-30
+	return coord > p.pageHeight-p.footerSpace
 }
 
 func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *PdfTableOptions) (string, error) {
@@ -101,13 +136,13 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pdf.SetMargins(pageProps.pageLeftPadding, pageProps.pageTopPadding, pageProps.pageRightpadding)
 
 	drawHeader(pdf, props.getHeaderTitle(), &pageProps)
-	drawFooter(pdf)
+	drawFooter(pdf, &pageProps)
 
 	pdf.SetFont("Arial", "", 12)
 	pdf.AddPage()
 
 	pageWidth, pageHeight := pdf.GetPageSize()
-	currentY := pageProps.headerHeight + 10
+	currentY := pageProps.headerSpace
 	lineHeight := float64(6)
 	pageProps.lineHeight = lineHeight
 	pageProps.currentY = currentY
@@ -135,7 +170,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pageProps.tableWidth = totalWidth
 	pageProps.tableMarginX = tableMarginX
 	pageProps.colWidthList = columnWidth
-
+	pageProps.currRowMaxPage = pdf.PageNo()
 	currentX := tableMarginX
 	pageProps.currentX = currentX
 	pdf.SetLeftMargin(currentX)
@@ -157,24 +192,22 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 		lineHeight := pageProps.lineHeight
 		currentY := pageProps.currentY
 		pageHeight := pageProps.pageHeight
+		footerSpace := pageProps.footerSpace
 		currentX := pageProps.tableMarginX
 		maxColHeight := getHighestCol(pdf, columnWidth, rows)
 		currRowsheight := float64(maxColHeight) * lineHeight
+		currPageRowHeight := currRowsheight
+		curRowsBgHeightLeft := currRowsheight
+		curRowsBgHeight := currPageRowHeight
 
-		currPageRowHeight := func() float64 {
-			if pageProps.isNeedPageBreak(currentY+currRowsheight) && math.Floor((pageHeight-30-currentY)/lineHeight) != 0 {
-				return math.Abs(math.Floor((pageHeight-30-currentY)/lineHeight) * lineHeight)
-			}
-			return math.Abs(currRowsheight)
-		}()
-		curRowsBgHeight := func() float64 {
-			if pageProps.isNeedPageBreak(currentY+currPageRowHeight) && math.Floor((pageHeight-30-currentY)/lineHeight) != 0 {
-				return math.Abs(math.Floor((pageHeight-30-currentY)/lineHeight) * lineHeight)
-			}
-			return math.Abs(currPageRowHeight)
-		}()
+		if pageProps.isNeedPageBreak(currentY+currRowsheight) && math.Floor((pageHeight-footerSpace-currentY)/lineHeight) > 0 {
+			currPageRowHeight = math.Abs(math.Floor((pageHeight-footerSpace-currentY)/lineHeight) * lineHeight)
+			curRowsBgHeight = currPageRowHeight
+			curRowsBgHeightLeft = currRowsheight - curRowsBgHeight
+		}
 
 		pageProps.currRowsheight = currRowsheight
+		pageProps.curRowsBgHeightLeft = curRowsBgHeightLeft
 		pageProps.currPageRowHeight = currPageRowHeight
 		pageProps.curRowsBgHeight = curRowsBgHeight
 		pageProps.currRowsIndex = r
@@ -185,7 +218,7 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 			pdf.AddPage()
 			pdf.SetPage(pageProps.currpage + 1)
 			pageProps.currpage = pdf.PageNo()
-			currentY = pageProps.headerHeight + 10
+			currentY = pageProps.headerSpace
 			pageProps.currentY = currentY
 		}
 
@@ -196,8 +229,7 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 			pageProps.currentY = pageProps.newPageMargin
 			pageProps.newPageMargin = 0
 		}
-		pdf.SetPage(pageProps.currpage)
-
+		pdf.SetPage(pageProps.currRowMaxPage)
 		drawRows(pdf, pageProps, rows)
 
 		// do calibration on the props
@@ -207,7 +239,7 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 
 		//  add height for every line added
 		pageProps.currentY = func() float64 {
-			if pdf.PageNo() > 1 && currentY == pageProps.headerHeight+10 && currRowsheight > curRowsBgHeight {
+			if pdf.PageNo() > 1 && currentY == pageProps.headerSpace && currRowsheight > curRowsBgHeight {
 				return currentY + currRowsheight - curRowsBgHeight
 			}
 			return currentY + (float64(maxColHeight) * lineHeight)
@@ -221,13 +253,17 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	columnWidth := pageProps.colWidthList
 	lineHeight := pageProps.lineHeight
 	pageHeight := pageProps.pageHeight
-	currPageRowHeight := pageProps.currPageRowHeight
+	// currPageRowHeight := pageProps.currPageRowHeight
+	footerSpace := pageProps.footerSpace
+	curRowsBgHeightLeft := pageProps.curRowsBgHeightLeft
 
+	// curRowsBgHeight := pageProps.curRowsBgHeight
 	curRowsBgHeight := func() float64 {
-		if pageProps.isNeedPageBreak(currentY+currPageRowHeight) && math.Floor((pageHeight-30-currentY)/lineHeight) != 0 {
-			return math.Abs(math.Floor((pageHeight-30-currentY)/lineHeight) * lineHeight)
+		if pageProps.isNeedPageBreak(currentY+curRowsBgHeightLeft) && math.Floor((pageHeight-footerSpace-currentY)/lineHeight) != 0 {
+			currPageBg := math.Abs(math.Floor((pageHeight-footerSpace-currentY)/lineHeight) * lineHeight)
+			return currPageBg
 		}
-		return math.Abs(currPageRowHeight)
+		return math.Abs(curRowsBgHeightLeft)
 	}()
 
 	var rowPageOrigin int
@@ -251,7 +287,7 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	if curRowsBgHeight > pageProps.currRowsheight {
 		curRowsBgHeight = pageProps.currRowsheight
 	}
-
+	pageProps.curRowsBgHeight = curRowsBgHeight
 	pdf.Rect(currentX, currentY, float64(pageProps.tableWidth), curRowsBgHeight, "F")
 	pdf.SetAlpha(1, "Normal")
 
@@ -295,51 +331,75 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 	currentX := pageProps.currentX
 	currentY := pageProps.currentY
 	lineHeight := pageProps.lineHeight
-	curRowsBgHeight := pageProps.curRowsBgHeight
-	colNumber := pageProps.curColIndex
+	// curRowsBgHeight := pageProps.curRowsBgHeight
+	// curRowsBgHeightLeft := pageProps.curRowsBgHeightLeft
+	// colNumber := pageProps.curColIndex
 	totalWidth := pageProps.tableWidth
 	tableMarginX := pageProps.tableMarginX
+	// footerSpace := pageProps.footerSpace
+	// headerSpace := pageProps.headerSpace
+	// pageHeight := pageProps.pageHeight
+	// curRowsBgHeight := func() float64 {
+	// 	if pageProps.isNeedPageBreak(curRowsBgHeightLeft + currentY) {
+	// 		currPageBg := curRowsBgHeightLeft - (pageHeight - currentY - footerSpace)
+	// 		pageProps.curRowsBgHeightLeft = curRowsBgHeightLeft - currPageBg
+	// 		return currPageBg
+	// 	}
+	// 	return curRowsBgHeightLeft
+	// }()
 
 	pdf.SetY(currentY)
 	pdf.SetX(currentX)
 
-	// column border
-	pdf.SetLineWidth(.25)
-	pdf.SetDrawColor(0, 0, 0)
-	pdf.SetAlpha(.25, "Normal")
-	pdf.Line(currentX, currentY, currentX, currentY+curRowsBgHeight)
-	if colNumber == pageProps.totalColumn {
-		pdf.Line(currentX+currColWidth, currentY, currentX+currColWidth, currentY+curRowsBgHeight)
-	}
-	pdf.SetAlpha(1, "Normal")
+	// // column border
+	// pdf.SetLineWidth(.25)
+	// pdf.SetDrawColor(0, 0, 0)
+	// pdf.SetAlpha(.25, "Normal")
+	// pdf.Line(currentX, currentY, currentX, currentY+curRowsBgHeight)
+	// if colNumber == pageProps.totalColumn {
+	// 	pdf.Line(currentX+currColWidth, currentY, currentX+currColWidth, currentY+curRowsBgHeight)
+	// }
+	// pdf.SetAlpha(1, "Normal")
 	splittedtext := pdf.SplitLines([]byte(content), currColWidth)
 	lastRowY := currentY
 	for lineIdx, text := range splittedtext {
 		// reset properties when add page
+		curRowsBgHeight := pageProps.curRowsBgHeightLeft
 		if pageProps.isNeedPageBreak(lastRowY+float64(lineHeight)) && lineIdx > 0 {
 			pdf.AddPage()
 			pdf.SetPage(linePagePosLogs[lineIdx-1] + 1)
-			pageProps.currpage = pdf.PageNo()
-			currentY = pageProps.headerHeight + 10
-			lastRowY = currentY
-			curRowsBgHeight = func() float64 {
-				if pageProps.isNeedPageBreak(curRowsBgHeight + currentY) {
-					return pageProps.pageHeight - 30 - (curRowsBgHeight + pageProps.headerHeight + 10)
+			curPagePosition := pdf.PageNo()
+			pageProps.currpage = curPagePosition
+
+			pageProps.currRowMaxPage = func() int {
+				if curPagePosition <= pageProps.currRowMaxPage {
+					return pageProps.currRowMaxPage
 				}
-				return curRowsBgHeight
+				return curPagePosition
 			}()
-			pageProps.curRowsBgHeight = curRowsBgHeight
+			curRowsBgHeight = pageProps.curRowsBgHeightLeft
+
+			currentY = pageProps.headerSpace
+			lastRowY = currentY
+
+			if pageProps.isNeedPageBreak(lastRowY + curRowsBgHeight) {
+				croppedBgHeight := curRowsBgHeight - (pageProps.pageHeight - pageProps.headerSpace - pageProps.footerSpace)
+				pageProps.curRowsBgHeightLeft = curRowsBgHeight - croppedBgHeight
+				curRowsBgHeight = croppedBgHeight
+			}
+			pageProps.logStat()
+			pageProps.curRowsBgHeightLeft = curRowsBgHeight
 
 			// draw bg
 			if pageProps.currRowsIndex%2 != 0 {
 				pdf.SetAlpha(0, "Normal")
 			}
 
-			pdf.Rect(tableMarginX, lastRowY, float64(totalWidth), pageProps.currRowsheight-curRowsBgHeight, "F")
+			pdf.Rect(tableMarginX, lastRowY, float64(totalWidth), curRowsBgHeight, "F")
 			pdf.SetAlpha(1, "Normal")
 			pageProps.currentY = lastRowY
 			// mark if there is new page added
-			pageProps.newPageMargin = lastRowY + pageProps.currRowsheight - curRowsBgHeight
+			pageProps.newPageMargin = lastRowY + curRowsBgHeight
 		}
 
 		linePagePosLogs = append(linePagePosLogs, pdf.PageNo())
@@ -376,7 +436,7 @@ func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTab
 	pdf.SetMargins(pageProps.pageLeftPadding, pageProps.pageTopPadding, pageProps.pageRightpadding)
 
 	drawHeader(pdf, opt.getHeaderTitle(), &pageProps)
-	drawFooter(pdf)
+	drawFooter(pdf, &pageProps)
 
 	pdf.SetFont("Arial", "", 12)
 	pdf.AddPage()
@@ -426,9 +486,13 @@ func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTab
 	return filenames, nil
 }
 
-func drawFooter(pdf *fpdf.Fpdf) {
+func drawFooter(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties) {
 	pageWidth, pageHeight := pdf.GetPageSize()
 	footerHeight := 10
+	footerMarginTop := 10
+	pageProps.footerHeight = float64(footerHeight)
+	pageProps.footerMarginTop = float64(footerMarginTop)
+	pageProps.footerSpace = float64(footerHeight) + float64(footerMarginTop)
 
 	pdf.SetFooterFunc(func() {
 		footerImgHeight := 7
@@ -463,7 +527,12 @@ func drawFooter(pdf *fpdf.Fpdf) {
 }
 
 func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
-	pageProps.headerHeight = 30
+	headerHeight := 30
+	headerMarginBottom := 10
+	pageProps.headerHeight = float64(headerHeight)
+	pageProps.headerMarginBottom = float64(headerMarginBottom)
+	pageProps.headerSpace = float64(headerHeight) + float64(headerMarginBottom)
+
 	pdf.SetHeaderFunc(func() {
 		pdf.SetTextColor(0, 0, 0)
 		pageWidth, pageHeight := pdf.GetPageSize()
