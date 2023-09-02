@@ -37,6 +37,6 @@ func GetCompanyProfileXml(c *gin.Context) {
 		model.GenerateReadErrorResponseXml(c, errorResult)
 		return
 	}
-	
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+
+	c.XML(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
 }
