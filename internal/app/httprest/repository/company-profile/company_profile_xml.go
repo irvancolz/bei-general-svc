@@ -13,7 +13,7 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]databasemode
 	
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
-		return listData, nil
+		return listData, errInitDb
 	}
 
 	if len(request.CompanyCode) > 0 {
@@ -21,11 +21,11 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]databasemode
 	} 
 
 	dbConn.Find(&listData)
-
+	
 	if dbConn.Error != nil {
 		return listData, errors.New("Failed to get company ab: "+dbConn.Error.Error())
 	}
-
+	
 	return listData, nil
 }
 
@@ -35,7 +35,7 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]dat
 	
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
-		return listData, nil
+		return listData, errInitDb
 	}
 
 	if len(request.CompanyCode) > 0 {
@@ -56,7 +56,7 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]database
 	
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
-		return listData, nil
+		return listData, errInitDb
 	}
 
 	if len(request.CompanyCode) > 0 {
@@ -77,7 +77,7 @@ func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]databasemo
 	
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
-		return listData, nil
+		return listData, errInitDb
 	}
 
 	if len(request.CompanyCode) > 0 {

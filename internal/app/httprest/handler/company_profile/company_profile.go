@@ -38,5 +38,5 @@ func GetCompanyProfileXml(c *gin.Context) {
 		return
 	}
 	
-	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, result))
+	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
 }
