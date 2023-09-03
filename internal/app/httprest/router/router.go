@@ -79,6 +79,9 @@ func Routes() *gin.Engine {
 		WithoutCheckPermission.GET("/get-company-profile", companyprofile.GetCompanyProfile)
 	}
 
+	r.POST("/api/get-company-profile/xml", companyprofile.GetCompanyProfileXml)
+
+
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		announcementRoute.GET("/get-all-announcement", announcement.GetAllAnnouncement) // used

@@ -12,3 +12,4 @@ func GetCompanyProfile(c *gin.Context) (interface{}, error) {
 
 	return companyprofile.GetCompanyProfile(extType, id)
 }
+

@@ -2,10 +2,15 @@ package helper
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func InitDBConn(externalType string) (*sqlx.DB, error) {
@@ -52,4 +57,22 @@ func InitDBConn(externalType string) (*sqlx.DB, error) {
 	dbUrl = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, pass, dbname)
 
 	return sqlx.Connect("postgres", dbUrl)
+}
+
+func InitDBConnGorm(externalType string) (*gorm.DB, error) {
+	dbConn, errInitDb := InitDBConn(externalType)
+	if errInitDb != nil {
+		return nil, errInitDb
+	}
+
+	gormDb, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: dbConn,
+	}), &gorm.Config{ Logger: logger.Default.LogMode(logger.Info)})
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return gormDb, nil
+	
 }
