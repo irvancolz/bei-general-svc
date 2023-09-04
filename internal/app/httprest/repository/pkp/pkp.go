@@ -83,6 +83,13 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 	getAllQuery := searchQueryConfig.GenerateGetAllDataQuerry(c, query)
 	getAllQuery += orderQuery
 
+	authDb, errGetAuthCon := helper.InitDBConn("auth")
+	if errGetAuthCon != nil {
+		log.Println("failed inisiate connection to get pkp user :", errGetAuthCon)
+		return nil, errGetAuthCon
+	}
+	defer authDb.Close()
+
 	rows, err := m.DB.Queryx(getAllQuery)
 	if err != nil {
 		log.Println(getAllQuery)
@@ -118,7 +125,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			ExternalType:   item.ExternalType,
 			AdditionalInfo: item.AdditionalInfo.String,
 			CreatedAt:      item.CreatedAt.Unix(),
-			CreateBy:       item.CreateBy,
+			CreateBy:       GetUserFullname(authDb, item.CreateBy),
 
 			UpdatedBy: item.UpdatedBy.String,
 			DeletedBy: item.DeletedBy.String,
@@ -143,7 +150,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 }
 
 func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error) {
-	UserId, _ := c.Get("name_user")
+	UserId, _ := c.Get("user_id")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 
 	QuestionDate := pkp.QuestionDate
@@ -202,7 +209,7 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("name_user")
+	userId, _ := c.Get("user_id")
 	query := `
 		UPDATE
 			pkp SET
@@ -269,7 +276,7 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("name_user")
+	userId, _ := c.Get("user_id")
 	deleted_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	query := `
 	UPDATE

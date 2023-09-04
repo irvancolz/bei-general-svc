@@ -93,13 +93,14 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 			"company_code",
 			"company_name",
 			"file_name",
-			"id",
+			"report_type",
 		},
 	}
 
 	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getUploadedFilesQuery)
 	rowResults, errorRows := r.DB.Queryx(query)
 	if errorRows != nil {
+		log.Println(query)
 		log.Println("failed to get uploaded files from databases :", errorRows)
 		return nil, errorRows
 	}

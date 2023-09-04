@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -76,7 +77,7 @@ func drawTxtTable(data [][]string, columnWidth []int) []string {
 	for j, item := range data {
 		var beautifiedRows strings.Builder
 		for i, text := range item {
-			beautifiedRows.WriteString("| " + text)
+			beautifiedRows.WriteString("| " + removeEscEnter(text))
 			for space := len(text); space <= columnWidth[i]; space++ {
 				beautifiedRows.WriteString("\u0020")
 			}
@@ -97,6 +98,10 @@ func drawTxtTable(data [][]string, columnWidth []int) []string {
 		result = append(result, beautifiedRows.String())
 	}
 	return result
+}
+
+func removeEscEnter(s string) string {
+	return strings.Join(strings.Split(strings.ReplaceAll(strconv.Quote(s), `"`, ""), `\n`), " ")
 }
 
 func checkOverlappedText(data [][]string, widths []int) bool {
