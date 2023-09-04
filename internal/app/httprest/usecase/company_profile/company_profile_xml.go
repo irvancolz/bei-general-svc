@@ -49,26 +49,29 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 ) error {
 
 	if len(request.ExternalType) == 0 {
+		request.ExternalType = "ab"
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
 		if err != nil {
 			return err
 		}
 
+		request.ExternalType = "participant"
 		participantList, err := companyprofilerepository.GetCompanyProfileParticipant(request)
 
 		if err != nil {
 			return err
 		}
 
+		request.ExternalType = "pjsppa"
 		pjsppaList, err := companyprofilerepository.GetCompanyProfilePJSPPA(request)
 
 		if err != nil {
 			return err
 		}
-
 		onGetPjsppaList(pjsppaList)
 
+		request.ExternalType = "du"
 		dealerUtamaList, err := companyprofilerepository.GetCompanyDealerUtama(request)
 
 		if err != nil {

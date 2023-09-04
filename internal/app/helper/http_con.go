@@ -55,7 +55,6 @@ func InitDBConn(externalType string) (*sqlx.DB, error) {
 		dbname = os.Getenv("DB_AUTH_NAME")
 	}
 	dbUrl = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, pass, dbname)
-
 	return sqlx.Connect("postgres", dbUrl)
 }
 
