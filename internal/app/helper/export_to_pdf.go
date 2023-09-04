@@ -232,10 +232,7 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 
 		//  add height for every line added
 		pageProps.currentY = func() float64 {
-			if pdf.PageNo() > 1 && currentY == pageProps.headerSpace && currRowsheight > curRowsBgHeight {
-				return currentY + pageProps.newPageMargin
-			}
-			if pageProps.isNeedPageBreak(currentY + pageProps.currRowsheight) {
+			if pageProps.isNeedPageBreak(pageProps.currentY + pageProps.currRowsheight) {
 				return pageProps.newPageMargin
 			}
 			return currentY + pageProps.currRowsheight
@@ -387,6 +384,7 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 		pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(content))
 
 		lastRowY += lineHeight
+		pageProps.currentY = lastRowY
 	}
 
 	currentX += currColWidth
