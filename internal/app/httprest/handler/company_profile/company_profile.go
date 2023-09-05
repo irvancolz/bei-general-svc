@@ -32,11 +32,18 @@ func GetCompanyProfileXml(c *gin.Context) {
 		return
 	}
 
-	result, errorResult := companyprofile.GetCompanyProfileXml(c, companyProfileXml)
+	companyProfileList, errorResult := companyprofile.GetCompanyProfileXml(c, companyProfileXml)
 	if errorResult != nil {
 		model.GenerateReadErrorResponseXml(c, errorResult)
 		return
 	}
 
-	c.XML(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+	c.Writer.Header().Set("Content-Type", "application/xml")
+	_, err := c.Writer.Write(companyProfileList)
+
+	if err != nil {
+		model.GenerateReadErrorResponseXml(c, err)
+		return
+	}
+	
 }
