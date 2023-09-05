@@ -1,44 +1,74 @@
 package companyprofile
 
 import (
-	"be-idx-tsg/internal/app/httprest/model/databasemodel"
 	"be-idx-tsg/internal/app/httprest/model/requestmodel"
-	"be-idx-tsg/internal/app/httprest/model/responsemodel"
 	companyprofilerepository "be-idx-tsg/internal/app/httprest/repository/company-profile"
 	"strings"
 
+	"github.com/beevik/etree"
 	"github.com/gin-gonic/gin"
 )
 
-type onGetPjsppaList = func([]databasemodel.Pjsppa)
-type onGetParticipantList = func([]databasemodel.Participant)
-type onGetAbList = func([]databasemodel.AngggotaBursa)
-type onGetDuList = func([]databasemodel.DealerUtama)
+type onGetPjsppaList = func([]byte)
+type onGetParticipantList = func([]byte)
+type onGetAbList = func([]byte)
+type onGetDuList = func([]byte)
+type onGetAllList = func([]byte)
 
-func GetCompanyProfileXml(c *gin.Context, request requestmodel.CompanyProfileXml) (responsemodel.CompanyProfileResponseXml, error) {
+const (
+	EXTERNAL_TYPE_LIST_AB = "AbList"
+	EXTERNAL_TYPE_LIST_PARTICIPANT = "ParticipantList"
+	EXTERNAL_TYPE_LIST_PJSPPA = "PjsppaList"
+	EXTERNAL_TYPE_LIST_DU = "DuList"
+)
 
-	companyProfileXml := responsemodel.CompanyProfileResponseXml{}
+func byteToDocument(data []byte) (*etree.Document, error) {
+	// Create a ew XML element from the new XML bytes
+	document := etree.NewDocument()
+	if err := document.ReadFromBytes(data); err != nil {
+		return nil, err
+	}
+
+	// Add the new element to the existing document
+
+
+	//log.Println("hey")
+	//data, err := abCompanyList.WriteToBytes()
+
+	//log.Println(string(data))
+
+
+
+	return document, nil
+}
+
+func GetCompanyProfileXml(c *gin.Context, request requestmodel.CompanyProfileXml) ([]byte, error) {
+
+	companyProfileXmlBytes := []byte{}
 
 	err := handleCompanyType(request,
-		func(abList []databasemodel.AngggotaBursa) {
-			companyProfileXml.AnggotaBursaList = abList
+		func(abList []byte) {
+			companyProfileXmlBytes = append(companyProfileXmlBytes, abList...) 
 		},
-		func(participantList []databasemodel.Participant) {
-			companyProfileXml.ParticipantList = participantList
+		func(participantList []byte) {
+			companyProfileXmlBytes = append(companyProfileXmlBytes, participantList...) 
 		},
-		func(pjsppaList []databasemodel.Pjsppa) {
-			companyProfileXml.PjsppaList = pjsppaList
+		func(pjsppaList []byte) {
+			companyProfileXmlBytes = append(companyProfileXmlBytes, pjsppaList...) 
 		},
-		func(duList []databasemodel.DealerUtama) {
-			companyProfileXml.DealerUtamaList = duList
+		func(duList []byte) {
+			companyProfileXmlBytes = append(companyProfileXmlBytes, duList...) 
+		},
+		func(allList []byte) {
+			companyProfileXmlBytes = append(companyProfileXmlBytes, allList...) 
 		},
 	)
 
 	if err != nil {
-		return companyProfileXml, err
+		return companyProfileXmlBytes, err
 	}
 
-	return companyProfileXml, nil
+	return companyProfileXmlBytes, nil
 }
 
 func handleCompanyType(request requestmodel.CompanyProfileXml,
@@ -46,9 +76,16 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 	onGetParticipantList onGetParticipantList,
 	onGetPjsppaList onGetPjsppaList,
 	onGetDuList onGetDuList,
+	onGetAllList onGetAllList,
 ) error {
 
+
+	companyList := etree.NewDocument()
+	companyList.CreateElement("CompanyProfile")
+
+
 	if len(request.ExternalType) == 0 {
+		var allList[]byte  
 		request.ExternalType = "ab"
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
@@ -56,8 +93,21 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
+		_, err = combineXml(companyList,  anggotaBursaList)
+
+		if err != nil {
+			return err
+		}
+		
+
 		request.ExternalType = "participant"
 		participantList, err := companyprofilerepository.GetCompanyProfileParticipant(request)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = combineXml(companyList,  participantList)
 
 		if err != nil {
 			return err
@@ -69,7 +119,12 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 		if err != nil {
 			return err
 		}
-		onGetPjsppaList(pjsppaList)
+
+		_, err = combineXml(companyList, pjsppaList)
+
+		if err != nil {
+			return err
+		}
 
 		request.ExternalType = "du"
 		dealerUtamaList, err := companyprofilerepository.GetCompanyDealerUtama(request)
@@ -78,16 +133,27 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		onGetAbList(anggotaBursaList)
-		onGetParticipantList(participantList)
-		onGetPjsppaList(pjsppaList)
-		onGetDuList(dealerUtamaList)
+		allList, err = combineXml(companyList, dealerUtamaList)
+
+		if err != nil {
+			return err
+		}
+
+
+		onGetAllList(allList)
 	} else if strings.EqualFold(request.ExternalType, "ab") {
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
 		if err != nil {
 			return err
 		}
+
+		anggotaBursaList, err = combineXml(companyList, anggotaBursaList)
+
+		if err != nil {
+			return err
+		}
+
 		onGetAbList(anggotaBursaList)
 
 	} else if strings.EqualFold(request.ExternalType, "participant") {
@@ -96,9 +162,22 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 		if err != nil {
 			return err
 		}
+
+		participantList, err = combineXml(companyList, participantList)
+
+		if err != nil {
+			return err
+		}
+
 		onGetParticipantList(participantList)
 	} else if strings.EqualFold(request.ExternalType, "pjsppa") {
 		pjsppaList, err := companyprofilerepository.GetCompanyProfilePJSPPA(request)
+
+		if err != nil {
+			return err
+		}
+
+		pjsppaList, err = combineXml(companyList, pjsppaList)
 
 		if err != nil {
 			return err
@@ -113,8 +192,34 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
+		dealerUtamaList, err = combineXml(companyList, dealerUtamaList)
+
+		if err != nil {
+			return err
+		}
+
 		onGetDuList(dealerUtamaList)
 	}
 
 	return nil
+}
+
+
+
+func combineXml(companyList *etree.Document, data []byte)  ([]byte, error) {
+
+	dataDocument, err :=  byteToDocument(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	companyList.Root().AddChild(dataDocument.Root())
+	data, err = companyList.WriteToBytes()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

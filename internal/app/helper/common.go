@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shohiebsense/gojsontoxml"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -123,6 +125,39 @@ func IsContainsBool(list []bool, data bool) bool {
 		}
 	}
 	return false
+}
+
+func JsonStringInterface(jsonByte []byte) (map[string]interface{}, error) {
+	var data map[string]interface{}
+	err := json.Unmarshal(jsonByte, &data)
+	if err != nil {
+		log.Println(err)
+	}
+	
+	return data, nil
+}
+
+func JsonToXml(data []byte, rootName, id string) ([]byte, error) {
+
+	if data == nil {
+		return gojsontoxml.JsonToXml(nil, false, rootName)
+	}
+	
+
+	jsonMapStringInterface, err := JsonStringInterface(data)
+	jsonMapStringInterface["Id"] = id
+	if err != nil {
+		return nil, err
+	}
+
+	messageBodyBytes, err := gojsontoxml.JsonToXml(jsonMapStringInterface, false, rootName)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return messageBodyBytes, nil
 }
 
 func IsContains[T comparable](list []T, data T) bool {

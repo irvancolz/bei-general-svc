@@ -84,6 +84,7 @@ func parseXml(doc *etree.Document, obj *etree.Element, data map[string]interface
 		default:
 			xType := reflect.TypeOf(element)
 			fmt.Println("this guy has not been handled: ", xType)
+			obj.CreateElement(k).SetText("")
 		}
 	}
 }
@@ -111,7 +112,7 @@ func parseSliceOfInterface(doc *etree.Document, obj *etree.Element, key string, 
 		default:
 			xType := reflect.TypeOf(element)
 			fmt.Println("this guy has not been handled: ", xType)
-
+			obj.CreateElement(key).SetText("")
 		}
 	}
 }
@@ -125,6 +126,7 @@ func parseInterface(doc *etree.Document, obj *etree.Element, key string, data in
 	default:
 		xType := reflect.TypeOf(v)
 		fmt.Println("this guy has not been handled: ", xType)
+		obj.CreateElement(key).SetText("")
 	}
 }
 
@@ -134,10 +136,12 @@ func parseSliceOfString(obj *etree.Element, key string, data []string) {
 	}
 }
 
-func JsonToXml(data map[string]interface{}, rootName string) ([]byte, error) {
+func JsonToXml(data map[string]interface{}, isRoot bool, rootName string) ([]byte, error) {
 
 	doc := etree.NewDocument()
-	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+	if isRoot {
+		doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+	}
 	var element *etree.Element
 	if (len(rootName) == 0) {
 		element = doc.CreateElement("Object")

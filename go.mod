@@ -18,18 +18,18 @@ require (
 require github.com/go-playground/validator/v10 v10.9.0
 
 require (
+	github.com/beevik/etree v1.2.0
 	github.com/go-pdf/fpdf v0.8.0
 	github.com/google/uuid v1.3.0
 	github.com/johnfercher/maroto v0.42.0
 	github.com/minio/minio-go/v7 v7.0.61
-	github.com/shohiebsense/gojsontoxml v1.0.2
+	github.com/shohiebsense/gojsontoxml v1.0.3
 	github.com/xuri/excelize/v2 v2.7.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.4
 )
 
 require (
-	github.com/beevik/etree v1.2.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

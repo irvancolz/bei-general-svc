@@ -20,7 +20,7 @@ func ToXmlUseCase() Usecase {
 
 func (*usecase) ToXml(data map[string]interface{}) ([]byte, error) {
 
-	dataBytes, err := gojsontoxml.JsonToXml(data, "body")
+	dataBytes, err := gojsontoxml.JsonToXml(data, true, "body")
 
 	if err != nil {
 		log.Println(err)
