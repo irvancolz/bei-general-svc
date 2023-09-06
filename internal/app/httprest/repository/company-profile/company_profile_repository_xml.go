@@ -4,7 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model/databasemodel"
 	"be-idx-tsg/internal/app/httprest/model/requestmodel"
-	"log"
+	"encoding/xml"
 
 	"errors"
 
@@ -79,25 +79,42 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)
 		}
 	
 
-		id := item.ID
-		if item.RegistrationJson == nil {
-			log.Println(item.ID)
-			return listData, errors.New("Failed to get company ab - registrationJson: is null")
-		}
+		if item.RegistrationJson != nil {
+			id := item.ID
 
-		itemXml, err := generateProfileXml(id, item.RegistrationJson, "Ab")
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Ab")
 		
-		if err != nil {
-			return listData, errors.New("Failed to get company ab - generateProfileXml: "+err.Error())
+			if err != nil {
+				return listData, errors.New("Failed to get company ab - generateProfileXml: "+err.Error())
+			}
+
+
+			itemXmlDocument := etree.NewDocument()
+			if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
+				return nil, err
+			}
+
+			element.AddChild(itemXmlDocument.Root())
+		} else {
+			//todo cleanup
+			withoutJsonItem := &databasemodel.Ab{}
+
+			helper.Copy(withoutJsonItem, item)
+
+			withoutJsonItemXml, err:= xml.MarshalIndent(withoutJsonItem, "", " ")
+
+			if err != nil {
+				return listData, errors.New("Failed to get company ab - generateProfileXml: "+err.Error())
+			}
+
+			itemXmlDocument := etree.NewDocument()
+			if err := itemXmlDocument.ReadFromBytes(withoutJsonItemXml); err != nil {
+				return nil, err
+			}
+
+			element.AddChild(itemXmlDocument.Root())
+
 		}
-
-
-		itemXmlDocument := etree.NewDocument()
-		if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
-			return nil, err
-		}
-
-		element.AddChild(itemXmlDocument.Root())
 
 	}
 	
@@ -151,23 +168,23 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 			return listData, errors.New("Failed to get company participant- dbConn.ScanRows: "+err.Error())
 		}
 
-		id := item.ID
+		if item.RegistrationJson != nil {
+			id := item.ID
 
 		
-		itemXml, err := generateProfileXml(id, item.RegistrationJson, "Participant")
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Participant")
 
-		if err != nil {
-			return listData, errors.New("Failed to get company participant - generateProfileXml: "+err.Error())
+			if err != nil {
+				return listData, errors.New("Failed to get company participant - generateProfileXml: "+err.Error())
+			}
+
+			itemXmlDocument := etree.NewDocument()
+			if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
+				return nil, err
+			}
+
+			element.AddChild(itemXmlDocument.Root())
 		}
-
-		itemXmlDocument := etree.NewDocument()
-		if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
-			return nil, err
-		}
-
-
-		element.AddChild(itemXmlDocument.Root())
-
 	}
 
 	if dbConn.Error != nil {
@@ -215,21 +232,20 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, er
 			return listData, errors.New("Failed to get company pjsppa- dbConn.ScanRows: "+err.Error())
 		}
 
-		id := item.ID
 		
-		itemXml, err := generateProfileXml(id, item.RegistrationJson, "Pjsppa")
-		
-		if err != nil {
-			return listData, errors.New("Failed to get company pjsppa - generateProfileXml: "+err.Error())
+		if item.RegistrationJson != nil {
+			id := item.ID
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Pjsppa")
+			if err != nil {
+				return listData, errors.New("Failed to get company pjsppa - generateProfileXml: "+err.Error())
+			}
+
+			itemXmlDocument := etree.NewDocument()
+			if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
+				return nil, err
+			}
+			element.AddChild(itemXmlDocument.Root())
 		}
-
-		itemXmlDocument := etree.NewDocument()
-		if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
-			return nil, err
-		}
-
-
-		element.AddChild(itemXmlDocument.Root())
 	}
 
 
@@ -278,20 +294,22 @@ func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]byte, erro
 			return listData, errors.New("Failed to get company dealerutama- dbConn.ScanRows: "+err.Error())
 		}
 
-		id := item.ID
+		if item.RegistrationJson != nil {
+			id := item.ID
 		
-		itemXml, err := generateProfileXml(id, item.RegistrationJson, "Du")
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Du")
 		
-		if err != nil {
-			return listData, errors.New("Failed to get company dealerutama - generateProfileXml: "+err.Error())
-		}
+			if err != nil {
+				return listData, errors.New("Failed to get company dealerutama - generateProfileXml: "+err.Error())
+			}
 
-		itemXmlDocument := etree.NewDocument()
-		if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
-			return nil, err
-		}
+			itemXmlDocument := etree.NewDocument()
+			if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
+				return nil, err
+			}
 
-		element.AddChild(itemXmlDocument.Root())
+			element.AddChild(itemXmlDocument.Root())
+		}
 	}
 
 
