@@ -15,6 +15,7 @@ import (
 
 	"github.com/shohiebsense/gojsontoxml"
 	"github.com/xuri/excelize/v2"
+	"github.com/jinzhu/copier"
 )
 
 func ConvertArrayStringtoString(array []string) string {
@@ -305,4 +306,11 @@ func ConvertTimeToHumanDateOnly(baseDate time.Time, monthProvider [12]string) st
 
 func GetTimeAndMinuteOnly(baseDate time.Time) string {
 	return strings.Join(strings.Split(baseDate.Format(time.TimeOnly), ":")[:2], ":")
+}
+
+func Copy(toValue interface{}, fromValue interface{}) {
+	err := copier.CopyWithOption(toValue, fromValue, copier.Option{DeepCopy: true})
+	if err != nil {
+		log.Panicln(err)
+	}
 }
