@@ -44,6 +44,8 @@ func Routes() *gin.Engine {
 			"http_port": os.Getenv("HTTP_PORT"),
 		})
 	})
+
+	//
 	globalRepo := global.NewRepositorys()
 	announcement := Announcement.NewHandler()
 	guidances := Guidances.NewGuidanceHandler()
