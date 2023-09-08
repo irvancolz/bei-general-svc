@@ -5,6 +5,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/utilities"
 	"be-idx-tsg/internal/pkg/database"
+	"database/sql"
 	"errors"
 	"log"
 	"strings"
@@ -198,7 +199,8 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 	effective_date,
 	regarding,
 	created_by,
-	type
+	type,
+	form_value_id
    FROM announcements
 	` + filterQuery
 
@@ -221,6 +223,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 		var item model.UpdateAnnouncement
 		var userId string
 		var anEffectiveDate time.Time
+		var anFormId sql.NullString
 		err := rows.Scan(
 			&item.ID,
 			&item.Information_Type,
@@ -228,6 +231,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			&item.Regarding,
 			&userId,
 			&item.Type,
+			&anFormId,
 		)
 
 		announcement := model.Announcement{
@@ -236,6 +240,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			Regarding:        item.Regarding,
 			Type:             item.Type,
 			Creator:          userId,
+			Form_Value_Id:    anFormId.String,
 		}
 		announcement.Effective_Date = anEffectiveDate.Unix()
 
