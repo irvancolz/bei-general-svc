@@ -247,20 +247,27 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	lineHeight := pageProps.lineHeight
 	pageHeight := pageProps.pageHeight
 	footerSpace := pageProps.footerSpace
-	curRowsBgHeightLeft := pageProps.curRowsBgHeightLeft
 
 	curRowsBgHeight := func() float64 {
-		if pageProps.isNeedPageBreak(currentY+curRowsBgHeightLeft) && math.Floor((pageHeight-footerSpace-currentY)/lineHeight) != 0 {
+		if pageProps.isNeedPageBreak(currentY+pageProps.currPageRowHeight) && math.Floor((pageHeight-footerSpace-currentY)/lineHeight) != 0 {
 			currPageBg := math.Abs(math.Floor((pageHeight-footerSpace-currentY)/lineHeight) * lineHeight)
 			return currPageBg
 		}
-		return math.Abs(curRowsBgHeightLeft)
+		return math.Abs(pageProps.currPageRowHeight)
 	}()
 
 	var rowPageOrigin int
 	var rowYOrigin float64
-
+	rowPageOrigin = func() int {
+		if pageProps.currpage > pageProps.currRowMaxPage {
+			pageProps.currRowMaxPage = pageProps.currpage
+			return pageProps.currpage
+		}
+		return pageProps.currRowMaxPage
+	}()
 	pageProps.currentX = currentX
+
+	pdf.SetPage(rowPageOrigin)
 
 	pdf.SetFontStyle("")
 	pdf.SetTextColor(0, 0, 0)
@@ -269,11 +276,6 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	if pageProps.currRowsIndex%2 != 0 {
 		pdf.SetAlpha(0, "Normal")
 	}
-
-	// do not remove , i forgot why it was written
-	// if pageProps.newPageMargin == 0 && pageProps.curRowsBgHeight < pageProps.currRowsheight {
-	// 	curRowsBgHeight = pageProps.currRowsheight
-	// }
 
 	if curRowsBgHeight > pageProps.currRowsheight {
 		curRowsBgHeight = pageProps.currRowsheight
@@ -287,7 +289,6 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	pageProps.totalColumn = len(rows) - 1
 	for colNumber, col := range rows {
 		if colNumber == 0 {
-			rowPageOrigin = pageProps.currRowMaxPage
 			rowYOrigin = pageProps.currentY
 		}
 
