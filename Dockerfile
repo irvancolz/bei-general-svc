@@ -16,8 +16,7 @@ FROM golang:1.20.2-alpine3.17
 WORKDIR /app
 
 COPY --from=builder /svc-general /svc-general
-
-COPY ./internal/app/helper/*.png /app/internal/app/helper/
+COPY --from=builder /src/static ./static 
 
 EXPOSE 8080
 

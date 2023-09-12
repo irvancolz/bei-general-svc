@@ -497,7 +497,7 @@ func drawFooter(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties) {
 		pdf.MultiCell(float64(appNameWidth), 8, "Sistem IDX Portal", "", "C", false)
 
 		// idx footer logo
-		pdf.ImageOptions("internal/app/helper/idx-logo-2.png", (pageWidth-float64(footerImgHeight))/2, pageHeight-float64(footerHeight)+2, float64(footerImgHeight), float64(footerImgHeight), false, fpdf.ImageOptions{}, 0, "")
+		pdf.ImageOptions("static/idx-logo-2.png", (pageWidth-float64(footerImgHeight))/2, pageHeight-float64(footerHeight)+2, float64(footerImgHeight), float64(footerImgHeight), false, fpdf.ImageOptions{}, 0, "")
 	})
 }
 
@@ -519,7 +519,7 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 
 		// watermark
 		pdf.SetAlpha(0.1, "Normal")
-		pdf.ImageOptions("internal/app/helper/icon-globe-idx.png", (pageWidth-watermarkWidth)/2, (pageHeight-watermarkWidth)/2, watermarkWidth, watermarkWidth, false, fpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.ImageOptions("static/icon-globe-idx.png", (pageWidth-watermarkWidth)/2, (pageHeight-watermarkWidth)/2, watermarkWidth, watermarkWidth, false, fpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		pdf.SetAlpha(1, "Normal")
 
 		// header bg
@@ -527,7 +527,7 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 		pdf.Rect(0, 0, pageWidth, float64(pageProps.headerHeight+pageProps.pageTopPadding), "F")
 
 		// header logo
-		pdf.ImageOptions("internal/app/helper/icon-globe-idx.png", pageProps.pageLeftPadding, pageProps.pageTopPadding, headerImgHeight, headerImgHeight, false, fpdf.ImageOptions{}, 0, "")
+		pdf.ImageOptions("static/icon-globe-idx.png", pageProps.pageLeftPadding, pageProps.pageTopPadding, headerImgHeight, headerImgHeight, false, fpdf.ImageOptions{}, 0, "")
 
 		// header title
 		leftMargin := (pageWidth - headerTitleWidth) / 2
