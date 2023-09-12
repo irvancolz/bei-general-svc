@@ -63,7 +63,7 @@ func Routes() *gin.Engine {
 	bukuPetujukBerkasPengaturan := global.BukuPetunjukBerkasPengaturan
 	ParameterAdmin := global.ParameterAdmin
 
-	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(&bukuPetujukBerkasPengaturan))
+	UploadFile := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
 		UploadFile.POST("/upload-form-file", upload.UploadForm)
 		UploadFile.POST("/upload-admin-file", upload.UploadAdmin)
@@ -82,7 +82,6 @@ func Routes() *gin.Engine {
 	}
 
 	r.POST("/api/get-company-profile/xml", companyprofile.GetCompanyProfileXml)
-
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
