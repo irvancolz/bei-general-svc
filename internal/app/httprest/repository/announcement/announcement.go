@@ -192,6 +192,14 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 	}
 
 	result := []model.Announcement{}
+
+	orderQuery := ` ORDER BY
+		CASE
+			WHEN updated_at IS NOT NULL 
+				THEN updated_at
+			ELSE created_at
+		END DESC`
+
 	getAllQuery := `
 	SELECT 
 	id,
@@ -210,7 +218,7 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			"regarding",
 		},
 	}
-	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllQuery)
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllQuery) + orderQuery
 
 	rows, err := m.DB.Query(query)
 	if err != nil {
@@ -242,11 +250,13 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			Creator:          userId,
 			Form_Value_Id:    anFormId.String,
 		}
+
 		announcement.Effective_Date = anEffectiveDate.Unix()
+		announcement.Creator_Name = utilities.GetUserNameByID(c, userId)
 
 		if err != nil {
 			log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetAllAnnouncement] ", err)
-			return nil, errors.New("failed when retrieving data")
+			return nil, err
 		}
 
 		result = append(result, announcement)

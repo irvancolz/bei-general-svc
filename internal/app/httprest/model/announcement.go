@@ -11,6 +11,7 @@ type Announcement struct {
 	Type          string `json:"type"`
 	Form_Value_Id string `json:"form_value_id"`
 	Creator       string `json:"creator"`
+	Creator_Name  string `json:"creator_name"`
 }
 
 type CreateAnnouncement struct {
