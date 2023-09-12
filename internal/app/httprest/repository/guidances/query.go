@@ -84,4 +84,10 @@ const (
 	FROM public.guidance_file_and_regulation
 	WHERE id = $1
 	`
+	orderQuery = ` ORDER BY
+		CASE
+			WHEN updated_at IS NOT NULL 
+				THEN updated_at
+			ELSE created_at
+		END DESC`
 )

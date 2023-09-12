@@ -39,28 +39,27 @@ func (m *SearchQueryGenerator) GenerateSearchQuery(valueExpected []string, const
 
 	var sb strings.Builder
 	for i, keyword := range valueExpected {
-		sb.WriteString("\nAND")
+		sb.WriteString(` AND`)
 		if i != 0 {
-			sb.WriteString(fmt.Sprintf(" %s IN", columnFlag))
+			sb.WriteString(fmt.Sprintf(` %s IN`, columnFlag))
 		}
-		sb.WriteString("(\n")
+		sb.WriteString(`( `)
 
 		if i != 0 {
-			sb.WriteString(fmt.Sprintf("SELECT %s FROM %s WHERE (\n", columnFlag, m.TableName))
+			sb.WriteString(fmt.Sprintf(`SELECT %s FROM %s WHERE (`, columnFlag, m.TableName))
 		}
 
 		for j, column := range m.ColumnScanned {
 			if j != 0 {
-				sb.WriteString("\nOR ")
+				sb.WriteString(` OR `)
 			}
-			sb.WriteString(fmt.Sprintf(`LOWER( %s ) LIKE LOWER('%%%s%%')`, column, keyword))
-
+			sb.WriteString(fmt.Sprintf(` CAST ( %s AS TEXT ) LIKE '%%%s%%'`, column, keyword))
 		}
 
 		if i != 0 {
-			sb.WriteString(")")
+			sb.WriteString(`)`)
 		}
-		sb.WriteString(")")
+		sb.WriteString(`)`)
 	}
 	return sb.String()
 }
