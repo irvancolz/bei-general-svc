@@ -19,6 +19,8 @@ type AuthenticationResponse struct {
 	ExternalType    *string         `json:"external_type"`
 	UserRoleForm    []*UserRoleForm `json:"user_form_role"`
 }
+
+type AuthUserDetail = AuthenticationResponse
 type UserRoleForm struct {
 	Id           string   `json:"id"`
 	UserId       string   `json:"user_id"`

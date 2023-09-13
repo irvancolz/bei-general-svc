@@ -1,6 +1,7 @@
 package companyprofile
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/model/requestmodel"
 	companyprofile "be-idx-tsg/internal/app/httprest/usecase/company_profile"
@@ -17,6 +18,19 @@ func GetCompanyProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(httpresponse.Format(httpresponse.UPDATESUCCESS_200, nil, result))
+}
+
+func GetCompanyProfileSingleLatest(c *gin.Context) {
+	filterQueryParameter := helper.GetFilterQueryParameter(c)
+	filterQueryParameter.Limit = 1
+	
+	responseData, maxPage, errorStr := companyprofile.GetCompanyProfileLatest(c, filterQueryParameter) 
+	if len(errorStr) > 0 {
+		model.GenerateReadErrorResponse(c, errors.New(errorStr))
+		return
+	}
+
+	model.GenerateQueryListResponse(c, responseData, maxPage)
 }
 
 func GetCompanyProfileXml(c *gin.Context) {
