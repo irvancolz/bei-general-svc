@@ -174,14 +174,11 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 			"file",
 			"file_group",
 			"owner",
+			"version",
+			`"order"`,
 		},
 	}
-	orderQuery := ` ORDER BY
-		CASE
-			WHEN updated_at IS NOT NULL 
-				THEN updated_at
-			ELSE created_at
-		END DESC`
+
 	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry) + orderQuery
 
 	result_rows, error_rows := r.DB.Queryx(query)

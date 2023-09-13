@@ -20,6 +20,11 @@ const (
 	EXTERNAL_TYPE_LIST_PARTICIPANT = "ParticipantList"
 	EXTERNAL_TYPE_LIST_PJSPPA = "PjsppaList"
 	EXTERNAL_TYPE_LIST_DU = "DuList"
+
+	REQUEST_EXTERNAL_TYPE_AB = "ab"
+	REQUEST_EXTERNAL_TYPE_PARTICIPANT = "participant"
+	REQUEST_EXTERNAL_TYPE_PJSPPA = "pjsppa"
+	REQUEST_EXTERNAL_TYPE_DU = "du"
 )
 
 func byteToDocument(data []byte) (*etree.Document, error) {
@@ -86,7 +91,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 
 	if len(request.ExternalType) == 0 {
 		var allList[]byte  
-		request.ExternalType = "ab"
+		request.ExternalType = REQUEST_EXTERNAL_TYPE_AB
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
 		if err != nil {
@@ -100,7 +105,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 		}
 		
 
-		request.ExternalType = "participant"
+		request.ExternalType = REQUEST_EXTERNAL_TYPE_PARTICIPANT
 		participantList, err := companyprofilerepository.GetCompanyProfileParticipant(request)
 
 		if err != nil {
@@ -113,7 +118,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		request.ExternalType = "pjsppa"
+		request.ExternalType = REQUEST_EXTERNAL_TYPE_PJSPPA
 		pjsppaList, err := companyprofilerepository.GetCompanyProfilePJSPPA(request)
 
 		if err != nil {
@@ -126,7 +131,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		request.ExternalType = "du"
+		request.ExternalType = REQUEST_EXTERNAL_TYPE_DU
 		dealerUtamaList, err := companyprofilerepository.GetCompanyDealerUtama(request)
 
 		if err != nil {
@@ -141,7 +146,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 
 
 		onGetAllList(allList)
-	} else if strings.EqualFold(request.ExternalType, "ab") {
+	} else if strings.EqualFold(request.ExternalType, REQUEST_EXTERNAL_TYPE_AB) {
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
 		if err != nil {
@@ -156,7 +161,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 
 		onGetAbList(anggotaBursaList)
 
-	} else if strings.EqualFold(request.ExternalType, "participant") {
+	} else if strings.EqualFold(request.ExternalType, REQUEST_EXTERNAL_TYPE_PARTICIPANT) {
 		participantList, err := companyprofilerepository.GetCompanyProfileParticipant(request)
 
 		if err != nil {
@@ -170,7 +175,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 		}
 
 		onGetParticipantList(participantList)
-	} else if strings.EqualFold(request.ExternalType, "pjsppa") {
+	} else if strings.EqualFold(request.ExternalType, REQUEST_EXTERNAL_TYPE_PJSPPA) {
 		pjsppaList, err := companyprofilerepository.GetCompanyProfilePJSPPA(request)
 
 		if err != nil {
@@ -185,7 +190,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 
 		onGetPjsppaList(pjsppaList)
 
-	} else if strings.EqualFold(request.ExternalType, "du") {
+	} else if strings.EqualFold(request.ExternalType, REQUEST_EXTERNAL_TYPE_DU) {
 		dealerUtamaList, err := companyprofilerepository.GetCompanyDealerUtama(request)
 
 		if err != nil {
