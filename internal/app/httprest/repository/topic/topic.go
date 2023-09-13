@@ -98,9 +98,9 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 			listData[i].Handler_ID = ""
 		}
 
-		listData[i].Created_At = listData[i].Time_Created_At.Unix()
+		listData[i].Created_At = listData[i].Time_Created_At.Format("2006-01-02 15:04")
 
-		listData[i].Updated_At = listData[i].Time_Updated_At.Unix()
+		listData[i].Updated_At = listData[i].Time_Updated_At.Format("2006-01-02 15:04")
 	}
 
 	return listData, nil
@@ -179,7 +179,7 @@ func (m *repository) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Contex
 	}
 
 	if data.Handler_ID != "00000000-0000-0000-0000-000000000000" {
-		return 0, errors.New("forbidden")
+		return 0, errors.New("Pertanyaan telah diambil alih")
 	}
 
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
