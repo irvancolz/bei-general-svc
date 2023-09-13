@@ -16,14 +16,14 @@ func GetCompanyProfile(c *gin.Context) (interface{}, error) {
 }
 
 func GetCompanyProfileLatest(c *gin.Context, filterQueryParameter model.FilterQueryParameter) (interface{}, int, string) {
-
+	
 	authUserDetail, err := helper.GetAuthUserDetail(c)
 
 	if err != nil {
 		return nil, 0, "Failed to get auth user detail: " + err.Error()
 	}
 
-	switch *authUserDetail.ExternalType {
+	switch authUserDetail.ExternalType {
 	case REQUEST_EXTERNAL_TYPE_PARTICIPANT:
 		{
 			return companyprofile.GetCompanyProfileParticipantLatest(authUserDetail, filterQueryParameter)

@@ -20,7 +20,23 @@ type AuthenticationResponse struct {
 	UserRoleForm    []*UserRoleForm `json:"user_form_role"`
 }
 
-type AuthUserDetail = AuthenticationResponse
+type AuthUserDetail struct {
+	ID              string          `json:"id"`
+	Name            string         `json:"name"`
+	Email           string         `json:"email"`
+	UserName        string         `json:"user_name"`
+	UserRole        string         `json:"user_role"`
+	UserRoleID      string         `json:"user_role_id"`
+	UserType        string         `json:"user_type"`
+	FirstLogin      bool            `json:"first_login"`
+	PasswordExpired string         `json:"password_expired"`
+	CompanyName     string         `json:"company_name"`
+	CompanyCode     string         `json:"company_code"`
+	CompanyId       string         `json:"company_id"`
+	GroupType       string         `json:"group_type"`
+	ExternalType    string         `json:"external_type"`
+	UserRoleForm    []UserRoleForm `json:"user_form_role"`
+}
 type UserRoleForm struct {
 	Id           string   `json:"id"`
 	UserId       string   `json:"user_id"`
