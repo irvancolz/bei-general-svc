@@ -221,7 +221,7 @@ func (m *repository) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context)
 	userId, _ := c.Get("user_id")
 
 	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
-		return 0, errors.New("forbidden")
+		return 0, errors.New("Status hanya bisa diubah oleh penanya atau penjawab")
 	}
 
 	topic.UpdatedBy = userId.(string)
@@ -337,7 +337,7 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 	userId, _ := c.Get("user_id")
 
 	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
-		return 0, errors.New("forbidden")
+		return 0, errors.New("Topik hanya bisa dibalas oleh penanya dan penjawab")
 	}
 
 	message.CreatedBy = userId.(string)
