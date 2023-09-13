@@ -2,7 +2,6 @@ package companyprofile
 
 import (
 	"be-idx-tsg/internal/app/helper"
-	"encoding/json"
 	"errors"
 	"log"
 	"strings"
@@ -10,6 +9,32 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type GetProfileABResponse struct {
+	Id                                     string `json:"id"`
+	Name                                   string `json:"name"`
+	Code                                   string `json:"code"`
+	Permit_bursa                           string `json:"permit_bursa"`
+	Company_status                         string `json:"company_status"`
+	Operational_status                     string `json:"operational_status"`
+	Registration_json                      string `json:"registration_json"`
+	Revocation_json                        string `json:"revocation_json"`
+	Name_json                              string `json:"name_json"`
+	Code_json                              string `json:"code_json"`
+	Spab_json                              string `json:"spab_json"`
+	Operational_status_json                string `json:"operational_status_json"`
+	Ownership_and_company_status_json      string `json:"ownership_and_company_status_json"`
+	Address_json                           string `json:"address_json"`
+	Structure_management_json              string `json:"structure_management_json"`
+	Shareholder_json                       string `json:"shareholder_json"`
+	Capital_json                           string `json:"capital_json"`
+	Bussiness_permit_ojk_json              string `json:"bussiness_permit_ojk_json"`
+	Permit_bursa_json                      string `json:"permit_bursa_json"`
+	Other_business_permit_ojk_json         string `json:"other_business_permit_ojk_json"`
+	Amount_of_customers_and_employees_json string `json:"amount_of_customers_and_employees_json"`
+	Tax_payer_id_json                      string `json:"tax_payer_id_json"`
+	Incorporation_deed_json                string `json:"incorporation_deed_json"`
+	Logo_json                              string `json:"logo_json"`
+}
 type GetProfilePjsppaResponse struct {
 	Id                        string `json:"id"`
 	Code                      string `json:"code"`
@@ -69,14 +94,12 @@ type GetProfileParticipantResponse struct {
 	Revocation_Json             string `json:"revocation_json"`
 }
 
-func GetCompanyProfile(extType, id string) (interface{}, error) {
+func GetCompanyProfile(extType string) ([]interface{}, error) {
+
+	result := []interface{}{}
 
 	if extType == "" {
 		return nil, errors.New("failed to get company profile : please specify the company external type")
-	}
-
-	if id == "" {
-		return nil, errors.New("failed to get company profile : please specify the company id")
 	}
 
 	query := generateGetCompanyProfileQuery(extType)
@@ -86,10 +109,22 @@ func GetCompanyProfile(extType, id string) (interface{}, error) {
 		return nil, errInitDb
 	}
 
-	rowResult := dbConn.QueryRowx(query, id)
-	result, errResult := getResultType(extType, rowResult)
-	if errResult != nil {
-		return nil, errResult
+	rowResult, errQuery := dbConn.Queryx(query)
+	if errQuery != nil {
+		log.Println("failed get company profile list from db :", errQuery)
+		return nil, errQuery
+	}
+
+	defer rowResult.Close()
+
+	for rowResult.Next() {
+		profile, errorScanProfile := getResultType(extType, rowResult)
+		if errorScanProfile != nil {
+			log.Println("failed retrieve company profile : ", errorScanProfile)
+			return nil, errorScanProfile
+		}
+
+		result = append(result, profile)
 	}
 
 	return result, nil
@@ -119,8 +154,7 @@ func generateGetCompanyProfileQuery(extType string) string {
 				coalesce(tax_payer_id_json::text, '') as tax_payer_id_json,
 				coalesce(logo_json::text, '') as logo_json
 				FROM pjsppa
-				WHERE id = $1 
-			AND deleted_at IS NULL
+				WHERE deleted_at IS NULL
 			AND deleted_by IS NUll`
 	}
 	if strings.EqualFold(extType, "du") {
@@ -139,8 +173,7 @@ func generateGetCompanyProfileQuery(extType string) string {
 			coalesce(registration_json::text,'') as registration_json,
 			coalesce(revocation_json::text,'') as revocation_json
 		FROM dealer_utama
-		WHERE id = $1
-		AND deleted_at IS NULL
+		WHERE deleted_at IS NULL
 		AND deleted_by IS NUll`
 	}
 	if strings.EqualFold(extType, "participant") {
@@ -164,8 +197,7 @@ func generateGetCompanyProfileQuery(extType string) string {
 			coalesce(registration_json::text,'') as registration_json,
 			coalesce(revocation_json::text,'') as revocation_json
 		FROM participant
-		WHERE id = $1 
-		AND deleted_at IS NULL
+		WHERE deleted_at IS NULL
 		AND deleted_by IS NUll`
 	}
 	if strings.EqualFold(extType, "ab") {
@@ -195,54 +227,49 @@ func generateGetCompanyProfileQuery(extType string) string {
 			COALESCE(incorporation_deed_json::text,'') as incorporation_deed_json,
 			COALESCE(logo_json::text,'') as logo_json
 		FROM anggota_bursa
-		WHERE id = $1 AND deleted_by is null`
+		WHERE deleted_by is null`
 	}
 	return ""
 }
 
-func getResultType(extType string, rowResult *sqlx.Row) (interface{}, error) {
-
+func getResultType(extType string, rowResult *sqlx.Rows) (interface{}, error) {
+	var companyProfile interface{}
 	if strings.EqualFold(extType, "participant") {
 		result := GetProfileParticipantResponse{}
+
 		errScan := rowResult.StructScan(&result)
 		if errScan != nil {
+			log.Println("failed read company profile from database :", errScan)
 			return nil, errScan
 		}
-		return result, nil
-	}
-	if strings.EqualFold(extType, "du") {
+		companyProfile = result
+	} else if strings.EqualFold(extType, "du") {
 		result := GetDuProfileResponse{}
+
 		errScan := rowResult.StructScan(&result)
 		if errScan != nil {
+			log.Println("failed read company profile from database :", errScan)
 			return nil, errScan
 		}
-		return result, nil
-	}
-	if strings.EqualFold(extType, "pjsppa") {
+		companyProfile = result
+	} else if strings.EqualFold(extType, "pjsppa") {
 		result := GetProfilePjsppaResponse{}
+
 		errScan := rowResult.StructScan(&result)
 		if errScan != nil {
+			log.Println("failed read company profile from database :", errScan)
 			return nil, errScan
 		}
-		return result, nil
+		companyProfile = result
+	} else {
+		result := GetProfileABResponse{}
+		errScan := rowResult.StructScan(&result)
+		if errScan != nil {
+			log.Println("failed read company profile from database :", errScan)
+			return nil, errScan
+		}
+		companyProfile = result
 	}
 
-	var result map[string]interface{}
-	var scannedResult interface{}
-	errScan := rowResult.MapScan(result)
-	if errScan != nil {
-		log.Println(extType)
-		return nil, errScan
-	}
-	bytesResult, errMarshall := json.Marshal(&result)
-	if errMarshall != nil {
-		log.Println(errMarshall)
-		return nil, errMarshall
-	}
-	errUnmarshall := json.Unmarshal(bytesResult, &scannedResult)
-	if errUnmarshall != nil {
-		log.Println(errUnmarshall)
-		return nil, errUnmarshall
-	}
-	return scannedResult, nil
+	return companyProfile, nil
 }
