@@ -31,6 +31,13 @@ type BaseErrorResponse struct {
 	Message string `json:"message"`
 }
 
+type QueryListBaseResponse struct {
+	Code    string      `json:"code"`
+	Message string      `json:"message"`
+	MaxPage int         `json:"max_page"`
+	Data    interface{} `json:"data"`
+}
+
 func generateErrorResponse(c *gin.Context, flag string, message string, http_code int) {
 	response := BaseErrorResponse{
 		Code:    strconv.Itoa(http_code) + "-" + flag,
@@ -110,4 +117,17 @@ func GenerateTokenErrorResponse(c *gin.Context, err error) {
 
 func GenerateTokeExpirednErrorResponse(c *gin.Context, err error) {
 	generateErrorResponse(c, error_type_token, err.Error(), http.StatusUnauthorized)
+}
+
+
+func GenerateQueryListResponse(c *gin.Context, data interface{}, maxPage int) {
+	response := QueryListBaseResponse{
+		Code:    strconv.Itoa(http.StatusOK) + "-" + error_type_flow_read,
+		Message: httpresponse.READSUCCESS_200,
+		MaxPage: maxPage,
+		Data:    data,
+	}
+
+	c.JSON(http.StatusOK,
+		response)
 }
