@@ -2,6 +2,8 @@ package databasemodel
 
 import (
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type AngggotaBursa struct {
@@ -11,23 +13,23 @@ type AngggotaBursa struct {
 	PermitBursa                       string `json:"permit_bursa" gorm:"column:permit_bursa"`
 	CompanyStatus                     string `json:"company_status" gorm:"column:company_status"`
 	OperationalStatus                 string `json:"status_operasional" gorm:"column:operational_status"`
-	RegistrationJson                  []byte
-	NameJson                          []byte
-	CodeJson                          []byte //todo dismiss
-	SpabJson                          []byte //todo
-	OperationalStatusJson             []byte //todo
-	AddressJson                       []byte
-	StructureManagementJson           []byte
-	ShareholderJson                   []byte
-	BussinessPermitOjkJson            []byte
-	PermitBursaJson                   []byte //todo
-	OtherBusinessPermitOjkJson        []byte  //todo is already inside businesspermitojk
-	AmountOfCustomersAndEmployeesJson []byte  //todo
-	TaxPayerIdJson                    []byte 
-	IncorporatioincnDeedJson          []byte 
-	OwnershipAndCompanyStatusJson     []byte
-	LogoJson                          []byte
-	RevocationJson                    []byte //todo
+	RegistrationJson                  datatypes.JSON
+	NameJson                          datatypes.JSON
+	CodeJson                          datatypes.JSON //todo dismiss
+	SpabJson                          datatypes.JSON //todo
+	OperationalStatusJson             datatypes.JSON //todo
+	AddressJson                       datatypes.JSON
+	StructureManagementJson           datatypes.JSON
+	ShareholderJson                   datatypes.JSON
+	BussinessPermitOjkJson            datatypes.JSON
+	PermitBursaJson                   datatypes.JSON //todo
+	OtherBusinessPermitOjkJson        datatypes.JSON  //todo is already inside businesspermitojk
+	AmountOfCustomersAndEmployeesJson datatypes.JSON  //todo
+	TaxPayerIdJson                    datatypes.JSON 
+	IncorporatioincnDeedJson          datatypes.JSON 
+	OwnershipAndCompanyStatusJson     datatypes.JSON
+	LogoJson                          datatypes.JSON
+	RevocationJson                    datatypes.JSON //todo
 	CreatedAt                         time.Time `gorm:"<-:create"`
 	CreatedBy                         string    `gorm:"<-:create"`
 	UpdatedAt                         time.Time

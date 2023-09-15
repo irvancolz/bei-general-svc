@@ -32,6 +32,7 @@ type JWTClaim struct {
 	jwt.StandardClaims
 }
 
+
 func GenerateJWT(Auth *model.AuthenticationResponse, expiredLogin int) (tokenString string, expiredTime string, err error) {
 	log.Println("company id ", Auth.CompanyId)
 	expirationTime := time.Now().Add(time.Duration(expiredLogin) * time.Minute)

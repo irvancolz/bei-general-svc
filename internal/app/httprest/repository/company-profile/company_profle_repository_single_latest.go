@@ -9,9 +9,9 @@ import (
 	"log"
 )
 
-func GetCompanyProfileParticipantLatest(authUserDetail model.AuthUserDetail, filterqueryparameter model.FilterQueryParameter) ([]*responsemodel.Participant, int, string) {
+func GetCompanyProfileParticipantLatest(authUserDetail model.AuthUserDetail, filterqueryparameter model.FilterQueryParameter) ([]*databasemodel.Participant, int, string) {
 
-	latestProfileList := []*responsemodel.Participant{}
+	latestProfileList := []*databasemodel.Participant{}
 	dbConn, errInitDb := helper.InitDBConnGorm(authUserDetail.ExternalType)
 	if errInitDb != nil {
 		return latestProfileList, 0, "Failed to get company participant latest -dbConn.InitDBConnGorm(): " + errInitDb.Error()
@@ -27,48 +27,18 @@ func GetCompanyProfileParticipantLatest(authUserDetail model.AuthUserDetail, fil
 		return latestProfileList, 0, "Failed to get company participant latest -dbConn.GetGormQueryFilter(): " + errorStr
 	}
 
-	dbConn = dbConn.Model(databasemodel.Participant{})
-	count := helper.GetMaxPage(dbConn, databasemodel.Participant{}, filterqueryparameter.Limit)
 	dbConn = dbConn.Order(helper.DEFAULT_ORDER_BY).Limit(filterqueryparameter.Limit).Offset(filterqueryparameter.Offset)
+	dbConn = dbConn.Find(&latestProfileList)
+	count := helper.GetMaxPage(dbConn, databasemodel.Participant{}, filterqueryparameter.Limit)
 
-	rows, err := dbConn.Rows()
-
-	if err != nil {
-		return latestProfileList, 0, "Failed to get company participant:Rows() " + err.Error()
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var item databasemodel.Participant
-		err := dbConn.ScanRows(rows, &item)
-
-		if err != nil {
-			return latestProfileList, 0, "Failed to get company participant - scanrows: " + err.Error()
-		}
-
-		responseModel := responsemodel.Participant{}
-		helper.Copy(&responseModel, item)
-		if item.RegistrationJson != nil {
-			var registrationJson interface{}
-
-			log.Println(string(item.RegistrationJson))
-			err := json.Unmarshal(item.RegistrationJson, &registrationJson)
-
-			if err != nil {
-				return latestProfileList, 0, "Failed to get company participant - unmarshal: " + err.Error()
-			}
-
-			responseModel.RegistrationJson = registrationJson
-
-		}
-
-		latestProfileList = append(latestProfileList, &responseModel)
+	if dbConn.Error != nil {
+		return latestProfileList, 0, "Failed to get company participant:Rows() " + dbConn.Error.Error()
 	}
 
 	return latestProfileList, count, errorStr
 }
 
+//todo
 func GetCompanyProfileAbLatest(authUserDetail model.AuthUserDetail, filterqueryparameter model.FilterQueryParameter) ([]*responsemodel.AngggotaBursa, int, string) {
 
 	latestProfileList := []*responsemodel.AngggotaBursa{}
