@@ -24,6 +24,7 @@ type GetTokens struct {
 }
 type Repositorys interface {
 	Authentication(module *string) gin.HandlerFunc
+	AuthenticationTest(module *string) gin.HandlerFunc
 }
 
 type repositorys struct {

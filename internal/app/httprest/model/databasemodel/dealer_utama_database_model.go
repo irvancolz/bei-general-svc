@@ -2,6 +2,8 @@ package databasemodel
 
 import (
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type DealerUtama struct {
@@ -11,14 +13,14 @@ type DealerUtama struct {
 	Nama                    string `json:"nama" gorm:"column:name"`
 	Tipe                    string `json:"tipe" gorm:"column:permission_type"`
 	OperationalStatus       string `json:"status_operasional" gorm:"column:operational_status"`
-	NameJson                []byte
-	StructureManagementJson []byte
-	AddressJson             []byte
-	BillingAddressJson      []byte
-	TaxPayerIdJson          []byte
-	LogoJson                []byte
-	RegistrationJson        []byte
-	RevocationJson          []byte    //todo
+	NameJson                datatypes.JSON
+	StructureManagementJson datatypes.JSON
+	AddressJson             datatypes.JSON
+	BillingAddressJson      datatypes.JSON
+	TaxPayerIdJson          datatypes.JSON
+	LogoJson                datatypes.JSON
+	RegistrationJson        datatypes.JSON
+	RevocationJson          datatypes.JSON    //todo
 	CreatedAt               time.Time `gorm:"<-:create"`
 	CreatedBy               string    `gorm:"<-:create"`
 	UpdatedAt               time.Time

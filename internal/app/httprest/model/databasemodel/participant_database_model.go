@@ -1,6 +1,7 @@
 package databasemodel
 
 import (
+	"gorm.io/datatypes"
 	"time"
 )
 
@@ -21,17 +22,17 @@ type Participant struct {
 	TanggalEfektif           time.Time      `json:"tanggal_efektif" gorm:"-:all"`
 	NomorSuratPendukung      string         `json:"nomor_surat_pendukung" gorm:"-:all"`
 	Alasan                   string         `json:"alasan" gorm:"-:all"`
-	RegistrationJson         []byte
-	PermissionTypeJson       []byte
-	OperationalStatusJson    []byte
-	AddressJson              []byte
-	BillingAddressJson       []byte
-	StructureManagementJson  []byte
-	OwnershipStatusJson      []byte
-	CompanyStatusJson        []byte
-	InstalledScreenTotalJson []byte
-	LogoJson                 []byte
-	RevocationJson           []byte
+	RegistrationJson         datatypes.JSON
+	PermissionTypeJson       datatypes.JSON
+	OperationalStatusJson    datatypes.JSON
+	AddressJson              datatypes.JSON
+	BillingAddressJson       datatypes.JSON
+	StructureManagementJson  datatypes.JSON
+	OwnershipStatusJson      datatypes.JSON
+	CompanyStatusJson        datatypes.JSON
+	InstalledScreenTotalJson datatypes.JSON
+	LogoJson                 datatypes.JSON
+	RevocationJson           datatypes.JSON
 	CreatedAt                time.Time `gorm:"<-:create"`
 	CreatedBy                string    `gorm:"<-:create"`
 	UpdatedAt                time.Time
