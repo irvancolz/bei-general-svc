@@ -382,7 +382,7 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 		pdf.SetFont("Arial", "", 12)
 		pdf.SetAlpha(1, "Normal")
 		pdf.SetTextColor(0, 0, 0)
-		pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(content))
+		pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "L", false, 0, getLink(content))
 
 		lastRowY += lineHeight
 		pageProps.currentY = lastRowY
