@@ -25,12 +25,18 @@ func GetCompanyProfile(c *gin.Context) ([]map[string]interface{}, error) {
 	for _, item := range filteredData {
 		for key := range item {
 			ogString := item[key]
-			var formattedProps interface{}
-			errUnmarshall := json.Unmarshal([]byte(ogString.(string)), &formattedProps)
-			if errUnmarshall != nil {
-				log.Println("failed to convert data to json :", errUnmarshall)
+
+			if json.Valid([]byte(ogString.(string))) {
+				var formattedProps interface{}
+				errUnmarshall := json.Unmarshal([]byte(ogString.(string)), &formattedProps)
+				if errUnmarshall != nil {
+					log.Println("failed to convert data to json :", errUnmarshall)
+				}
+				item[key] = formattedProps
+			} else {
+				item[key] = ogString
 			}
-			item[key] = formattedProps
+
 		}
 
 		result = append(result, item)

@@ -392,75 +392,6 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 	pageProps.currentX = currentX
 }
 
-func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTableOptions, filename string) (string, error) {
-
-	filenames := filename
-	if filenames == "" {
-		filenames = "export-to-pdf.pdf"
-	}
-
-	pdf := fpdf.NewCustom(createPageConfig(c, &opt))
-	pageProps := fpdfPageProperties{
-		pageLeftPadding:  15,
-		pageRightpadding: 15,
-		pageTopPadding:   5,
-	}
-
-	pdf.SetAutoPageBreak(false, 0)
-	pdf.SetFont("Arial", "", 12)
-	pdf.SetMargins(pageProps.pageLeftPadding, pageProps.pageTopPadding, pageProps.pageRightpadding)
-
-	drawHeader(pdf, opt.getHeaderTitle(), &pageProps)
-	drawFooter(pdf, &pageProps)
-
-	pdf.SetFont("Arial", "", 12)
-	pdf.AddPage()
-
-	pageWidth, pageHeight := pdf.GetPageSize()
-	currentY := pageProps.headerHeight + 10
-	lineHeight := float64(8)
-	rowsWidth := pageWidth - pageProps.pageLeftPadding - pageProps.pageRightpadding
-	pdf.SetLeftMargin(pageProps.pageLeftPadding)
-
-	pdf.SetFont("Arial", "B", 16)
-	pdf.SetY(currentY)
-	pdf.MultiCell(rowsWidth, lineHeight, fmt.Sprintf("Jenis informasi : %s", data.Information_Type), "", "", false)
-
-	currentY += lineHeight
-	pdf.SetY(currentY)
-	pdf.SetTextColor(29, 31, 29)
-	pdf.SetFont("Arial", "I", 12)
-	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat oleh : %s", data.Creator), "", 0, "", false, 0, "")
-
-	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat pada : %s", time.Unix(data.Effective_Date, 0).Format("15-06-2006")), "", 0, "", false, 0, "")
-
-	currentY += lineHeight + 10
-	pdf.SetFont("Arial", "", 12)
-	splittedText := pdf.SplitLines([]byte(data.Regarding), rowsWidth)
-
-	for _, line := range splittedText {
-
-		if currentY+lineHeight >= pageHeight-20 {
-			pdf.AddPage()
-			pdf.SetPage(pdf.PageNo() + 1)
-			currentY = pageProps.headerHeight + 10
-			pdf.SetLeftMargin(pageProps.pageLeftPadding)
-		}
-
-		pdf.SetY(currentY)
-		pdf.SetTextColor(29, 31, 29)
-		pdf.CellFormat(pageWidth/4, lineHeight, string(line), "", 2, "", false, 0, "")
-		currentY += lineHeight
-	}
-
-	err := pdf.OutputFileAndClose(filenames)
-	if err != nil {
-		log.Println("failed create Pdf files :", err)
-		return "", err
-	}
-	return filenames, nil
-}
-
 func drawFooter(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties) {
 	pageWidth, pageHeight := pdf.GetPageSize()
 	footerHeight := 10
@@ -691,4 +622,73 @@ func GenerateTableHeaders(titles []string, widths []float64) []TableHeader {
 	}
 
 	return result
+}
+
+func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTableOptions, filename string) (string, error) {
+
+	filenames := filename
+	if filenames == "" {
+		filenames = "export-to-pdf.pdf"
+	}
+
+	pdf := fpdf.NewCustom(createPageConfig(c, &opt))
+	pageProps := fpdfPageProperties{
+		pageLeftPadding:  15,
+		pageRightpadding: 15,
+		pageTopPadding:   5,
+	}
+
+	pdf.SetAutoPageBreak(false, 0)
+	pdf.SetFont("Arial", "", 12)
+	pdf.SetMargins(pageProps.pageLeftPadding, pageProps.pageTopPadding, pageProps.pageRightpadding)
+
+	drawHeader(pdf, opt.getHeaderTitle(), &pageProps)
+	drawFooter(pdf, &pageProps)
+
+	pdf.SetFont("Arial", "", 12)
+	pdf.AddPage()
+
+	pageWidth, pageHeight := pdf.GetPageSize()
+	currentY := pageProps.headerHeight + 10
+	lineHeight := float64(8)
+	rowsWidth := pageWidth - pageProps.pageLeftPadding - pageProps.pageRightpadding
+	pdf.SetLeftMargin(pageProps.pageLeftPadding)
+
+	pdf.SetFont("Arial", "B", 16)
+	pdf.SetY(currentY)
+	pdf.MultiCell(rowsWidth, lineHeight, fmt.Sprintf("Jenis informasi : %s", data.Information_Type), "", "", false)
+
+	currentY += lineHeight
+	pdf.SetY(currentY)
+	pdf.SetTextColor(29, 31, 29)
+	pdf.SetFont("Arial", "I", 12)
+	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat oleh : %s", data.Creator), "", 0, "", false, 0, "")
+
+	pdf.CellFormat(pageWidth/4, lineHeight, fmt.Sprintf("Dibuat pada : %s", time.Unix(data.Effective_Date, 0).Format("15-06-2006")), "", 0, "", false, 0, "")
+
+	currentY += lineHeight + 10
+	pdf.SetFont("Arial", "", 12)
+	splittedText := pdf.SplitLines([]byte(data.Regarding), rowsWidth)
+
+	for _, line := range splittedText {
+
+		if currentY+lineHeight >= pageHeight-20 {
+			pdf.AddPage()
+			pdf.SetPage(pdf.PageNo() + 1)
+			currentY = pageProps.headerHeight + 10
+			pdf.SetLeftMargin(pageProps.pageLeftPadding)
+		}
+
+		pdf.SetY(currentY)
+		pdf.SetTextColor(29, 31, 29)
+		pdf.CellFormat(pageWidth/4, lineHeight, string(line), "", 2, "", false, 0, "")
+		currentY += lineHeight
+	}
+
+	err := pdf.OutputFileAndClose(filenames)
+	if err != nil {
+		log.Println("failed create Pdf files :", err)
+		return "", err
+	}
+	return filenames, nil
 }
