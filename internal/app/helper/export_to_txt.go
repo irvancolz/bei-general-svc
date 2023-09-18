@@ -81,10 +81,12 @@ func drawTxtTable(data [][]string, columnWidth []int) []string {
 			for space := len(text); space <= columnWidth[i]; space++ {
 				beautifiedRows.WriteString("\u0020")
 			}
-			beautifiedRows.WriteString("|")
+			if i == len(item)-1 {
+				beautifiedRows.WriteString("|")
+			}
 		}
-		// the 2 pipe "|" before and after the text and the space " " after the first pipe
-		totalStylingCharacter := 3
+		// the  pipe "|" and the space " " after the first pipe
+		totalStylingCharacter := 2
 		// header border bottom
 		if j == 0 {
 			beautifiedRows.WriteString("\n")
