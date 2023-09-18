@@ -5,6 +5,7 @@ import (
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,7 +47,9 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"version",
 		"order",
 		"created_by",
+		"created_at",
 		"link",
+		"file",
 	}
 	columnHeaders := []string{
 		"No",
@@ -56,9 +59,11 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"Versi",
 		"Urutan",
 		"User",
+		"Waktu",
 		"Link",
+		"Nama File Attachment",
 	}
-	columnWidth := []float64{20, 40, 40, 60, 80, 20, 20, 40, 60}
+	columnWidth := []float64{20, 40, 60, 80, 20, 20, 40, 40, 50, 70}
 
 	var columnWidthInINT []int
 
@@ -90,6 +95,14 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 			return "Daftar Berkas"
 		}()
 
+		baseTime := exportedRows[7]
+		exportedRows[7] = func() string {
+			unixTime, _ := strconv.Atoi(baseTime)
+			dateTime := time.Unix(int64(unixTime), 0)
+			dateToFormat := helper.GetWIBLocalTime(&dateTime)
+			return helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo)
+		}()
+
 		exportedData = append(exportedData, exportedRows)
 	}
 	exportTableProps := helper.ExportTableToFileProps{
@@ -102,7 +115,7 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		},
 		PdfConfig: &helper.PdfTableOptions{
 			HeaderRows:   tableheaders,
-			PapperWidth:  410,
+			PapperWidth:  490,
 			Papperheight: 300,
 		},
 	}
