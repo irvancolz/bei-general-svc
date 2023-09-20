@@ -59,6 +59,7 @@ func formatDataToSlice(data [][]string, columnType []string) [][]interface{} {
 func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
 	// download uploaded files
 	fileLocation := upload.GetFilePath(pathFile)
+	removeFile := func() error { return os.Remove(fileLocation) }
 	minioClient, errorCreateMinionConn := helper.InitMinio()
 	if errorCreateMinionConn != nil {
 		return
@@ -77,7 +78,7 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	// read the files
 	uploadedData := helper.ReadFileExcel(fileLocation)
 	svcName := func() string {
-		if strings.EqualFold(reportType, "pjsppa") {
+		if strings.EqualFold(reportType, "pjsppa") || strings.EqualFold(reportType, "penyelesaian") {
 			return "pjsppa"
 		}
 		return "participant"
@@ -87,7 +88,7 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 		if strings.EqualFold("bulanan", reportType) {
 			return 3
 		}
-		if strings.EqualFold("pjsppa", reportType) {
+		if strings.EqualFold("pjsppa", reportType) || strings.EqualFold(reportType, "penyelesaian") {
 			return 2
 		}
 		return 4
@@ -99,12 +100,14 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 
 	DbConn, errCreateConn := helper.InitDBConn(svcName)
 	if errCreateConn != nil {
+		removeFile()
 		log.Println("failed create connection to upload data :", errCreateConn)
 		return
 	}
 
 	uploadStmt, errorCrateStmt := DbConn.Preparex(uploadReportQuery)
 	if errorCrateStmt != nil {
+		removeFile()
 		log.Println("failed create statement :", errorCrateStmt)
 		return
 	}
@@ -113,13 +116,15 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 		row = append(row, referenceNumber, "unggah berkas", helper.GetWIBLocalTime(nil))
 		errorInsert := sendRecordToDB(uploadStmt, reportType, row)
 		if errorInsert != nil {
+			removeFile()
 			log.Println("failed to upload data report to database :", errorInsert)
 			return
 		}
 	}
 
 	// delete the saved files
-	errorCleanup := os.Remove(fileLocation)
+
+	errorCleanup := removeFile()
 	if errorCleanup != nil {
 		log.Println("failed to do cleanup on downloaded files :", fileLocation)
 		return
@@ -145,6 +150,28 @@ func generateUploadReportQuery(reportType string) string {
 			created_at ) VALUES (
 				$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
 			)`
+	}
+	if strings.EqualFold(reportType, "penyelesaian") {
+		return `INSERT INTO finishing_transaction_report( 
+		pjsppa_code,
+		pjsppa_name,
+		pic,
+		trade_id,
+		securities_id,
+		trade_date,
+		price,
+		trade_volume,
+		settle_date,
+		settle_volume,
+		counterparty,
+		plte_number,
+		description,
+		no_ref,
+		created_by,
+		created_at
+		) VALUES (
+		$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+		)`
 	}
 	if strings.EqualFold(reportType, "pjsppa") {
 		return `INSERT INTO activity_transaction_report(
@@ -203,9 +230,15 @@ func generateUploadReportQuery(reportType string) string {
 func generateSliceFormatter(reportType string) []string {
 	if strings.EqualFold(reportType, "bulanan") {
 		return []string{"number", "string", "string", "string", "number", "number", "number", "number", "number", "number", "number"}
-	} else if strings.EqualFold(reportType, "pjsppa") {
+	}
+	if strings.EqualFold(reportType, "pjsppa") {
 		return []string{"s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s"}
 	}
+
+	if strings.EqualFold(reportType, "penyelesaian") {
+		return []string{"s", "s", "s", "s", "s", "s", "s", "number", "number", "s", "number", "s", "s", "s"}
+	}
+
 	return []string{"s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s"}
 }
 
@@ -221,6 +254,8 @@ func sendRecordToDB(stmt *sqlx.Stmt, reportType string, row []interface{}) error
 		insertQueryResult, errorInsert = stmt.Exec(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
 	} else if strings.EqualFold(reportType, "pjsppa") {
 		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16], row[17], row[18], row[19], row[20], row[21], row[22], row[23], row[24], row[25], row[26], row[27], row[28], row[29], row[30], row[31], row[32])
+	} else if strings.EqualFold(reportType, "penyelesaian") {
+		insertQueryResult, errorInsert = stmt.Exec(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
 	} else {
 		//  kunjungan order index 3 - 15
 		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
@@ -247,12 +282,16 @@ func buildNoReference(reportType string, timeProvider time.Time, order int) stri
 		if strings.EqualFold(reportType, "pjsppa") {
 			return "RATPJ"
 		}
+		if strings.EqualFold(reportType, "penyelesaian") {
+			return "LRPTPJ"
+		}
 		return "VISITPAR"
 	}()
 	currReportOrder := fmt.Sprintf("%03d", order)
 	currDate := func() string {
 		currTime := strings.Split(timeProvider.Format(time.DateOnly), "-")
 
+		// forgot bout how its works, should refactor later
 		for i, j := 0, len(currTime)-1; i < j; i, j = i+1, j-1 {
 			currTime[i], currTime[j] = currTime[j], currTime[i]
 		}

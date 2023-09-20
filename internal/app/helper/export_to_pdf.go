@@ -238,6 +238,10 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 			return currentY + pageProps.currRowsheight
 		}()
 	}
+	// table closing line
+	pdf.SetAlpha(.25, "Normal")
+	pdf.Line(pageProps.tableMarginX, pageProps.currentY, pageProps.tableMarginX+float64(pageProps.tableWidth), pageProps.currentY)
+	pdf.SetAlpha(1, "Normal")
 }
 
 func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
