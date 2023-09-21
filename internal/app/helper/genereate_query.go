@@ -53,7 +53,7 @@ func (m *SearchQueryGenerator) GenerateSearchQuery(valueExpected []string, const
 			if j != 0 {
 				sb.WriteString(` OR `)
 			}
-			sb.WriteString(fmt.Sprintf(` CAST ( %s AS TEXT ) LIKE '%%%s%%'`, column, keyword))
+			sb.WriteString(fmt.Sprintf(` CAST ( %s AS TEXT ) ILIKE '%%%s%%'`, column, keyword))
 		}
 
 		if i != 0 {
