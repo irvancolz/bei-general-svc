@@ -6,11 +6,11 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-pdf/fpdf"
-	"github.com/johnfercher/maroto/pkg/color"
 )
 
 type TableHeader struct {
@@ -43,16 +43,14 @@ type PdfTableOptions struct {
 	HeaderLogo string
 	// path to logo
 	FooterLogo string
-	// line header and footer color default is maroon
-	LineColor *color.Color
-	// even indexed rows bg color in table, default is gray
-	TableBgCol *color.Color
 	// setting paper width
 	PapperWidth float64
 	// setting papper height
 	Papperheight float64
 	// setting page orientation by default "p" / "l"
 	PageOrientation string
+	// align the table content by default is left
+	TableContentAlignment string
 }
 
 type fpdfPageProperties struct {
@@ -83,6 +81,7 @@ type fpdfPageProperties struct {
 	footerSpace         float64
 	headerSpace         float64
 	headerMarginBottom  float64
+	textAlign           string
 }
 
 func (p fpdfPageProperties) isNeedPageBreak(coord float64) bool {
@@ -156,6 +155,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 		return pageProps.pageLeftPadding
 	}()
 
+	pageProps.textAlign = props.getTableContentAlignment()
 	pageProps.tableWidth = totalWidth
 	pageProps.tableMarginX = tableMarginX
 	pageProps.colWidthList = columnWidth
@@ -386,7 +386,7 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 		pdf.SetFont("Arial", "", 12)
 		pdf.SetAlpha(1, "Normal")
 		pdf.SetTextColor(0, 0, 0)
-		pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, "L", false, 0, getLink(content))
+		pdf.CellFormat(currColWidth, lineHeight, string(text), "", 2, pageProps.textAlign, false, 0, getLink(content))
 
 		lastRowY += lineHeight
 		pageProps.currentY = lastRowY
@@ -553,6 +553,28 @@ func (opt *PdfTableOptions) getHeaderTitle() string {
 		return "Bursa Efek Indonesia"
 	}
 	return opt.HeaderTitle
+}
+
+func (opt *PdfTableOptions) getTableContentAlignment() string {
+	if strings.EqualFold("center", opt.TableContentAlignment) {
+		return "C"
+	}
+	if strings.EqualFold("right", opt.TableContentAlignment) {
+		return "R"
+	}
+	if strings.EqualFold("top", opt.TableContentAlignment) {
+		return "T"
+	}
+	if strings.EqualFold("middle", opt.TableContentAlignment) {
+		return "M"
+	}
+	if strings.EqualFold("bottom", opt.TableContentAlignment) {
+		return "B"
+	}
+	if strings.EqualFold("baseline", opt.TableContentAlignment) {
+		return "A"
+	}
+	return "L"
 }
 
 func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageProperties) {
