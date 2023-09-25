@@ -56,13 +56,11 @@ func formatDataToSlice(data [][]string, columnType []string) [][]interface{} {
 	return result
 }
 
-func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
-	// download uploaded files
+func getUnggahBerkasFile(c *gin.Context, pathFile string) string {
 	fileLocation := upload.GetFilePath(pathFile)
-	removeFile := func() error { return os.Remove(fileLocation) }
 	minioClient, errorCreateMinionConn := helper.InitMinio()
 	if errorCreateMinionConn != nil {
-		return
+		return ""
 	}
 
 	minioSaveConfig := helper.UploadToMinioProps{
@@ -72,17 +70,27 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 
 	errGetFromMinio := helper.GetFileFromMinio(minioClient, c, minioSaveConfig)
 	if errGetFromMinio != nil {
-		return
+		return ""
 	}
+
+	return fileLocation
+}
+
+func getDbSvcName(reportType string) string {
+	if strings.EqualFold(reportType, "pjsppa") || strings.EqualFold(reportType, "penyelesaian") {
+		return "pjsppa"
+	}
+	return "participant"
+}
+
+func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
+	// download uploaded files
+	fileLocation := getUnggahBerkasFile(c, pathFile)
+	removeFile := func() error { return os.Remove(fileLocation) }
 
 	// read the files
 	uploadedData := helper.ReadFileExcel(fileLocation)
-	svcName := func() string {
-		if strings.EqualFold(reportType, "pjsppa") || strings.EqualFold(reportType, "penyelesaian") {
-			return "pjsppa"
-		}
-		return "participant"
-	}()
+	svcName := getDbSvcName(reportType)
 
 	headerHeight := func() int {
 		if strings.EqualFold("bulanan", reportType) {
