@@ -33,33 +33,35 @@ func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNu
 			return
 		}
 
-		if uploadedData != nil && len(uploadedData) > 2 {
-			catatanParticipantList := []databasemodel.Notes{}
-			for i := 3; i < len(uploadedData); i++ {
-				catatanParticipant := databasemodel.Notes{
-					ID:                safeAccess(uploadedData, i, 1),
-					ReferenceNo:       safeAccess(uploadedData, i, 2),
-					UploadDate:        safeAccess(uploadedData, i, 3),
-					ParticipantCode:   safeAccess(uploadedData, i, 4),
-					ParticipantName:   safeAccess(uploadedData, i, 5),
-					EventDate:         safeAccess(uploadedData, i, 6),
-					Category:          safeAccess(uploadedData, i, 7),
-					ReportDescription: safeAccess(uploadedData, i, 8),
-					Action:            safeAccess(uploadedData, i, 9),
-					BursaUser:         safeAccess(uploadedData, i, 10),
-					Description:       safeAccess(uploadedData, i, 11),
+		if uploadedData != nil {
+			if len(uploadedData) > 2 {
+				catatanParticipantList := []databasemodel.Notes{}
+				for i := 3; i < len(uploadedData); i++ {
+					catatanParticipant := databasemodel.Notes{
+						ID:                safeAccess(uploadedData, i, 1),
+						ReferenceNo:       safeAccess(uploadedData, i, 2),
+						UploadDate:        safeAccess(uploadedData, i, 3),
+						ParticipantCode:   safeAccess(uploadedData, i, 4),
+						ParticipantName:   safeAccess(uploadedData, i, 5),
+						EventDate:         safeAccess(uploadedData, i, 6),
+						Category:          safeAccess(uploadedData, i, 7),
+						ReportDescription: safeAccess(uploadedData, i, 8),
+						Action:            safeAccess(uploadedData, i, 9),
+						BursaUser:         safeAccess(uploadedData, i, 10),
+						Description:       safeAccess(uploadedData, i, 11),
+					}
+
+					catatanParticipantList = append(catatanParticipantList, catatanParticipant)
 				}
 
-				catatanParticipantList = append(catatanParticipantList, catatanParticipant)
+				DbConn.Save(&catatanParticipantList)
 			}
 
-			DbConn.Save(&catatanParticipantList)
+			defer func() {
+				dbInstance, _ := DbConn.DB()
+				_ = dbInstance.Close()
+			}()
 		}
-
-		defer func() {
-			dbInstance, _ := DbConn.DB()
-			_ = dbInstance.Close()
-		}()
 	}
 }
 
