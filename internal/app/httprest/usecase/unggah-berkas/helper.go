@@ -56,13 +56,11 @@ func formatDataToSlice(data [][]string, columnType []string) [][]interface{} {
 	return result
 }
 
-func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
-	// download uploaded files
+func getUnggahBerkasFile(c *gin.Context, pathFile string) string {
 	fileLocation := upload.GetFilePath(pathFile)
-	removeFile := func() error { return os.Remove(fileLocation) }
 	minioClient, errorCreateMinionConn := helper.InitMinio()
 	if errorCreateMinionConn != nil {
-		return
+		return ""
 	}
 
 	minioSaveConfig := helper.UploadToMinioProps{
@@ -72,17 +70,27 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 
 	errGetFromMinio := helper.GetFileFromMinio(minioClient, c, minioSaveConfig)
 	if errGetFromMinio != nil {
-		return
+		return ""
 	}
+
+	return fileLocation
+}
+
+func getDbSvcName(reportType string) string {
+	if strings.EqualFold(reportType, "pjsppa") || strings.EqualFold(reportType, "penyelesaian") {
+		return "pjsppa"
+	}
+	return "participant"
+}
+
+func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
+	// download uploaded files
+	fileLocation := getUnggahBerkasFile(c, pathFile)
+	removeFile := func() error { return os.Remove(fileLocation) }
 
 	// read the files
 	uploadedData := helper.ReadFileExcel(fileLocation)
-	svcName := func() string {
-		if strings.EqualFold(reportType, "pjsppa") || strings.EqualFold(reportType, "penyelesaian") {
-			return "pjsppa"
-		}
-		return "participant"
-	}()
+	svcName := getDbSvcName(reportType)
 
 	headerHeight := func() int {
 		if strings.EqualFold("bulanan", reportType) {
@@ -98,37 +106,43 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	sliceFormat := generateSliceFormatter(reportType)
 	formattedData := formatDataToSlice(uploadedData[headerHeight:], sliceFormat)
 
-	DbConn, errCreateConn := helper.InitDBConn(svcName)
-	if errCreateConn != nil {
-		removeFile()
-		log.Println("failed create connection to upload data :", errCreateConn)
-		return
-	}
-
-	uploadStmt, errorCrateStmt := DbConn.Preparex(uploadReportQuery)
-	if errorCrateStmt != nil {
-		removeFile()
-		log.Println("failed create statement :", errorCrateStmt)
-		return
-	}
-
-	for _, row := range formattedData {
-		row = append(row, referenceNumber, "unggah berkas", helper.GetWIBLocalTime(nil))
-		errorInsert := sendRecordToDB(uploadStmt, reportType, row)
-		if errorInsert != nil {
+	if reportType == "catatan" && svcName == "participant" {
+		uploadParticipantNoteToDb(c, pathFile, reportType, referenceNumber, svcName, uploadedData, removeFile)
+	} else {
+		DbConn, errCreateConn := helper.InitDBConn(svcName)
+		if errCreateConn != nil {
 			removeFile()
-			log.Println("failed to upload data report to database :", errorInsert)
+			log.Println("failed create connection to upload data :", errCreateConn)
+			return
+		}
+
+		uploadStmt, errorCrateStmt := DbConn.Preparex(uploadReportQuery)
+		if errorCrateStmt != nil {
+			removeFile()
+			log.Println("failed create statement :", errorCrateStmt)
+			return
+		}
+
+		for _, row := range formattedData {
+			row = append(row, referenceNumber, "unggah berkas", helper.GetWIBLocalTime(nil))
+			errorInsert := sendRecordToDB(uploadStmt, reportType, row)
+			if errorInsert != nil {
+				removeFile()
+				log.Println("failed to upload data report to database :", errorInsert)
+				return
+			}
+		}
+
+		// delete the saved files
+
+		errorCleanup := removeFile()
+		if errorCleanup != nil {
+			log.Println("failed to do cleanup on downloaded files :", fileLocation)
 			return
 		}
 	}
 
-	// delete the saved files
-
-	errorCleanup := removeFile()
-	if errorCleanup != nil {
-		log.Println("failed to do cleanup on downloaded files :", fileLocation)
-		return
-	}
+	
 }
 
 func generateUploadReportQuery(reportType string) string {
