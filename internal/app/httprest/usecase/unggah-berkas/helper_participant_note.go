@@ -4,28 +4,15 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model/databasemodel"
 	"log"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
-func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNumber string) {
+func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNumber, svcName string, uploadedData [][]string, removeFile func() error, ) {
 	// download uploaded files
 
 	// read the files
-	fileLocation := getUnggahBerkasFile(c, pathFile)
-
-	if len(fileLocation) == 0 {
-		return
-	}
-
-	removeFile := func() error { return os.Remove(fileLocation) }
-
-	// read the files
-	uploadedData := helper.ReadFileExcel(fileLocation)
-	svcName := getDbSvcName(reportType)
-
-	if svcName == "participant" {
+	
 		DbConn, errCreateConn := helper.InitDBConnGorm(svcName)
 		if errCreateConn != nil {
 			removeFile()
@@ -62,7 +49,6 @@ func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNu
 				_ = dbInstance.Close()
 			}()
 		}
-	}
 }
 
 func safeAccess(slice [][]string, columnIndex, rowIndex int) string {

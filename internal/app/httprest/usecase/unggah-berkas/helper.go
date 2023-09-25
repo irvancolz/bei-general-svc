@@ -106,37 +106,43 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	sliceFormat := generateSliceFormatter(reportType)
 	formattedData := formatDataToSlice(uploadedData[headerHeight:], sliceFormat)
 
-	DbConn, errCreateConn := helper.InitDBConn(svcName)
-	if errCreateConn != nil {
-		removeFile()
-		log.Println("failed create connection to upload data :", errCreateConn)
-		return
-	}
-
-	uploadStmt, errorCrateStmt := DbConn.Preparex(uploadReportQuery)
-	if errorCrateStmt != nil {
-		removeFile()
-		log.Println("failed create statement :", errorCrateStmt)
-		return
-	}
-
-	for _, row := range formattedData {
-		row = append(row, referenceNumber, "unggah berkas", helper.GetWIBLocalTime(nil))
-		errorInsert := sendRecordToDB(uploadStmt, reportType, row)
-		if errorInsert != nil {
+	if reportType == "catatan" && svcName == "participant" {
+		uploadParticipantNoteToDb(c, pathFile, reportType, referenceNumber, svcName, uploadedData, removeFile)
+	} else {
+		DbConn, errCreateConn := helper.InitDBConn(svcName)
+		if errCreateConn != nil {
 			removeFile()
-			log.Println("failed to upload data report to database :", errorInsert)
+			log.Println("failed create connection to upload data :", errCreateConn)
+			return
+		}
+
+		uploadStmt, errorCrateStmt := DbConn.Preparex(uploadReportQuery)
+		if errorCrateStmt != nil {
+			removeFile()
+			log.Println("failed create statement :", errorCrateStmt)
+			return
+		}
+
+		for _, row := range formattedData {
+			row = append(row, referenceNumber, "unggah berkas", helper.GetWIBLocalTime(nil))
+			errorInsert := sendRecordToDB(uploadStmt, reportType, row)
+			if errorInsert != nil {
+				removeFile()
+				log.Println("failed to upload data report to database :", errorInsert)
+				return
+			}
+		}
+
+		// delete the saved files
+
+		errorCleanup := removeFile()
+		if errorCleanup != nil {
+			log.Println("failed to do cleanup on downloaded files :", fileLocation)
 			return
 		}
 	}
 
-	// delete the saved files
-
-	errorCleanup := removeFile()
-	if errorCleanup != nil {
-		log.Println("failed to do cleanup on downloaded files :", fileLocation)
-		return
-	}
+	
 }
 
 func generateUploadReportQuery(reportType string) string {

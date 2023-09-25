@@ -71,11 +71,9 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 
 	referenceNumber := buildNoReference(props.Type, time.Now(), u.Repo.CurrentFileUploadedOrderToday(props.Type))
 
-	if !strings.EqualFold("catatan", props.Type) {
+	
 		go uploadReportToDb(c, props.File_Path, props.Type, referenceNumber)
-	} else if strings.EqualFold("catatan", props.Type) {
-		go uploadParticipantNoteToDb(c, props.File_Path, props.Type, referenceNumber)
-	}
+	
 
 	return u.Repo.UploadNew(createNewArgs)
 }
