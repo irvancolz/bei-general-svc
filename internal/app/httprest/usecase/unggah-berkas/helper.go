@@ -142,7 +142,6 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 		}
 	}
 
-	
 }
 
 func generateUploadReportQuery(reportType string) string {
@@ -189,6 +188,7 @@ func generateUploadReportQuery(reportType string) string {
 	}
 	if strings.EqualFold(reportType, "pjsppa") {
 		return `INSERT INTO activity_transaction_report(
+			pjsppa_code,
 			delivery_date,
 			trade_id,
 			date,
@@ -220,7 +220,7 @@ func generateUploadReportQuery(reportType string) string {
 			created_by,
 			created_at
 		) VALUES (
-			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28, $29, $30
+			$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28, $29, $30, $31
 		)`
 	}
 	return `INSERT INTO visits (
@@ -246,7 +246,7 @@ func generateSliceFormatter(reportType string) []string {
 		return []string{"number", "string", "string", "string", "number", "number", "number", "number", "number", "number", "number"}
 	}
 	if strings.EqualFold(reportType, "pjsppa") {
-		return []string{"s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s"}
+		return []string{"s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s"}
 	}
 
 	if strings.EqualFold(reportType, "penyelesaian") {
@@ -267,7 +267,7 @@ func sendRecordToDB(stmt *sqlx.Stmt, reportType string, row []interface{}) error
 		//  bulanan order index 1 - 13
 		insertQueryResult, errorInsert = stmt.Exec(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
 	} else if strings.EqualFold(reportType, "pjsppa") {
-		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16], row[17], row[18], row[19], row[20], row[21], row[22], row[23], row[24], row[25], row[26], row[27], row[28], row[29], row[30], row[31], row[32])
+		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16], row[17], row[18], row[19], row[20], row[21], row[22], row[23], row[24], row[25], row[26], row[27], row[28], row[29], row[30], row[31], row[32], row[33])
 	} else if strings.EqualFold(reportType, "penyelesaian") {
 		insertQueryResult, errorInsert = stmt.Exec(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
 	} else {
