@@ -9,7 +9,7 @@ COPY . .
 # RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 RUN go mod tidy
 
-RUN go build -o /svc-general
+RUN go build -o /svc-general -mod=mod
 
 FROM golang:1.20.2-alpine3.17
 
