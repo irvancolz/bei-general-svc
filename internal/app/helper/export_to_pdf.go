@@ -230,6 +230,26 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 		pdf.SetPage(pageProps.currRowMaxPage)
 		drawRows(pdf, pageProps, rows)
 
+		if r == len(data)-1 {
+			curRowHeight := func() float64 {
+				if pageProps.isNeedPageBreak(pageProps.currentY + pageProps.currRowsheight) {
+					return pageProps.newPageMargin
+				}
+				return currentY + pageProps.currRowsheight
+			}()
+
+			linePos := func() float64 {
+				if pageProps.isNeedPageBreak(pageProps.currentY + curRowHeight + 1) {
+					return pageProps.pageHeight - pageProps.footerSpace
+				}
+				return currentY
+			}()
+
+			pdf.SetAlpha(.25, "Normal")
+			pdf.Line(pageProps.tableMarginX, linePos, pageProps.tableMarginX+float64(pageProps.tableWidth), linePos)
+			pdf.SetAlpha(1, "Normal")
+		}
+
 		//  add height for every line added
 		pageProps.currentY = func() float64 {
 			if pageProps.isNeedPageBreak(pageProps.currentY + pageProps.currRowsheight) {

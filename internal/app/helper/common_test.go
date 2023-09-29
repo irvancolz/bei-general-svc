@@ -164,3 +164,35 @@ func TestGenerateTimeOnly(t *testing.T) {
 		t.Error()
 	}
 }
+
+func sortArrayByParity(nums []int) []int {
+	i, j := 0, len(nums)-1
+
+	for {
+		if i > j {
+			break
+		}
+		if nums[i]%2 == 0 {
+			i++
+		}
+		if nums[j]%2 != 0 {
+			j--
+		}
+
+		if i < j {
+			t := nums[i]
+			nums[i] = nums[j]
+			nums[j] = t
+		}
+
+	}
+	return nums
+}
+
+func TestArrByParity(t *testing.T) {
+	arr := []int{0, 1, 2}
+	// t.Log(0 % 2)
+	res := sortArrayByParity(arr)
+	t.Log(res)
+
+}
