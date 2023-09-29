@@ -46,7 +46,7 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"description",
 		"version",
 		"order",
-		"created_by",
+		"file_owner",
 		"created_at",
 		"link",
 		"file",
