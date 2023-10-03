@@ -8,11 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNumber, svcName string, uploadedData [][]string, removeFile func()) {
-	// download uploaded files
-
-	// read the files
-
+func uploadParticipantNoteToDb(c *gin.Context, referenceNumber, svcName string, uploadedData [][]string, removeFile func()) {
 	DbConn, errCreateConn := helper.InitDBConnGorm(svcName)
 	if errCreateConn != nil {
 		removeFile()
@@ -25,8 +21,7 @@ func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNu
 			catatanParticipantList := []databasemodel.Notes{}
 			for i := 3; i < len(uploadedData); i++ {
 				catatanParticipant := databasemodel.Notes{
-					ID:                safeAccess(uploadedData, i, 1),
-					ReferenceNo:       safeAccess(uploadedData, i, 2),
+					ReferenceNo:       referenceNumber,
 					UploadDate:        safeAccess(uploadedData, i, 3),
 					ParticipantCode:   safeAccess(uploadedData, i, 4),
 					ParticipantName:   safeAccess(uploadedData, i, 5),
@@ -36,18 +31,17 @@ func uploadParticipantNoteToDb(c *gin.Context, pathFile, reportType, referenceNu
 					Action:            safeAccess(uploadedData, i, 9),
 					BursaUser:         safeAccess(uploadedData, i, 10),
 					Description:       safeAccess(uploadedData, i, 11),
+					CreatedBy:         "Unggah Berkas",
 				}
 
 				catatanParticipantList = append(catatanParticipantList, catatanParticipant)
 			}
 
-			DbConn.Save(&catatanParticipantList)
+			DbConn.Create(&catatanParticipantList)
+			if DbConn.Error != nil {
+				removeFile()
+			}
 		}
-
-		defer func() {
-			dbInstance, _ := DbConn.DB()
-			_ = dbInstance.Close()
-		}()
 	}
 }
 

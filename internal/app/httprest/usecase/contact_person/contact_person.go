@@ -342,7 +342,7 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 		return nil, error_member
 	}
 	for _, data := range memberList {
-		if data.Institute_type == company_type {
+		if strings.EqualFold(data.Institute_type, company_type) {
 			result := model.InstitutionMembersResponse{
 				Id:           data.Id,
 				Name:         data.Name,
