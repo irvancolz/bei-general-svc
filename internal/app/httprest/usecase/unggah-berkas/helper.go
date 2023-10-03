@@ -112,7 +112,7 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	formattedData := formatDataToSlice(uploadedData[headerHeight:], sliceFormat)
 
 	if reportType == "catatan" && svcName == "participant" {
-		uploadParticipantNoteToDb(c, pathFile, reportType, referenceNumber, svcName, uploadedData, removeFile)
+		uploadParticipantNoteToDb(c, referenceNumber, svcName, uploadedData, removeFile)
 	} else {
 		DbConn, errCreateConn := helper.InitDBConn(svcName)
 		if errCreateConn != nil {
@@ -266,6 +266,9 @@ func buildNoReference(reportType string, timeProvider time.Time, order int) stri
 		}
 		if strings.EqualFold(reportType, "pjsppa") {
 			return "RATPJ"
+		}
+		if strings.EqualFold(reportType, "catatan") {
+			return "NOTEPAR"
 		}
 		return "VISITPAR"
 	}()

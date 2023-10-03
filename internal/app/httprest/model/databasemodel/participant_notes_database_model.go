@@ -15,12 +15,12 @@ type Notes struct {
 	Action            string    `json:"action"`
 	BursaUser         string    `json:"bursa_user"`
 	Description       string    `json:"information"`
-	CreatedAt         time.Time `gorm:"<-:create" json:"created_at"`
-	CreatedBy         string    `gorm:"<-:create" json:"created_by"`
-	UpdatedBy         string    `json:"updated_by"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	DeletedBy         string    `json:"deleted_by"`
-	DeletedAt         time.Time `json:"deleted_at"`
+	CreatedAt         time.Time `gorm:"<-:false" json:"created_at"`
+	CreatedBy         string    `json:"created_by"`
+	UpdatedBy         string    `gorm:"<-:false" json:"updated_by"`
+	UpdatedAt         time.Time `gorm:"<-:false" json:"updated_at"`
+	DeletedBy         string    `gorm:"<-:false" json:"deleted_by"`
+	DeletedAt         time.Time `gorm:"<-:false" json:"deleted_at"`
 }
 
 func (Notes) TableName() string {

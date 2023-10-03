@@ -66,12 +66,12 @@ func InitDBConnGorm(externalType string) (*gorm.DB, error) {
 
 	gormDb, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: dbConn,
-	}), &gorm.Config{ Logger: logger.Default.LogMode(logger.Info)})
+	}), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	return gormDb, nil
-	
+
 }
