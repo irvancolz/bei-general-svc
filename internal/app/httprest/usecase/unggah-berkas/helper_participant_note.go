@@ -43,6 +43,7 @@ func uploadParticipantNoteToDb(c *gin.Context, referenceNumber, svcName string, 
 			}
 		}
 	}
+	removeFile()
 }
 
 func safeAccess(slice [][]string, columnIndex, rowIndex int) string {
