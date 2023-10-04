@@ -38,7 +38,7 @@ func NewGuidancesRepository() GuidancesRepoInterface {
 }
 
 type CreateNewDataProps struct {
-	Category    string `validate:"oneof=Guidebook File Regulation"`
+	Category    string
 	Description string
 	Name        string
 	Link        string
@@ -76,7 +76,7 @@ func (u *guidancesRepository) CreateNewData(props CreateNewDataProps) (int64, er
 
 type UpdateExistingDataProps struct {
 	Id          string
-	Category    string `validate:"oneof=Guidebook File Regulation"`
+	Category    string
 	Name        string
 	Description string
 	Link        string
@@ -123,12 +123,6 @@ func (u *guidancesRepository) UpdateExistingData(c *gin.Context, props UpdateExi
 }
 
 func (r *guidancesRepository) insertNewData(props CreateNewDataProps) (int64, error) {
-	error_validate := helper.Validator().Struct(props)
-	if error_validate != nil {
-		log.Println("data is not passed validation ", error_validate)
-		return 0, error_validate
-	}
-
 	insert_res, error_insert := r.DB.Exec(createNewDataQuerry,
 		props.Category,
 		props.Name,
@@ -154,8 +148,9 @@ func (r *guidancesRepository) insertNewData(props CreateNewDataProps) (int64, er
 		return 0, error_results
 	}
 	if results == 0 {
-		log.Println("database is not updated after transactions")
-		return 0, errors.New("DATABASE IS NOT UPDATED, PLEASE TRY AGAIN")
+		errTxt := "cannot find the data inserted in database, please try again"
+		log.Println(errTxt)
+		return 0, errors.New(errTxt)
 	}
 
 	return results, nil
