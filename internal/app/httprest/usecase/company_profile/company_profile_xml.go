@@ -16,15 +16,15 @@ type onGetDuList = func([]byte)
 type onGetAllList = func([]byte)
 
 const (
-	EXTERNAL_TYPE_LIST_AB = "AbList"
+	EXTERNAL_TYPE_LIST_AB          = "AbList"
 	EXTERNAL_TYPE_LIST_PARTICIPANT = "ParticipantList"
-	EXTERNAL_TYPE_LIST_PJSPPA = "PjsppaList"
-	EXTERNAL_TYPE_LIST_DU = "DuList"
+	EXTERNAL_TYPE_LIST_PJSPPA      = "PjsppaList"
+	EXTERNAL_TYPE_LIST_DU          = "DuList"
 
-	REQUEST_EXTERNAL_TYPE_AB = "ab"
+	REQUEST_EXTERNAL_TYPE_AB          = "ab"
 	REQUEST_EXTERNAL_TYPE_PARTICIPANT = "participant"
-	REQUEST_EXTERNAL_TYPE_PJSPPA = "pjsppa"
-	REQUEST_EXTERNAL_TYPE_DU = "du"
+	REQUEST_EXTERNAL_TYPE_PJSPPA      = "pjsppa"
+	REQUEST_EXTERNAL_TYPE_DU          = "du"
 )
 
 func byteToDocument(data []byte) (*etree.Document, error) {
@@ -36,13 +36,10 @@ func byteToDocument(data []byte) (*etree.Document, error) {
 
 	// Add the new element to the existing document
 
-
 	//log.Println("hey")
 	//data, err := abCompanyList.WriteToBytes()
 
 	//log.Println(string(data))
-
-
 
 	return document, nil
 }
@@ -53,19 +50,19 @@ func GetCompanyProfileXml(c *gin.Context, request requestmodel.CompanyProfileXml
 
 	err := handleCompanyType(request,
 		func(abList []byte) {
-			companyProfileXmlBytes = append(companyProfileXmlBytes, abList...) 
+			companyProfileXmlBytes = append(companyProfileXmlBytes, abList...)
 		},
 		func(participantList []byte) {
-			companyProfileXmlBytes = append(companyProfileXmlBytes, participantList...) 
+			companyProfileXmlBytes = append(companyProfileXmlBytes, participantList...)
 		},
 		func(pjsppaList []byte) {
-			companyProfileXmlBytes = append(companyProfileXmlBytes, pjsppaList...) 
+			companyProfileXmlBytes = append(companyProfileXmlBytes, pjsppaList...)
 		},
 		func(duList []byte) {
-			companyProfileXmlBytes = append(companyProfileXmlBytes, duList...) 
+			companyProfileXmlBytes = append(companyProfileXmlBytes, duList...)
 		},
 		func(allList []byte) {
-			companyProfileXmlBytes = append(companyProfileXmlBytes, allList...) 
+			companyProfileXmlBytes = append(companyProfileXmlBytes, allList...)
 		},
 	)
 
@@ -84,13 +81,11 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 	onGetAllList onGetAllList,
 ) error {
 
-
 	companyList := etree.NewDocument()
 	companyList.CreateElement("CompanyProfile")
 
-
 	if len(request.ExternalType) == 0 {
-		var allList[]byte  
+		var allList []byte
 		request.ExternalType = REQUEST_EXTERNAL_TYPE_AB
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
 
@@ -98,12 +93,11 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		_, err = combineXml(companyList,  anggotaBursaList)
+		_, err = combineXml(companyList, anggotaBursaList)
 
 		if err != nil {
 			return err
 		}
-		
 
 		request.ExternalType = REQUEST_EXTERNAL_TYPE_PARTICIPANT
 		participantList, err := companyprofilerepository.GetCompanyProfileParticipant(request)
@@ -112,7 +106,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		_, err = combineXml(companyList,  participantList)
+		_, err = combineXml(companyList, participantList)
 
 		if err != nil {
 			return err
@@ -144,7 +138,6 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-
 		onGetAllList(allList)
 	} else if strings.EqualFold(request.ExternalType, REQUEST_EXTERNAL_TYPE_AB) {
 		anggotaBursaList, err := companyprofilerepository.GetCompanyProfileAb(request)
@@ -153,7 +146,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		anggotaBursaList, err = combineXml(companyList, anggotaBursaList)
+		// anggotaBursaList, err = combineXml(companyList, anggotaBursaList)
 
 		if err != nil {
 			return err
@@ -168,7 +161,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		participantList, err = combineXml(companyList, participantList)
+		// participantList, err = combineXml(companyList, participantList)
 
 		if err != nil {
 			return err
@@ -182,7 +175,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		pjsppaList, err = combineXml(companyList, pjsppaList)
+		// pjsppaList, err = combineXml(companyList, pjsppaList)
 
 		if err != nil {
 			return err
@@ -197,7 +190,7 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 			return err
 		}
 
-		dealerUtamaList, err = combineXml(companyList, dealerUtamaList)
+		// dealerUtamaList, err = combineXml(companyList, dealerUtamaList)
 
 		if err != nil {
 			return err
@@ -209,11 +202,9 @@ func handleCompanyType(request requestmodel.CompanyProfileXml,
 	return nil
 }
 
+func combineXml(companyList *etree.Document, data []byte) ([]byte, error) {
 
-
-func combineXml(companyList *etree.Document, data []byte)  ([]byte, error) {
-
-	dataDocument, err :=  byteToDocument(data)
+	dataDocument, err := byteToDocument(data)
 
 	if err != nil {
 		return nil, err
