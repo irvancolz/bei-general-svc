@@ -58,7 +58,7 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 		"Versi",
 		"Urutan",
 		"User",
-		"Waktu",
+		"Created Time",
 		"Link",
 		"Nama File Attachment",
 	}
