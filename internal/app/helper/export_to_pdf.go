@@ -231,18 +231,11 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 		drawRows(pdf, pageProps, rows)
 
 		if r == len(data)-1 {
-			curRowHeight := func() float64 {
-				if pageProps.isNeedPageBreak(pageProps.currentY + pageProps.currRowsheight) {
-					return pageProps.newPageMargin
-				}
-				return currentY + pageProps.currRowsheight
-			}()
-
 			linePos := func() float64 {
-				if pageProps.isNeedPageBreak(pageProps.currentY + curRowHeight + 1) {
+				if pageProps.isNeedPageBreak(pageProps.currentY + curRowsBgHeight + 1) {
 					return pageProps.pageHeight - pageProps.footerSpace
 				}
-				return currentY
+				return currentY + pageProps.currPageRowHeight
 			}()
 
 			pdf.SetAlpha(.25, "Normal")
@@ -258,10 +251,6 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 			return currentY + pageProps.currRowsheight
 		}()
 	}
-	// table closing line
-	pdf.SetAlpha(.25, "Normal")
-	pdf.Line(pageProps.tableMarginX, pageProps.currentY, pageProps.tableMarginX+float64(pageProps.tableWidth), pageProps.currentY)
-	pdf.SetAlpha(1, "Normal")
 }
 
 func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
@@ -297,6 +286,7 @@ func drawRows(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, rows []string) {
 	pdf.SetTextColor(0, 0, 0)
 	pdf.SetFillColor(240, 240, 240)
 
+	pdf.SetAlpha(.5, "Normal")
 	if pageProps.currRowsIndex%2 != 0 {
 		pdf.SetAlpha(0, "Normal")
 	}
@@ -379,12 +369,7 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 			pageProps.curRowsBgHeight = curRowsBgHeightOnNewPage
 			pageProps.currPageRowHeight = curRowsBgHeightOnNewPage
 
-			// draw bg
-			if pageProps.currRowsIndex%2 != 0 {
-				pdf.SetAlpha(0, "Normal")
-			}
-
-			pdf.SetAlpha(1, "Normal")
+			pdf.SetAlpha(.5, "Normal")
 			if pageProps.currRowsIndex%2 != 0 {
 				pdf.SetAlpha(0, "Normal")
 			}
