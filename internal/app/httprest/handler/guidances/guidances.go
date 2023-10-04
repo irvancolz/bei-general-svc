@@ -4,7 +4,6 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/guidances"
 	"be-idx-tsg/internal/pkg/httpresponse"
-	"log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -62,7 +61,7 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 
 func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 	types := c.Query("type")
-	log.Println("type :", types)
+
 	if strings.EqualFold(types, usecase.BukuPetunjuk) {
 		result, error_result := h.usecase.GetAllGuidanceBasedOnType(c, types)
 		if error_result != nil {
