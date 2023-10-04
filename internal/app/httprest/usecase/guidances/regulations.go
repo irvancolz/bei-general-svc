@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,12 +31,13 @@ type RegulationUsecaseInterface interface {
 	GetAllRegulationsBasedOnType(c *gin.Context, types string) (*helper.PaginationResponse, error)
 }
 
+const Peraturan = "Peraturan"
+
 func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewRegulationsProps) (int64, error) {
 	name_user, _ := c.Get("name_user")
-	categories := "Regulation"
 
 	createDataArgs := repo.CreateNewDataProps{
-		Category:   categories,
+		Category:   Peraturan,
 		Name:       props.Name,
 		File_Owner: props.Owner,
 		Link:       props.Link,
@@ -53,10 +55,9 @@ func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewR
 
 func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props UpdateExistingRegulationsProps) error {
 	name_user, _ := c.Get("name_user")
-	categories := "Regulation"
 
 	updateDataArgs := repo.UpdateExistingDataProps{
-		Category:   categories,
+		Category:   Peraturan,
 		Name:       props.Name,
 		File_Owner: props.Owner,
 		Link:       props.Link,
@@ -70,9 +71,9 @@ func (r *guidancesUsecase) UpdateExistingRegulations(c *gin.Context, props Updat
 		updateDataArgs.Order = 1
 	}
 
-	isOrderFilled := r.Repository.CheckIsOrderFilled(updateDataArgs.Order, categories)
+	isOrderFilled := r.Repository.CheckIsOrderFilled(updateDataArgs.Order, Peraturan)
 	if isOrderFilled {
-		errorSetOrder := r.Repository.UpdateOrder(updateDataArgs.Order, categories)
+		errorSetOrder := r.Repository.UpdateOrder(updateDataArgs.Order, Peraturan)
 		if errorSetOrder != nil {
 			return errorSetOrder
 		}
@@ -91,7 +92,7 @@ func (r *guidancesUsecase) GetAllRegulationsBasedOnType(c *gin.Context, types st
 		return nil, error_result
 	}
 	for _, item := range raw_result {
-		if item.Category == types {
+		if strings.EqualFold(item.Category, types) {
 			result := model.RegulationJSONResponse{
 				Id:         item.Id,
 				Category:   item.Category,

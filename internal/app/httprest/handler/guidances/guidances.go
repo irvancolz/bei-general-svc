@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	usecase "be-idx-tsg/internal/app/httprest/usecase/guidances"
 	"be-idx-tsg/internal/pkg/httpresponse"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,50 +62,42 @@ func (h *guidancehandler) UpdateExistingGuidance(c *gin.Context) {
 func (h *guidancehandler) GetAllGuidanceBasedOnType(c *gin.Context) {
 	types := c.Query("type")
 
-	switch types {
-	case "Guidebook":
-		{
-			result, error_result := h.usecase.GetAllGuidanceBasedOnType(c, types)
-			if error_result != nil {
-				model.GenerateFlowErrorResponse(c, error_result)
-				return
-			}
-
-			if !c.Writer.Written() {
-				c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
-			}
-
-			break
+	if strings.EqualFold(types, usecase.BukuPetunjuk) {
+		result, error_result := h.usecase.GetAllGuidanceBasedOnType(c, types)
+		if error_result != nil {
+			model.GenerateFlowErrorResponse(c, error_result)
+			return
 		}
-	case "File":
-		{
-			result, error_result := h.usecase.GetAllFilesOnType(c, types)
-			if error_result != nil {
-				model.GenerateFlowErrorResponse(c, error_result)
-				return
-			}
+
+		if !c.Writer.Written() {
 			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
-
-			break
 		}
 
-	case "Regulation":
-		{
-			result, error_result := h.usecase.GetAllRegulationsBasedOnType(c, types)
-			if error_result != nil {
-				model.GenerateFlowErrorResponse(c, error_result)
-				return
-			}
-			c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
-
-			break
-		}
-	default:
-		{
-			model.GenerateFlowErrorFromMessageResponse(c, "type is unexpected. please change your type to Guidebook || File || Regulation")
-		}
-
+		return
 	}
+	if strings.EqualFold(types, usecase.Berkas) {
+		result, error_result := h.usecase.GetAllFilesOnType(c, types)
+		if error_result != nil {
+			model.GenerateFlowErrorResponse(c, error_result)
+			return
+		}
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+
+		return
+	}
+
+	if strings.EqualFold(types, usecase.Peraturan) {
+		result, error_result := h.usecase.GetAllRegulationsBasedOnType(c, types)
+		if error_result != nil {
+			model.GenerateFlowErrorResponse(c, error_result)
+			return
+		}
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+
+		return
+	}
+
+	model.GenerateFlowErrorFromMessageResponse(c, "type is unexpected. please change your type to Buku Petunjuk || Berkas || Peraturan")
 }
 
 func (h *guidancehandler) GetAllData(c *gin.Context) {

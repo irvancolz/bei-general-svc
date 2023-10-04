@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,8 @@ type FilesUsecaseInterface interface {
 	CreateNewFiles(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error)
 }
 
+const Berkas = "Berkas"
+
 func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*helper.PaginationResponse, error) {
 	var results []model.GuidanceFilesJSONResponse
 	raw_result, error_result := u.Repository.GetAllData(c)
@@ -22,7 +25,7 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*hel
 		return nil, error_result
 	}
 	for _, item := range raw_result {
-		if item.Category == types {
+		if strings.EqualFold(item.Category, types) {
 			result := model.GuidanceFilesJSONResponse{
 				Id:          item.Id,
 				Name:        item.Name,
@@ -54,11 +57,10 @@ func (u *guidancesUsecase) GetAllFilesOnType(c *gin.Context, types string) (*hel
 
 func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExsistingGuidancesAndFilesProps) error {
 	name_user, _ := c.Get("name_user")
-	categories := "File"
 
 	createNewDataArgs := repo.UpdateExistingDataProps{
 		Id:          props.Id,
-		Category:    categories,
+		Category:    Berkas,
 		Name:        props.Name,
 		Description: props.Description,
 		File:        props.File,
@@ -71,6 +73,14 @@ func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExsis
 		Updated_by:  name_user.(string),
 	}
 
+	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order, Berkas)
+	if isOrderFilled {
+		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order, Berkas)
+		if errorSetOrder != nil {
+			return errorSetOrder
+		}
+	}
+
 	error_result := u.Repository.UpdateExistingData(c, createNewDataArgs)
 	if error_result != nil {
 		return error_result
@@ -80,10 +90,9 @@ func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExsis
 
 func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewGuidanceAndFilesProps) (int64, error) {
 	name_user, _ := c.Get("name_user")
-	categories := "File"
 
 	createNewDataArgs := repo.CreateNewDataProps{
-		Category:    categories,
+		Category:    Berkas,
 		Name:        props.Name,
 		Description: props.Description,
 		File:        props.File,
@@ -94,6 +103,14 @@ func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewGuidanc
 		File_Owner:  props.Owner,
 		Created_at:  time.Now(),
 		Created_by:  name_user.(string),
+	}
+
+	isOrderFilled := u.Repository.CheckIsOrderFilled(createNewDataArgs.Order, Berkas)
+	if isOrderFilled {
+		errorSetOrder := u.Repository.UpdateOrder(createNewDataArgs.Order, Berkas)
+		if errorSetOrder != nil {
+			return 0, errorSetOrder
+		}
 	}
 
 	result, error_result := u.Repository.CreateNewData(createNewDataArgs)
