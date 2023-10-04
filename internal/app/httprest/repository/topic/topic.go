@@ -307,7 +307,10 @@ func (m *repository) CreateTopicWithMessage(topic model.CreateTopicWithMessage, 
 	}
 
 	for row.Next() {
-		row.StructScan(&topic)
+		errScan := row.StructScan(&topic)
+		if errScan != nil {
+			log.Println("failed to read data from database result : ", errScan)
+		}
 	}
 
 	query = `INSERT INTO topic_messages (topic_id, message, company_id, company_name, user_full_name, created_by, created_at) 
@@ -331,13 +334,13 @@ func (m *repository) CreateMessage(message model.CreateMessage, c *gin.Context) 
 
 	err := m.DB.Get(&data, query)
 	if err != nil {
-		return 0, errors.New("Percakapan tidak tersedia")
+		return 0, errors.New("percakapan tidak tersedia")
 	}
 
 	userId, _ := c.Get("user_id")
 
 	if userId.(string) != data.Created_By && userId.(string) != data.Handler_ID {
-		return 0, errors.New("Pertanyaan hanya bisa dibalas oleh penanya dan penjawab")
+		return 0, errors.New("pertanyaan hanya bisa dibalas oleh penanya dan penjawab")
 	}
 
 	message.CreatedBy = userId.(string)
@@ -459,28 +462,4 @@ func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.
 	rowsAffected, _ := result.RowsAffected()
 
 	return rowsAffected, nil
-}
-
-func parseTime(input string) string {
-	// parse input string menjadi time.Time object
-	t, err := time.Parse(time.RFC3339Nano, input)
-	if err != nil {
-		log.Println("error parsing time:", err)
-		return ""
-	}
-
-	// set timezone yang diinginkan
-	location, err := time.LoadLocation("Asia/Jakarta")
-	if err != nil {
-		log.Println("error loading location:", err)
-		return ""
-	}
-
-	// konversi time.Time object ke timezone yang diinginkan
-	t = t.In(location)
-
-	// format output string
-	output := t.Format("2006-01-02")
-
-	return output
 }
