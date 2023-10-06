@@ -166,6 +166,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
 	drawTable(pdf, &pageProps, data)
+	pdf.SetPage(pdf.PageCount())
 
 	err := pdf.OutputFileAndClose(filenames)
 	if err != nil {
@@ -232,13 +233,18 @@ func drawTable(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, data [][]string) {
 
 		if r == len(data)-1 {
 			linePos := func() float64 {
-				if pageProps.isNeedPageBreak(pageProps.currentY + curRowsBgHeight + 1) {
+				if pageProps.isNeedPageBreak(pageProps.currentY+curRowsBgHeight+1) && pageProps.newPageMargin < pageProps.lineHeight {
 					return pageProps.pageHeight - pageProps.footerSpace
+				}
+				if pageProps.newPageMargin != 0 {
+					pdf.SetPage(pdf.PageCount())
+					return pageProps.newPageMargin
 				}
 				return currentY + pageProps.currPageRowHeight
 			}()
 
 			pdf.SetAlpha(.25, "Normal")
+			pdf.SetLineWidth(.25)
 			pdf.Line(pageProps.tableMarginX, linePos, pageProps.tableMarginX+float64(pageProps.tableWidth), linePos)
 			pdf.SetAlpha(1, "Normal")
 		}
@@ -383,7 +389,6 @@ func drawCell(pdf *fpdf.Fpdf, pageProps *fpdfPageProperties, content string) {
 
 			pageProps.currentY = lastRowY
 		}
-
 		linePagePosLogs = append(linePagePosLogs, pdf.PageNo())
 
 		pdf.SetY(lastRowY)
