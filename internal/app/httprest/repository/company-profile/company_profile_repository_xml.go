@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	EXTERNAL_TYPE_LIST_AB = "AbList"
+	EXTERNAL_TYPE_LIST_AB          = "AbList"
 	EXTERNAL_TYPE_LIST_PARTICIPANT = "ParticipantList"
-	EXTERNAL_TYPE_LIST_PJSPPA = "PjsppaList"
-	EXTERNAL_TYPE_LIST_DU = "DuList"
+	EXTERNAL_TYPE_LIST_PJSPPA      = "PjsppaList"
+	EXTERNAL_TYPE_LIST_DU          = "DuList"
 )
 
 func generateProfileXml(id string, registrationJSON []byte, name string) ([]byte, error) {
@@ -36,7 +36,7 @@ func generateProfileXml(id string, registrationJSON []byte, name string) ([]byte
 	}
 	// Create an "ID" element and set its text to the provided 'id'
 	itemXml, err := bodyDocument.WriteToBytes()
-		
+
 	if err != nil {
 		return nil, err
 	}
@@ -44,29 +44,27 @@ func generateProfileXml(id string, registrationJSON []byte, name string) ([]byte
 	return itemXml, nil
 }
 
-
-
-func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)  {
+func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error) {
 	listData := []byte{}
-	
+
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
 		return listData, errInitDb
 	}
 
 	existingDoc := etree.NewDocument()
-	element := existingDoc.CreateElement(EXTERNAL_TYPE_LIST_AB)
+	element := existingDoc.CreateElement("DaftarAnggotaBursa")
 
 	dbConn = dbConn.Model(databasemodel.AngggotaBursa{})
 
 	if len(request.CompanyCode) > 0 {
 		dbConn = dbConn.Where("code = ?", request.CompanyCode)
-	} 
+	}
 
 	rows, err := dbConn.Rows()
 
 	if err != nil {
-		return listData, errors.New("Failed to get company ab: "+err.Error())
+		return listData, errors.New("Failed to get company ab: " + err.Error())
 	}
 
 	defer rows.Close()
@@ -76,19 +74,18 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)
 		err := dbConn.ScanRows(rows, &item)
 
 		if err != nil {
-			return listData, errors.New("Failed to get company ab - scanrows: "+err.Error())
+			return listData, errors.New("Failed to get company ab - scanrows: " + err.Error())
 		}
-	
+
 		id := item.ID
 
 		if item.RegistrationJson != nil {
 
-			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Ab")
-		
-			if err != nil {
-				return listData, errors.New("Failed to get company ab - generateProfileXml: "+err.Error())
-			}
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "ProfilAnggotaBursa")
 
+			if err != nil {
+				return listData, errors.New("Failed to get company ab - generateProfileXml: " + err.Error())
+			}
 
 			itemXmlDocument := etree.NewDocument()
 			if err := itemXmlDocument.ReadFromBytes(itemXml); err != nil {
@@ -104,10 +101,10 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)
 
 			helper.Copy(withoutJsonItem, item)
 
-			withoutJsonItemXml, err:= xml.MarshalIndent(withoutJsonItem, "", " ")
+			withoutJsonItemXml, err := xml.MarshalIndent(withoutJsonItem, "", " ")
 
 			if err != nil {
-				return listData, errors.New("Failed to get company ab - generateProfileXml: "+err.Error())
+				return listData, errors.New("Failed to get company ab - generateProfileXml: " + err.Error())
 			}
 
 			itemXmlDocument := etree.NewDocument()
@@ -120,11 +117,11 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)
 		}
 
 	}
-	
+
 	if dbConn.Error != nil {
-		return listData, errors.New("Failed to get company ab - dbConn.Error: "+dbConn.Error.Error())
+		return listData, errors.New("Failed to get company ab - dbConn.Error: " + dbConn.Error.Error())
 	}
-	
+
 	listData, err = existingDoc.WriteToBytes()
 
 	if err != nil {
@@ -135,14 +132,12 @@ func GetCompanyProfileAb(request requestmodel.CompanyProfileXml) ([]byte, error)
 
 }
 
-
-func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byte, error)  {
+func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byte, error) {
 	listData := []byte{}
 	existingDoc := etree.NewDocument()
-	element := existingDoc.CreateElement(EXTERNAL_TYPE_LIST_PARTICIPANT)
+	element := existingDoc.CreateElement("DaftarProfilPartisipan")
 	// Create a ew XML element from the new XML bytes
-	
-	
+
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
 		return listData, errInitDb
@@ -152,12 +147,12 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 
 	if len(request.CompanyCode) > 0 {
 		dbConn = dbConn.Where("code = ?", request.CompanyCode)
-	} 
+	}
 
 	rows, err := dbConn.Rows()
 
 	if err != nil {
-		return listData, errors.New("Failed to get company participant -dbConn.Rows(): "+err.Error())
+		return listData, errors.New("Failed to get company participant -dbConn.Rows(): " + err.Error())
 	}
 
 	defer rows.Close()
@@ -166,20 +161,19 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 
 		var item databasemodel.Participant
 		err := dbConn.ScanRows(rows, &item)
-		
+
 		if err != nil {
-			return listData, errors.New("Failed to get company participant- dbConn.ScanRows: "+err.Error())
+			return listData, errors.New("Failed to get company participant- dbConn.ScanRows: " + err.Error())
 		}
 
 		id := item.ID
 
 		if item.RegistrationJson != nil {
 
-		
-			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Participant")
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "ProfilPartisipan")
 
 			if err != nil {
-				return listData, errors.New("Failed to get company participant - generateProfileXml: "+err.Error())
+				return listData, errors.New("Failed to get company participant - generateProfileXml: " + err.Error())
 			}
 
 			itemXmlDocument := etree.NewDocument()
@@ -196,10 +190,10 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 
 			helper.Copy(withoutJsonItem, item)
 
-			withoutJsonItemXml, err:= xml.MarshalIndent(withoutJsonItem, "", " ")
+			withoutJsonItemXml, err := xml.MarshalIndent(withoutJsonItem, "", " ")
 
 			if err != nil {
-				return listData, errors.New("Failed to get company participant - generateProfileXml: "+err.Error())
+				return listData, errors.New("Failed to get company participant - generateProfileXml: " + err.Error())
 			}
 
 			itemXmlDocument := etree.NewDocument()
@@ -213,7 +207,7 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 	}
 
 	if dbConn.Error != nil {
-		return listData, errors.New("Failed to get company participant - dbConn.Err: "+dbConn.Error.Error())
+		return listData, errors.New("Failed to get company participant - dbConn.Err: " + dbConn.Error.Error())
 	}
 
 	listData, err = existingDoc.WriteToBytes()
@@ -225,10 +219,10 @@ func GetCompanyProfileParticipant(request requestmodel.CompanyProfileXml) ([]byt
 	return listData, nil
 }
 
-func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, error)  {
+func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, error) {
 	listData := []byte{}
 	existingDoc := etree.NewDocument()
-	element := existingDoc.CreateElement(EXTERNAL_TYPE_LIST_PJSPPA)
+	element := existingDoc.CreateElement("DaftarProfilPjsppa")
 
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
@@ -239,12 +233,12 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, er
 
 	if len(request.CompanyCode) > 0 {
 		dbConn = dbConn.Where("code = ?", request.CompanyCode)
-	} 
+	}
 
 	rows, err := dbConn.Rows()
 
 	if err != nil {
-		return listData, errors.New("Failed to get company pjsppa -dbConn.Rows(): "+err.Error())
+		return listData, errors.New("Failed to get company pjsppa -dbConn.Rows(): " + err.Error())
 	}
 
 	defer rows.Close()
@@ -252,17 +246,16 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, er
 	for rows.Next() {
 		var item databasemodel.Pjsppa
 		err := dbConn.ScanRows(rows, &item)
-		
+
 		if err != nil {
-			return listData, errors.New("Failed to get company pjsppa- dbConn.ScanRows: "+err.Error())
+			return listData, errors.New("Failed to get company pjsppa- dbConn.ScanRows: " + err.Error())
 		}
 
-		
 		if item.RegistrationJson != nil {
 			id := item.ID
-			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Pjsppa")
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "ProfilPjsppa")
 			if err != nil {
-				return listData, errors.New("Failed to get company pjsppa - generateProfileXml: "+err.Error())
+				return listData, errors.New("Failed to get company pjsppa - generateProfileXml: " + err.Error())
 			}
 
 			itemXmlDocument := etree.NewDocument()
@@ -273,9 +266,8 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, er
 		}
 	}
 
-
 	if dbConn.Error != nil {
-		return listData, errors.New("Failed to get company pjsppa: "+dbConn.Error.Error())
+		return listData, errors.New("Failed to get company pjsppa: " + dbConn.Error.Error())
 	}
 
 	listData, err = existingDoc.WriteToBytes()
@@ -287,26 +279,26 @@ func GetCompanyProfilePJSPPA(request requestmodel.CompanyProfileXml) ([]byte, er
 	return listData, nil
 }
 
-func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]byte, error)  {
+func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]byte, error) {
 	listData := []byte{}
 	existingDoc := etree.NewDocument()
-	element := existingDoc.CreateElement(EXTERNAL_TYPE_LIST_DU)
+	element := existingDoc.CreateElement("DaftarProfilDealerUtama")
 
 	dbConn, errInitDb := helper.InitDBConnGorm(request.ExternalType)
 	if errInitDb != nil {
 		return listData, errInitDb
 	}
-	
+
 	dbConn = dbConn.Model(databasemodel.DealerUtama{})
 
 	if len(request.CompanyCode) > 0 {
 		dbConn = dbConn.Where("code = ?", request.CompanyCode)
-	} 
+	}
 
 	rows, err := dbConn.Rows()
 
 	if err != nil {
-		return listData, errors.New("Failed to get company dealerutama -dbConn.Rows(): "+err.Error())
+		return listData, errors.New("Failed to get company dealerutama -dbConn.Rows(): " + err.Error())
 	}
 
 	defer rows.Close()
@@ -314,18 +306,18 @@ func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]byte, erro
 	for rows.Next() {
 		var item databasemodel.DealerUtama
 		err := dbConn.ScanRows(rows, &item)
-		
+
 		if err != nil {
-			return listData, errors.New("Failed to get company dealerutama- dbConn.ScanRows: "+err.Error())
+			return listData, errors.New("Failed to get company dealerutama- dbConn.ScanRows: " + err.Error())
 		}
 
 		if item.RegistrationJson != nil {
 			id := item.ID
-		
-			itemXml, err := generateProfileXml(id, item.RegistrationJson, "Du")
-		
+
+			itemXml, err := generateProfileXml(id, item.RegistrationJson, "ProfilDealerUtama")
+
 			if err != nil {
-				return listData, errors.New("Failed to get company dealerutama - generateProfileXml: "+err.Error())
+				return listData, errors.New("Failed to get company dealerutama - generateProfileXml: " + err.Error())
 			}
 
 			itemXmlDocument := etree.NewDocument()
@@ -337,9 +329,8 @@ func GetCompanyDealerUtama(request requestmodel.CompanyProfileXml) ([]byte, erro
 		}
 	}
 
-
 	if dbConn.Error != nil {
-		return listData, errors.New("Failed to get company dealer utama: "+dbConn.Error.Error())
+		return listData, errors.New("Failed to get company dealer utama: " + dbConn.Error.Error())
 	}
 
 	listData, err = existingDoc.WriteToBytes()
