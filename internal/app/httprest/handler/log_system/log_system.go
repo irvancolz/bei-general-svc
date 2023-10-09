@@ -25,7 +25,7 @@ func NewHandler() Handler {
 }
 
 func (m *handler) GetAll(c *gin.Context) {
-	data, err := m.log.GetAll()
+	data, err := m.log.GetAll(c)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return

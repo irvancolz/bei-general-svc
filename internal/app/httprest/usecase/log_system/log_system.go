@@ -4,13 +4,13 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/repository/log_system"
-	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Usecase interface {
-	GetAll() ([]*model.LogSystem, error)
+	GetAll(c *gin.Context) ([]model.LogSystem, error)
 	CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (int64, error)
 	ExportLogSystem(c *gin.Context) error
 }
@@ -25,8 +25,8 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll() ([]*model.LogSystem, error) {
-	return m.logSystemRepo.GetAll()
+func (m *usecase) GetAll(c *gin.Context) ([]model.LogSystem, error) {
+	return m.logSystemRepo.GetAll(c)
 }
 
 func (m *usecase) CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (int64, error) {
@@ -34,65 +34,66 @@ func (m *usecase) CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (in
 }
 
 func (m *usecase) ExportLogSystem(c *gin.Context) error {
-	exportedField := []string{
-		"modul",
-		"sub",
-		"action",
-		"detail",
-		"user",
-		"ip",
-		"date",
+	results, errorResults := m.logSystemRepo.GetAll(c)
+	if errorResults != nil {
+		return errorResults
 	}
 
-	tableHeader := []string{
-		"Modul",
-		"Sub Modul",
-		"Aksi",
-		"Detail",
-		"User",
-		"IP",
-		"Tanggal",
+	var dataToConverted []interface{}
+	for _, item := range results {
+		dataToConverted = append(dataToConverted, item)
 	}
 
-	var dataToExported [][]string
-	var logSystemList []*model.LogSystem
-	dataToExported = append(dataToExported, tableHeader)
+	filteredData, _ := helper.HandleDataFiltering(c, dataToConverted, nil)
 
-	logSystemList, _ = m.GetAll()
+	columnHeaders := []string{"Modul", "Sub Modul", "Aksi", "Detail", "User", "IP", "Waktu"}
+	columnWidth := []float64{35, 40, 30, 40, 45, 35, 40}
 
-	for _, data := range logSystemList {
-		log := model.LogSystemExport{
-			Modul:  data.Modul,
-			Sub:    data.SubModul,
-			Action: data.Action,
-			Detail: data.Detail,
-			User:   data.UserName,
-			IP:     data.IP,
-			Date:   data.CreatedAt.Format("2 Jan 2006 - 15:04"),
+	var columnWidthInt []int
+
+	for _, width := range columnWidth {
+		columnWidthInt = append(columnWidthInt, int(width))
+	}
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
+
+	exportedFields := []string{"modul", "submodul", "action", "detail", "username", "ip", "createdat"}
+	var exportedData [][]string
+
+	for _, content := range filteredData {
+		var item []string
+		item = append(item, helper.MapToArray(content, exportedFields)...)
+
+		for i, content := range item {
+			if i == 6 {
+				date, _ := time.Parse("2006-01-02 15:04:05", content[0:19])
+
+				item[i] = date.Format("2 Jan 2006 - 15:04")
+			}
 		}
 
-		fmt.Println(data.UserName)
-
-		var logData []string
-		logData = append(logData, helper.StructToArray(log, exportedField)...)
-
-		dataToExported = append(dataToExported, logData)
+		exportedData = append(exportedData, item)
 	}
 
-	excelConfig := helper.ExportToExcelConfig{
-		CollumnStart: "b",
+	exportConfig := helper.ExportTableToFileProps{
+		Filename: "Log System",
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Log System"},
+		},
+		PdfConfig: &helper.PdfTableOptions{
+			PapperWidth:  297,
+			Papperheight: 210,
+			HeaderRows:   helper.GenerateTableHeaders(columnHeaders, columnWidth),
+		},
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInt,
 	}
-	pdfConfig := helper.PdfTableOptions{
-		HeaderTitle: "Log System",
-	}
-	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
-		Filename:    "log_system",
-		Data:        dataToExported,
-		ExcelConfig: &excelConfig,
-		PdfConfig:   &pdfConfig,
-	})
-	if errorCreateFile != nil {
-		return errorCreateFile
+
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return errorExport
 	}
 
 	return nil
