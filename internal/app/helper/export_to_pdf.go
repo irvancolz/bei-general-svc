@@ -166,7 +166,10 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
 	drawTable(pdf, &pageProps, data)
-	pdf.SetPage(pdf.PageCount())
+
+	if pageProps.newPageMargin != 0 {
+		pdf.SetPage(pageProps.currpage + 1)
+	}
 
 	err := pdf.OutputFileAndClose(filenames)
 	if err != nil {
