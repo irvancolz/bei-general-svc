@@ -51,7 +51,6 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"topic",
 		"answersby",
 		"filename",
-		"createdat",
 		"createby",
 		"additionalinfo",
 	}
@@ -67,7 +66,6 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Topik",
 		"Personil Follow Up",
 		"Lampiran",
-		"Waktu",
 		"User",
 		"Sumber Informasi Tambahan",
 	}
