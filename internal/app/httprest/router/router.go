@@ -76,6 +76,7 @@ func Routes() *gin.Engine {
 	{
 		WithoutCheckPermission.POST("/upload-user-file", upload.UploadUser)
 		WithoutCheckPermission.GET("/download-existing-file", upload.Download)
+		WithoutCheckPermission.GET("/download-report-template", upload.DownloadStaticFile)
 		WithoutCheckPermission.DELETE("/delete-existing-file", upload.Remove)
 		WithoutCheckPermission.GET("/check-is-file-exists", upload.IsFileExists)
 		WithoutCheckPermission.GET("/get-company-profile", companyprofile.GetCompanyProfile)
@@ -86,7 +87,7 @@ func Routes() *gin.Engine {
 	{
 		WithoutCheckPermissionTest.GET("/get-company-profile/single", companyprofile.GetCompanyProfileSingleLatest)
 	}
-	
+
 	r.GET("/get-company-profile/single", companyprofile.GetCompanyProfileSingleLatest)
 	r.POST("/api/get-company-profile/xml", companyprofile.GetCompanyProfileXml)
 

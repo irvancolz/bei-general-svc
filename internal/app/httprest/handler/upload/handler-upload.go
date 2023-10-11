@@ -17,6 +17,7 @@ type UploadFileHandlreInterface interface {
 	UploadPkp(c *gin.Context)
 	UploadGuidebook(c *gin.Context)
 	Download(c *gin.Context)
+	DownloadStaticFile(c *gin.Context)
 	Remove(c *gin.Context)
 	UploadParameterAdminFile(c *gin.Context)
 	UploadParameterAdminImage(c *gin.Context)
@@ -190,4 +191,12 @@ func (h *handler) IsFileExists(c *gin.Context) {
 	}
 
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, "file ada dalam penyimpanan"))
+}
+func (h *handler) DownloadStaticFile(c *gin.Context) {
+	errResult := h.Usecase.DownloadFromLocal(c)
+	if errResult != nil {
+		model.GenerateReadErrorResponse(c, errResult)
+		return
+	}
+
 }

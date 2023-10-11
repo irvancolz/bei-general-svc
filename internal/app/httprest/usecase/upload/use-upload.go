@@ -17,6 +17,7 @@ import (
 type UploadFileUsecaseInterface interface {
 	Upload(c *gin.Context, props UploadFileConfig) (*model.UploadFileResponse, error)
 	Download(c *gin.Context, path string) error
+	DownloadFromLocal(c *gin.Context) error
 	DeleteFile(c *gin.Context, props UploadFileConfig, slug string) error
 	IsFileExists(c *gin.Context, slug string) error
 }
@@ -227,6 +228,32 @@ func (u *usecase) IsFileExists(c *gin.Context, slug string) error {
 		log.Println("failed to remove file : ", err)
 		return err
 	}
+
+	return nil
+}
+
+func (u usecase) DownloadFromLocal(c *gin.Context) error {
+	reportType := c.DefaultQuery("report", "")
+
+	fileName := func() string {
+		if strings.EqualFold(reportType, "lraktp") {
+			return "static/Laporan Rekapitulasi Aktivitas Transaksi Partisipan.xlsx"
+		}
+		if strings.EqualFold(reportType, "lraktpjsppa") {
+			return "static/Laporan Rekapitulasi Aktivitas Transaksi PJSPPA.xlsx"
+		}
+		if strings.EqualFold(reportType, "lhkp") {
+			return "static/Laporan Historis Kunjungan Partisipan.xlsx"
+		}
+		return ""
+
+	}()
+
+	if fileName == "" {
+		return errors.New("cannot find the report template, please select the correct type : lraktp || lraktpjsppa || lhkp")
+	}
+
+	c.File(fileName)
 
 	return nil
 }
