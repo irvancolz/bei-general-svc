@@ -6,6 +6,7 @@ import (
 	"be-idx-tsg/internal/pkg/database"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 )
 
 type Repository interface {
-	GetAll() ([]*model.LogSystem, error)
+	GetAll(c *gin.Context) ([]model.LogSystem, error)
 	CreateLogSystem(logSystem model.CreateLogSystem, c *gin.Context) (int64, error)
 }
 
@@ -27,10 +28,17 @@ func NewRepository() Repository {
 	}
 }
 
-func (m *repository) GetAll() ([]*model.LogSystem, error) {
-	var listData = []*model.LogSystem{}
+func (m *repository) GetAll(c *gin.Context) ([]model.LogSystem, error) {
+	var listData = []model.LogSystem{}
 
-	query := `SELECT id, modul, COALESCE(sub_modul, '') AS sub_modul, "action", COALESCE(detail, '') AS detail,  user_name, ip, browser, created_by, created_at FROM log_systems`
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", ""))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", ""))
+
+	query := `SELECT id, modul, COALESCE(sub_modul, '') AS sub_modul, "action", COALESCE(detail, '') AS detail,  user_name, ip, browser, created_by, created_at FROM log_systems ORDER BY created_at DESC`
+
+	if limit != 0 && page != 0 {
+		query += ` LIMIT ` + strconv.Itoa(limit) + ` OFFSET ` + strconv.Itoa((page-1)*limit)
+	}
 
 	err := m.DB.Select(&listData, query)
 	if err != nil {
@@ -46,6 +54,10 @@ func (m *repository) GetAll() ([]*model.LogSystem, error) {
 }
 
 func (m *repository) CreateLogSystem(logSystem model.CreateLogSystem, c *gin.Context) (int64, error) {
+	if allowedAction := model.IsAllowedAction(logSystem.Action); !allowedAction {
+		return 1, nil
+	}
+
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	logSystem.CreatedAt = t.Format("2006-01-02 15:04:05")
 
