@@ -38,3 +38,20 @@ type LogSystemExport struct {
 	IP     string `json:"ip"`
 	Date   string `json:"date"`
 }
+
+func IsAllowedAction(action string) bool {
+	blackList := []string{
+		"List",
+		"Filter",
+		"Detail",
+		"Sort",
+	}
+
+	for _, v := range blackList {
+		if v == action {
+			return false
+		}
+	}
+
+	return true
+}

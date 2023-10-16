@@ -54,6 +54,10 @@ func (m *repository) GetAll(c *gin.Context) ([]model.LogSystem, error) {
 }
 
 func (m *repository) CreateLogSystem(logSystem model.CreateLogSystem, c *gin.Context) (int64, error) {
+	if allowedAction := model.IsAllowedAction(logSystem.Action); !allowedAction {
+		return 1, nil
+	}
+
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	logSystem.CreatedAt = t.Format("2006-01-02 15:04:05")
 
