@@ -138,7 +138,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 
 	var columnWidth []float64
 	for _, header := range props.HeaderRows {
-		columnWidth = append(columnWidth, header.GetWidth(header.Children))
+		columnWidth = append(columnWidth, header.getColWidthList()...)
 	}
 
 	var totalWidth int
@@ -164,6 +164,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pageProps.currentX = currentX
 	pdf.SetLeftMargin(currentX)
 
+	// magic start
 	pdf.SetAlpha(0, "Normal")
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
 	pdf.SetAlpha(1, "Normal")
@@ -171,7 +172,9 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pdf.Rect(tableMarginX, pageProps.headerSpace, float64(pageProps.tableWidth), pageProps.currentY, "F")
 	pageProps.currentY = pageProps.headerSpace
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
+	// magic end
 
+	pageProps.currentY += pageProps.headerSpace
 	drawTable(pdf, &pageProps, data)
 
 	if pageProps.newPageMargin != 0 {
@@ -706,6 +709,17 @@ func (t TableHeader) GetHeight(pdf *fpdf.Fpdf) float64 {
 	}
 
 	return curcelHeight + highestChild
+}
+
+func (t TableHeader) getColWidthList() []float64 {
+	if len(t.Children) <= 0 {
+		return []float64{t.GetWidth(t.Children)}
+	}
+	var colWidth []float64
+	for _, child := range t.Children {
+		colWidth = append(colWidth, child.getColWidthList()...)
+	}
+	return colWidth
 }
 
 func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTableOptions, filename string) (string, error) {
