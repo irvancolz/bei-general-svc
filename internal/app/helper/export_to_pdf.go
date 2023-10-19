@@ -500,11 +500,17 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 	})
 }
 
-func getHighestCol(pdf *fpdf.Fpdf, colWidth []float64, data []string) int {
+func getHighestCol(pdf *fpdf.Fpdf, colWidthList []float64, data []string) int {
 	result := 0
 
 	for i, text := range data {
-		currTextHeight := pdf.SplitLines([]byte(text), colWidth[i])
+		colWidth := func() float64 {
+			if i >= len(colWidthList) {
+				return 20
+			}
+			return colWidthList[i]
+		}()
+		currTextHeight := pdf.SplitLines([]byte(text), colWidth)
 		if len(currTextHeight) > result {
 			result = len(currTextHeight)
 		}
