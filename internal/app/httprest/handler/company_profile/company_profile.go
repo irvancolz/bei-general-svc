@@ -85,57 +85,5 @@ func GetCompanyProfileJSON(c *gin.Context) {
 		listAllCompany = append(listAllCompany, company)
 	}
 
-	listCompanyParticipant, _ := companyprofile.GetCompanyProfile(c, "participant")
-
-	for _, p := range listCompanyParticipant {
-		company := map[string]any{
-			"company_id":   p["id"],
-			"company_code": p["code"],
-			"company_name": p["name"],
-			"phone":        p["registration_json"].(map[string]interface{})["phone"],
-			"fax":          p["registration_json"].(map[string]interface{})["fax"],
-			"address":      p["registration_json"].(map[string]interface{})["address"],
-			"status":       p["operational_status"],
-		}
-
-		listAllCompany = append(listAllCompany, company)
-	}
-
-	listCompanyPjsppa, _ := companyprofile.GetCompanyProfile(c, "pjsppa")
-
-	for _, pj := range listCompanyPjsppa {
-		kontak, _ := pj["registration_json"].(map[string]interface{})["kontak"]
-
-		company := map[string]any{
-			"company_id":   pj["id"],
-			"company_code": pj["code"],
-			"company_name": pj["name"],
-			"phone":        kontak.(map[string]interface{})["telepon"],
-			"fax":          kontak.(map[string]interface{})["faksimili"],
-			"address":      kontak.(map[string]interface{})["alamat"],
-			"status":       pj["operational_status"],
-		}
-
-		listAllCompany = append(listAllCompany, company)
-	}
-
-	listCompanyDu, _ := companyprofile.GetCompanyProfile(c, "du")
-
-	for _, du := range listCompanyDu {
-		kontak, _ := du["registration_json"].(map[string]interface{})["kontak"]
-
-		company := map[string]any{
-			"company_id":   du["id"],
-			"company_code": du["code"],
-			"company_name": du["name"],
-			"phone":        kontak.(map[string]interface{})["telepon"],
-			"fax":          kontak.(map[string]interface{})["faksimili"],
-			"address":      kontak.(map[string]interface{})["alamat"],
-			"status":       du["operational_status"],
-		}
-
-		listAllCompany = append(listAllCompany, company)
-	}
-
 	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, listAllCompany))
 }
