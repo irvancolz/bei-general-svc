@@ -138,7 +138,7 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 
 	var columnWidth []float64
 	for _, header := range props.HeaderRows {
-		columnWidth = append(columnWidth, header.GetWidth(header.Children))
+		columnWidth = append(columnWidth, header.getColWidthList()...)
 	}
 
 	var totalWidth int
@@ -164,7 +164,17 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	pageProps.currentX = currentX
 	pdf.SetLeftMargin(currentX)
 
+	// magic start
+	pdf.SetAlpha(0, "Normal")
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
+	pdf.SetAlpha(1, "Normal")
+
+	pdf.Rect(tableMarginX, pageProps.headerSpace, float64(pageProps.tableWidth), pageProps.currentY, "F")
+	pageProps.currentY = pageProps.headerSpace
+	drawTableHeader(pdf, props.HeaderRows, &pageProps)
+	// magic end
+
+	pageProps.currentY += pageProps.headerSpace
 	drawTable(pdf, &pageProps, data)
 
 	if pageProps.newPageMargin != 0 {
@@ -493,11 +503,17 @@ func drawHeader(pdf *fpdf.Fpdf, title string, pageProps *fpdfPageProperties) {
 	})
 }
 
-func getHighestCol(pdf *fpdf.Fpdf, colWidth []float64, data []string) int {
+func getHighestCol(pdf *fpdf.Fpdf, colWidthList []float64, data []string) int {
 	result := 0
 
 	for i, text := range data {
-		currTextHeight := pdf.SplitLines([]byte(text), colWidth[i])
+		colWidth := func() float64 {
+			if i >= len(colWidthList) {
+				return 20
+			}
+			return colWidthList[i]
+		}()
+		currTextHeight := pdf.SplitLines([]byte(text), colWidth)
 		if len(currTextHeight) > result {
 			result = len(currTextHeight)
 		}
@@ -612,14 +628,19 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 	}
 
 	maxColHeight := getHighestCol(pdf, headerWidths, headerTexts)
-	currRowsheight := float64(maxColHeight) * lineHeight
 
 	var totalWidth int
 	for _, col := range headerWidths {
 		totalWidth += int(col)
 	}
-	// draw bg
-	pdf.Rect(currentX, currentY, float64(totalWidth), currRowsheight, "F")
+
+	var highestHeader float64
+	for _, header := range headers {
+		colHeight := header.GetHeight(pdf)
+		if colHeight > highestHeader {
+			highestHeader = colHeight
+		}
+	}
 
 	for _, header := range headers {
 		pdf.SetLeftMargin(currentX)
@@ -627,21 +648,30 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 		curColWidth := header.GetWidth(header.Children)
 
 		splittedtext := pdf.SplitLines([]byte(header.Title), curColWidth)
+
 		for _, text := range splittedtext {
 			pdf.CellFormat(curColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(header.Title))
 		}
 
 		currentX += curColWidth
-		if len(header.Children) > 0 {
-			currentY += lineHeight
+		if len(header.Children) > 0 && maxColHeight >= len(splittedtext) {
+			currentY += float64(maxColHeight) * lineHeight
 		}
 
 		pageProps.currentY = currentY
 		drawTableHeader(pdf, header.Children, pageProps)
+
+		if len(header.Children) > 0 && maxColHeight >= len(splittedtext) {
+			currentY -= float64(maxColHeight) * lineHeight
+		}
+
+		pageProps.currentY = currentY
 		pageProps.currentX = currentX
 	}
-	pageProps.currentY += float64(maxColHeight * int(lineHeight))
 
+	// prepare property to be used next component
+	pageProps.currentY += float64(maxColHeight * int(lineHeight))
+	pageProps.currentX = pageProps.tableMarginX
 }
 
 func GenerateTableHeaders(titles []string, widths []float64) []TableHeader {
@@ -661,6 +691,35 @@ func GenerateTableHeaders(titles []string, widths []float64) []TableHeader {
 	}
 
 	return result
+}
+
+func (t TableHeader) GetHeight(pdf *fpdf.Fpdf) float64 {
+	var highestChild float64
+	curCelWidth := t.GetWidth(t.Children)
+	curcelHeight := float64(len(pdf.SplitLines([]byte(t.Title), curCelWidth)))
+	if len(t.Children) <= 0 {
+		return curcelHeight
+	}
+
+	for _, child := range t.Children {
+		curChildHeight := child.GetHeight(pdf)
+		if highestChild < curChildHeight {
+			highestChild = curChildHeight
+		}
+	}
+
+	return curcelHeight + highestChild
+}
+
+func (t TableHeader) getColWidthList() []float64 {
+	if len(t.Children) <= 0 {
+		return []float64{t.GetWidth(t.Children)}
+	}
+	var colWidth []float64
+	for _, child := range t.Children {
+		colWidth = append(colWidth, child.getColWidthList()...)
+	}
+	return colWidth
 }
 
 func ExportAnnouncementToPdf(c *gin.Context, data model.Announcement, opt PdfTableOptions, filename string) (string, error) {
