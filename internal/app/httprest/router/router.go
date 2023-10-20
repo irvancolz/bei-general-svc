@@ -90,6 +90,7 @@ func Routes() *gin.Engine {
 
 	r.GET("/get-company-profile/single", companyprofile.GetCompanyProfileSingleLatest)
 	r.POST("/api/get-company-profile/xml", companyprofile.GetCompanyProfileXml)
+	r.GET("/api/get-company-profile/json", companyprofile.GetCompanyProfileJSON)
 
 	announcementRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))
 	{
