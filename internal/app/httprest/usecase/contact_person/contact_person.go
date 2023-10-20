@@ -363,7 +363,7 @@ func (u *usecase) GetMemberByCompanyType(company_type string) ([]model.Instituti
 }
 
 func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, division_id string) error {
-	var exportedField, tableHeader []string
+	var exportedField, tableHeaderName []string
 	var columnWidths []float64
 
 	exportTitle := "CONTACT PERSON "
@@ -376,7 +376,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		"email",
 	}
 
-	tableHeader = []string{
+	tableHeaderName = []string{
 		"No",
 		"Fungsi",
 		"Nama",
@@ -387,16 +387,16 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 
 	columnWidths = []float64{20, 40, 60, 60, 50, 40, 60}
 
-	tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
+	tableHeaders := helper.GenerateTableHeaders(tableHeaderName, columnWidths)
 
-	for i, header := range tableHeader {
-		item := helper.TableHeader{
-			Title: header,
-			Width: columnWidths[i],
-		}
+	// for i, header := range tableHeader {
+	// 	item := helper.TableHeader{
+	// 		Title: header,
+	// 		Width: columnWidths[i],
+	// 	}
 
-		tableHeaders = append(tableHeaders, item)
-	}
+	// tableHeaders = append(tableHeaders, item)
+	// }
 
 	excelConfig := helper.ExportToExcelConfig{
 		CollumnStart: "b",
@@ -459,7 +459,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 			"email",
 		}
 
-		tableHeader = []string{
+		tableHeaderName = []string{
 			"No",
 			"Kode",
 			"Nama Perusahaan",
@@ -472,7 +472,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 
 		columnWidths = []float64{20, 40, 50, 40, 60, 60, 50, 40, 60}
 
-		tableHeaders := helper.GenerateTableHeaders(tableHeader, columnWidths)
+		tableHeaders := helper.GenerateTableHeaders(tableHeaderName, columnWidths)
 
 		pdfConfig.HeaderRows = tableHeaders
 		excelConfig.HeaderText = []string{exportTitle + " " + company_type}
@@ -498,7 +498,7 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 		ColumnWidtINT = append(ColumnWidtINT, int(width))
 	}
 
-	tablesColumns = append(tablesColumns, tableHeader)
+	tablesColumns = append(tablesColumns, tableHeaderName)
 
 	errorCreateFile := helper.ExportTableToFile(c, helper.ExportTableToFileProps{
 		Filename:    "contact_person_members",
