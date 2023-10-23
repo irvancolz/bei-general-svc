@@ -82,6 +82,7 @@ type fpdfPageProperties struct {
 	headerSpace         float64
 	headerMarginBottom  float64
 	textAlign           string
+	tableHeaderlastY    float64
 }
 
 func (p fpdfPageProperties) isNeedPageBreak(coord float64) bool {
@@ -169,12 +170,12 @@ func ExportTableToPDF(c *gin.Context, data [][]string, filename string, props *P
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
 	pdf.SetAlpha(1, "Normal")
 
-	pdf.Rect(tableMarginX, pageProps.headerSpace, float64(pageProps.tableWidth), pageProps.currentY, "F")
+	pdf.Rect(tableMarginX, pageProps.headerSpace, float64(pageProps.tableWidth), pageProps.tableHeaderlastY-pageProps.headerSpace, "F")
 	pageProps.currentY = pageProps.headerSpace
 	drawTableHeader(pdf, props.HeaderRows, &pageProps)
 	// magic end
 
-	pageProps.currentY += pageProps.headerSpace
+	pageProps.currentY = pageProps.tableHeaderlastY
 	drawTable(pdf, &pageProps, data)
 
 	if pageProps.newPageMargin != 0 {
@@ -651,6 +652,11 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 
 		for _, text := range splittedtext {
 			pdf.CellFormat(curColWidth, lineHeight, string(text), "", 2, "C", false, 0, getLink(header.Title))
+		}
+
+		highestYPos := currentY + (float64(len(splittedtext)) * lineHeight)
+		if highestYPos > pageProps.tableHeaderlastY {
+			pageProps.tableHeaderlastY = highestYPos
 		}
 
 		currentX += curColWidth
