@@ -389,15 +389,6 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 
 	tableHeaders := helper.GenerateTableHeaders(tableHeaderName, columnWidths)
 
-	// for i, header := range tableHeader {
-	// 	item := helper.TableHeader{
-	// 		Title: header,
-	// 		Width: columnWidths[i],
-	// 	}
-
-	// tableHeaders = append(tableHeaders, item)
-	// }
-
 	excelConfig := helper.ExportToExcelConfig{
 		CollumnStart: "b",
 	}
