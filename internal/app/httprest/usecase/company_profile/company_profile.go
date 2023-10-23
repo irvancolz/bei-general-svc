@@ -11,9 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetCompanyProfile(c *gin.Context) ([]map[string]interface{}, error) {
-	extType := c.Query("external_type")
-
+func GetCompanyProfile(c *gin.Context, extType string) ([]map[string]interface{}, error) {
 	companyList, errGetList := companyprofile.GetCompanyProfile(extType)
 	if errGetList != nil {
 		return nil, errGetList

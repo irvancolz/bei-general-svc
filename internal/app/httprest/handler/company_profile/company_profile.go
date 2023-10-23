@@ -12,7 +12,9 @@ import (
 )
 
 func GetCompanyProfile(c *gin.Context) {
-	result, errorResult := companyprofile.GetCompanyProfile(c)
+	extType := c.Query("external_type")
+
+	result, errorResult := companyprofile.GetCompanyProfile(c, extType)
 	if errorResult != nil {
 		model.GenerateReadErrorResponse(c, errorResult)
 		return
@@ -23,8 +25,8 @@ func GetCompanyProfile(c *gin.Context) {
 func GetCompanyProfileSingleLatest(c *gin.Context) {
 	filterQueryParameter := helper.GetFilterQueryParameter(c)
 	filterQueryParameter.Limit = 1
-	
-	responseData, maxPage, errorStr := companyprofile.GetCompanyProfileLatest(c, filterQueryParameter) 
+
+	responseData, maxPage, errorStr := companyprofile.GetCompanyProfileLatest(c, filterQueryParameter)
 	if len(errorStr) > 0 {
 		model.GenerateReadErrorResponse(c, errors.New(errorStr))
 		return
@@ -59,5 +61,29 @@ func GetCompanyProfileXml(c *gin.Context) {
 		model.GenerateReadErrorResponseXml(c, err)
 		return
 	}
-	
+
+}
+
+func GetCompanyProfileJSON(c *gin.Context) {
+	var listAllCompany []map[string]any
+
+	listCompanyAB, _ := companyprofile.GetCompanyProfile(c, "ab")
+
+	for _, ab := range listCompanyAB {
+		kontak, _ := ab["registration_json"].(map[string]interface{})["kontak"]
+
+		company := map[string]any{
+			"company_id":   ab["id"],
+			"company_code": ab["code"],
+			"name":         ab["name"],
+			"phone":        kontak.(map[string]interface{})["telepon"],
+			"fax":          kontak.(map[string]interface{})["faksimili"],
+			"address":      kontak.(map[string]interface{})["alamat"],
+			"status":       ab["operational_status"],
+		}
+
+		listAllCompany = append(listAllCompany, company)
+	}
+
+	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, listAllCompany))
 }
