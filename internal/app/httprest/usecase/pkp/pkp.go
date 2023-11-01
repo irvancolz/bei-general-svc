@@ -56,24 +56,24 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	}
 	columnHeaders := []string{
 		"No",
-		"Identitas Stakeholder",
-		"Kode Perusahaan",
-		"Nama Perusahaan",
-		"Waktu Pertanyaan / Keluhan",
-		"Pertanyaan / Keluhan",
-		"Waktu Jawaban / Respon",
-		"Jawaban / Respon",
-		"Topik",
-		"Personel Follow Up",
-		"Lampiran",
-		"User",
-		"Sumber Informasi Tambahan",
+		"Identitas Stakeholder",      //25
+		"Kode Perusahaan",            //20
+		"Nama Perusahaan",            //25
+		"Waktu Pertanyaan / Keluhan", //30
+		"Pertanyaan / Keluhan",       // 25
+		"Waktu Jawaban / Respon",     // 25
+		"Jawaban / Respon",           // 25
+		"Topik",                      // 25
+		"Personel Follow Up",         // 20
+		"Lampiran",                   // 30
+		"User",                       // 15
+		"Sumber Informasi Tambahan",  // 20
 	}
 
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	columnWidth := []float64{20, 50, 40, 40, 30, 40, 30, 40, 40, 50, 40, 30, 40, 60}
+	columnWidth := []float64{20, 50, 40, 40, 30, 40, 30, 40, 40, 50, 40, 30, 40}
 	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
@@ -105,7 +105,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 			Papperheight: 300,
 			HeaderRows:   tableHeaders,
 		},
-		ColumnWidth: []int{4, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60},
+		ColumnWidth: []int{4, 25, 20, 25, 30, 25, 25, 25, 25, 20, 30, 15, 20},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
 	if errorExport != nil {
