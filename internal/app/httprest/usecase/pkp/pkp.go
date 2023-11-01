@@ -105,7 +105,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 			Papperheight: 300,
 			HeaderRows:   tableHeaders,
 		},
-		ColumnWidth: []int{20, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60},
+		ColumnWidth: []int{4, 50, 40, 40, 50, 40, 50, 40, 40, 50, 40, 40, 40, 60},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
 	if errorExport != nil {
