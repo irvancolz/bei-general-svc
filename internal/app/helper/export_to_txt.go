@@ -21,7 +21,6 @@ func ExportTableToTxt(props ExportTableToTxtProps) (string, error) {
 	fileName := props.Filename
 	data := props.Header
 	data = append(data, props.Data...)
-	columnWidth := props.ColumnWidth
 
 	fileresultName := generateFileNames(fileName, "_", time.Now())
 	file, errorCreate := os.Create(fileresultName + ".txt")
@@ -31,13 +30,15 @@ func ExportTableToTxt(props ExportTableToTxtProps) (string, error) {
 	}
 	defer file.Close()
 
-	beautifiedData := formatRowsData(data, columnWidth)
-	withStylingData := drawTxtTable(beautifiedData, columnWidth)
+	var rows []string
+	for _, line := range data {
+		rows = append(rows, strings.Join(line, "\u0009"))
+	}
 
 	txtFile := bufio.NewWriter(file)
 	defer txtFile.Flush()
 
-	_, errorResult := txtFile.WriteString(strings.Join(withStylingData, "\n"))
+	_, errorResult := txtFile.WriteString(strings.Join(rows, "\n"))
 	if errorResult != nil {
 		log.Println("failed to write data to txt :", errorResult)
 		return "", errorResult
