@@ -125,7 +125,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			ExternalType:   item.ExternalType,
 			AdditionalInfo: item.AdditionalInfo.String,
 			CreatedAt:      item.CreatedAt.Unix(),
-			CreateBy:       GetUserFullname(authDb, item.CreateBy),
+			CreateBy:       GetUsername(authDb, item.CreateBy),
 
 			UpdatedBy: item.UpdatedBy.String,
 			DeletedBy: item.DeletedBy.String,
