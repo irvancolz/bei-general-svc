@@ -618,7 +618,7 @@ func drawTableHeader(pdf *fpdf.Fpdf, headers []TableHeader, pageProps *fpdfPageP
 
 	pdf.SetFontStyle("B")
 	pdf.SetTextColor(255, 255, 255)
-	pdf.SetFillColor(50, 117, 168)
+	pdf.SetFillColor(159, 14, 15)
 
 	// get how high this row are
 	var headerTexts []string
