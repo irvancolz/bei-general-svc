@@ -125,7 +125,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 			ExternalType:   item.ExternalType,
 			AdditionalInfo: item.AdditionalInfo.String,
 			CreatedAt:      item.CreatedAt.Unix(),
-			CreateBy:       GetUsername(authDb, item.CreateBy),
+			CreateBy:       item.CreateBy,
 
 			UpdatedBy: item.UpdatedBy.String,
 			DeletedBy: item.DeletedBy.String,
@@ -150,7 +150,7 @@ func (m *repository) GetAllPKuser(c *gin.Context) ([]model.PKuser, error) {
 }
 
 func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error) {
-	UserId, _ := c.Get("user_id")
+	userName, _ := c.Get("name_user")
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 
 	QuestionDate := pkp.QuestionDate
@@ -190,7 +190,7 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 		pkp.Topic,
 		pkp.FileName,
 		pkp.FilePath,
-		UserId.(string),
+		userName.(string),
 		t,
 		pkp.ExternalType,
 		pkp.AdditionalInfo,
@@ -209,7 +209,7 @@ func (m *repository) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("user_id")
+	userName, _ := c.Get("name_user")
 	query := `
 		UPDATE
 			pkp SET
@@ -249,7 +249,7 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 		pkp.Topic,
 		pkp.FileName,
 		pkp.FilePath,
-		userId.(string),
+		userName.(string),
 		UpdatedAt,
 		pkp.ExternalType,
 		pkp.AdditionalInfo,
@@ -276,7 +276,7 @@ func (m *repository) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64
 }
 
 func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
-	userId, _ := c.Get("user_id")
+	userName, _ := c.Get("name_user")
 	deleted_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	query := `
 	UPDATE
@@ -287,7 +287,7 @@ func (m *repository) Delete(id string, c *gin.Context) (int64, error) {
 		id = $1 
 		AND deleted_by IS NULL
 		AND deleted_at IS NULL;`
-	selDB, err := m.DB.Exec(query, id, userId.(string), deleted_at)
+	selDB, err := m.DB.Exec(query, id, userName.(string), deleted_at)
 	if err != nil {
 		log.Println("[AQI-debug] [err] [repository] [PKP] [Delete] ", err)
 		return 0, err
