@@ -32,7 +32,7 @@ func ExportTableToTxt(props ExportTableToTxtProps) (string, error) {
 
 	var rows []string
 	for _, line := range data {
-		rows = append(rows, strings.Join(line, "\u0009"))
+		rows = append(rows, strings.Join(line, " | "))
 	}
 
 	txtFile := bufio.NewWriter(file)
