@@ -12,7 +12,7 @@ import (
 
 type Usecase interface {
 	GetAll(c *gin.Context) (*helper.PaginationResponse, error)
-	GetByID(topicID, keyword string) (*model.Topic, error)
+	GetByID(c *gin.Context, topicID, keyword string) (*model.Topic, error)
 	UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error)
 	UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error)
 	CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error)
@@ -64,8 +64,8 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 	return &paginatedData, nil
 }
 
-func (m *usecase) GetByID(topicID, keyword string) (*model.Topic, error) {
-	return m.tpRepo.GetByID(topicID, keyword)
+func (m *usecase) GetByID(c *gin.Context, topicID, keyword string) (*model.Topic, error) {
+	return m.tpRepo.GetByID(c, topicID, keyword)
 }
 
 func (m *usecase) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) (int64, error) {
