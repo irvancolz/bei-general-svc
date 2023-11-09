@@ -1,6 +1,7 @@
 package email
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"bytes"
 	"crypto/tls"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/k3a/html2text"
 	"gopkg.in/gomail.v2"
 )
@@ -194,7 +196,7 @@ func generateTemplatesfromHTML(data interface{}, html string) (*bytes.Buffer, er
 	return &result, nil
 }
 
-func SendEmailNotification(receiver model.UsersIdWithEmail, message, subject string) {
+func SendEmailNotification(receiver model.UsersIdWithEmail, subject, message string) {
 	emailConfig := EmailConfig{
 		Receiver: receiver.Email,
 		Subject:  subject,
@@ -204,4 +206,69 @@ func SendEmailNotification(receiver model.UsersIdWithEmail, message, subject str
 		Message string
 		Name    string
 	}{Message: message, Name: receiver.Username}, "dummy-general-notif.html")
+}
+
+func GetAllUserInternalBursa(c *gin.Context) []model.UsersIdWithEmail {
+	result := []model.UsersIdWithEmail{}
+	dbConn, errInitDb := helper.InitDBConn("auth")
+	if errInitDb != nil {
+		log.Println(errInitDb)
+		return result
+	}
+	defer dbConn.Close()
+
+	query := ` 
+		SELECT
+			id,
+			username,
+			email
+		FROM users WHERE 
+		type = 'Internal'
+		AND deleted_by IS NULL
+	`
+	queryRes, errQuery := dbConn.Queryx(query)
+	if errQuery != nil {
+		log.Println("failed to get user internal bursa :", errQuery)
+		return result
+	}
+	defer queryRes.Close()
+
+	for queryRes.Next() {
+		var users model.UsersIdWithEmail
+		if errScan := queryRes.StructScan(&users); errScan != nil {
+			log.Println("failed to read user data :", errScan)
+			return []model.UsersIdWithEmail{}
+		}
+		result = append(result, users)
+	}
+
+	return result
+}
+
+func GetUser(c *gin.Context, id string) (*model.UsersIdWithEmail, error) {
+	result := model.UsersIdWithEmail{}
+	dbConn, errInitDb := helper.InitDBConn("auth")
+
+	if errInitDb != nil {
+		log.Println(errInitDb)
+		return nil, errInitDb
+	}
+	defer dbConn.Close()
+
+	query := ` 
+		SELECT
+			id,
+			username,
+			email
+		FROM users WHERE id = $1
+	`
+	queryRes := dbConn.QueryRowx(query, id)
+
+	var users model.UsersIdWithEmail
+	if errScan := queryRes.StructScan(&users); errScan != nil {
+		log.Println("failed to read user data :", errScan)
+		return nil, errScan
+	}
+
+	return &result, nil
 }

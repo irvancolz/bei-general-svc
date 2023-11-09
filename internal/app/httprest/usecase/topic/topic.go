@@ -4,6 +4,9 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	tp "be-idx-tsg/internal/app/httprest/repository/topic"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
+	"fmt"
 	"log"
 	"time"
 
@@ -77,6 +80,24 @@ func (m *usecase) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (i
 }
 
 func (m *usecase) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error) {
+	notifCreatorId, _ := c.Get("user_id")
+	notifCreatorUserName, _ := c.Get("name_user")
+	notifCreatorEmail, _ := c.Get("email")
+
+	go utilities.CreateNotif(c, notifCreatorId.(string), "Pertanyaan", "Pertanyaan Berhasil Dibuat")
+	go email.SendEmailNotification(model.UsersIdWithEmail{Id: notifCreatorId.(string), Username: notifCreatorUserName.(string), Email: notifCreatorEmail.(string)}, "Pertanyaan Berhasil Dibuat", "Pertanyaan Berhasil Dibuat")
+
+	internalBursaUser := email.GetAllUserInternalBursa(c)
+	var internalBursaUserId []string
+	for _, user := range internalBursaUser {
+		internalBursaUserId = append(internalBursaUserId, user.Id)
+	}
+	go utilities.CreateGroupNotif(c, internalBursaUserId, "Pertanyaan", fmt.Sprintf("user %s menambahkan pertanyaan baru", notifCreatorUserName.(string)))
+
+	for _, user := range internalBursaUser {
+		go email.SendEmailNotification(user, "Pertanyaan Berhasil Dibuat", fmt.Sprintf("user %s menambahkan pertanyaan baru", notifCreatorUserName.(string)))
+	}
+
 	return m.tpRepo.CreateTopicWithMessage(topic, c, isDraft)
 }
 

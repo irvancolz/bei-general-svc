@@ -1,6 +1,7 @@
 package utilities
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"bytes"
 	"encoding/json"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 
@@ -239,7 +241,31 @@ type CreateNewGroupNotifiCationsProps struct {
 	Type    string                `json:"type"`
 }
 
-func CreateNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) error {
+func CreateNotif(c *gin.Context, recipient, types, message string) {
+	notifConfig := CreateNewNotifiCationsProps{
+		User_id: recipient,
+		Data: NotificationsDataJson{
+			Title: message,
+			Date:  helper.GetWIBLocalTime(nil).Format(time.DateTime),
+		},
+		Type: types,
+	}
+	createNotifRequest(c, notifConfig)
+}
+
+func CreateGroupNotif(c *gin.Context, recipient []string, types, message string) {
+	notifConfig := CreateNewGroupNotifiCationsProps{
+		User_id: recipient,
+		Data: NotificationsDataJson{
+			Title: message,
+			Date:  helper.GetWIBLocalTime(nil).Format(time.DateTime),
+		},
+		Type: types,
+	}
+	createGroupNotifRequest(c, notifConfig)
+}
+
+func createNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) error {
 	err_host := godotenv.Load(".env")
 	if err_host != nil {
 		fmt.Println(err_host)
@@ -277,7 +303,7 @@ func CreateNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) e
 	return nil
 }
 
-func CreateGroupNotifRequest(c *gin.Context, notifData CreateNewGroupNotifiCationsProps) error {
+func createGroupNotifRequest(c *gin.Context, notifData CreateNewGroupNotifiCationsProps) error {
 	err_host := godotenv.Load(".env")
 	if err_host != nil {
 		fmt.Println(err_host)
