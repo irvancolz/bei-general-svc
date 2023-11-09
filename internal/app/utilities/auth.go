@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -217,4 +218,99 @@ func GetUserRoles(c *gin.Context, id string) string {
 	}
 
 	return result.Data
+}
+
+type NotificationsDataJson struct {
+	Title string `json:"title"`
+	Date  string `json:"date"`
+	Email string `json:"email"`
+}
+
+type CreateNewNotifiCationsProps struct {
+	User_id string                `json:"user_id"`
+	Data    NotificationsDataJson `json:"data"`
+	Link    string                `json:"link"`
+	Type    string                `json:"type"`
+}
+type CreateNewGroupNotifiCationsProps struct {
+	User_id []string              `json:"user_id"`
+	Data    NotificationsDataJson `json:"data"`
+	Link    string                `json:"link"`
+	Type    string                `json:"type"`
+}
+
+func CreateNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) error {
+	err_host := godotenv.Load(".env")
+	if err_host != nil {
+		fmt.Println(err_host)
+	}
+	host := os.Getenv("SERVICE_AUTH_HOST")
+
+	url := host + "/create-new-notifications"
+	tokens, _ := c.Get("token")
+
+	notifDataJson, _ := json.Marshal(notifData)
+	notifConfigReader := bytes.NewReader(notifDataJson)
+
+	Request, err := http.NewRequest("POST", url, notifConfigReader)
+
+	Request.Header.Add("authorization", tokens.(string))
+	Request.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Println("failed to create request to auth : ", err)
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(Request)
+	if err != nil {
+		log.Println("failed to get user response from auth: ", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		errMsg := "failed to get user detail, an error occured when try to get data"
+		log.Println(errMsg)
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
+
+func CreateGroupNotifRequest(c *gin.Context, notifData CreateNewGroupNotifiCationsProps) error {
+	err_host := godotenv.Load(".env")
+	if err_host != nil {
+		fmt.Println(err_host)
+	}
+	host := os.Getenv("SERVICE_AUTH_HOST")
+
+	url := host + "/create-new-group-notifications"
+	tokens, _ := c.Get("token")
+
+	notifDataJson, _ := json.Marshal(notifData)
+	notifConfigReader := bytes.NewReader(notifDataJson)
+
+	Request, err := http.NewRequest("POST", url, notifConfigReader)
+
+	Request.Header.Add("authorization", tokens.(string))
+	Request.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		log.Println("failed to create request to auth : ", err)
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(Request)
+	if err != nil {
+		log.Println("failed to get user response from auth: ", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		errMsg := "failed to get user detail, an error occured when try to get data"
+		log.Println(errMsg)
+		return errors.New(errMsg)
+	}
+
+	return nil
 }
