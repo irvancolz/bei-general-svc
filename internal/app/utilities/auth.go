@@ -266,10 +266,6 @@ func CreateGroupNotif(c *gin.Context, recipient []string, types, message string)
 }
 
 func createNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) error {
-	err_host := godotenv.Load(".env")
-	if err_host != nil {
-		fmt.Println(err_host)
-	}
 	host := os.Getenv("SERVICE_AUTH_HOST")
 
 	url := host + "/create-new-notifications"
@@ -304,10 +300,6 @@ func createNotifRequest(c *gin.Context, notifData CreateNewNotifiCationsProps) e
 }
 
 func createGroupNotifRequest(c *gin.Context, notifData CreateNewGroupNotifiCationsProps) error {
-	err_host := godotenv.Load(".env")
-	if err_host != nil {
-		fmt.Println(err_host)
-	}
 	host := os.Getenv("SERVICE_AUTH_HOST")
 
 	url := host + "/create-new-group-notifications"
