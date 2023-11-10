@@ -48,7 +48,7 @@ func (m *handler) GetById(c *gin.Context) {
 	ID := c.Query("id")
 	keyword := c.Query("keyword")
 
-	data, err := m.tp.GetByID(ID, keyword)
+	data, err := m.tp.GetByID(c, ID, keyword)
 	if err != nil {
 		model.GenerateReadErrorResponse(c, err)
 		return

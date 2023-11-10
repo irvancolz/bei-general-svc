@@ -24,6 +24,15 @@ func ConvertUnixStrToDateString(unix string, format string) string {
 	return result
 }
 
+func ConvertUnixStrToTime(unix string) time.Time {
+	location, _ := time.LoadLocation("Asia/Jakarta")
+
+	unixDate := ConvertUnixStrToNumber(unix)
+	result := time.Unix(int64(unixDate), 0).In(location)
+
+	return result
+}
+
 func generateFreeTextFilterKeywords(keys []string) []string {
 	result := []string{}
 
