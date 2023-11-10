@@ -40,8 +40,10 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 	keyword := c.Query("keyword")
 	userId, _ := c.Get("user_id")
 	userType, _ := c.Get("type")
+	searches := c.QueryArray("search")
 
-	var listData = []model.Topic{}
+	var listData []model.Topic
+
 	listUser := make(map[string]string)
 
 	query := `SELECT 
@@ -101,8 +103,12 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 		}
 
 		listData[i].Created_At = listData[i].Time_Created_At.Format("2006-01-02 15:04")
+		listData[i].F_Created_At = helper.ConvertTimeToHumanDateOnly(listData[i].Time_Created_At, helper.MonthFullNameInIndo) + " " + helper.GetTimeAndMinuteOnly(listData[i].Time_Created_At)
 
 		listData[i].Updated_At = listData[i].Time_Updated_At.Format("2006-01-02 15:04")
+		if listData[i].Handler_ID != "" {
+			listData[i].F_Updated_At = helper.ConvertTimeToHumanDateOnly(listData[i].Time_Updated_At, helper.MonthFullNameInIndo) + " " + helper.GetTimeAndMinuteOnly(listData[i].Time_Updated_At)
+		}
 
 		created_by, ok := listUser[listData[i].Created_By]
 		if !ok {
@@ -124,6 +130,43 @@ func (m *repository) GetAll(c *gin.Context) ([]model.Topic, error) {
 			listData[i].Handler_Name = &username
 		} else {
 			listData[i].Handler_Name = &handler
+		}
+	}
+
+	if len(searches) > 0 {
+		for _, search := range searches {
+			i := 0
+			for i < len(listData) {
+				var matches int
+
+				if strings.Contains(strings.ToLower(listData[i].User_Full_Name), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(listData[i].Company_Name), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(listData[i].F_Created_At), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(listData[i].Message), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(listData[i].Status), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(listData[i].F_Updated_At), strings.ToLower(search)) {
+					matches++
+				}
+				if strings.Contains(strings.ToLower(*listData[i].Handler_Name), strings.ToLower(search)) {
+					matches++
+				}
+
+				if matches == 0 {
+					listData = append(listData[:i], listData[i+1:]...)
+				} else {
+					i++
+				}
+			}
 		}
 	}
 

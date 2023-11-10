@@ -45,13 +45,19 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 
 	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, nil)
 
-	startDate := c.Query("start_date")
+	createdAtFrom := c.Query("created_at_from")
+	createdAtEnd := c.Query("created_at_end")
 
-	if startDate != "" {
+	if len(createdAtEnd) > 0 && len(createdAtFrom) > 0 {
+		from := helper.ConvertUnixStrToTime(createdAtFrom)
+		end := helper.ConvertUnixStrToTime(createdAtEnd)
+
 		var temp []map[string]interface{}
 
 		for _, data := range filteredData {
-			if parseTime(startDate) == data["time_created_at"].(time.Time).Format("2006-01-02") {
+			createdAt := data["time_created_at"].(time.Time)
+
+			if createdAt.After(from) && createdAt.Before(end) {
 				temp = append(temp, data)
 			}
 		}
