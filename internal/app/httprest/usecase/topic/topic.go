@@ -82,13 +82,44 @@ func (m *usecase) UpdateHandler(topic model.UpdateTopicHandler, c *gin.Context) 
 }
 
 func (m *usecase) UpdateStatus(topic model.UpdateTopicStatus, c *gin.Context) (int64, error) {
-	return m.tpRepo.UpdateStatus(topic, c)
+	updater, _ := c.Get("name_user")
+	updateStatRes, errUpdate := m.tpRepo.UpdateStatus(topic, c)
+	if errUpdate != nil {
+		return 0, errUpdate
+	}
+
+	topicCreatorId := m.tpRepo.GetCreator(c, topic.TopicID)
+	topicCreator, errGetTopicCreator := email.GetUser(c, topicCreatorId)
+	if errGetTopicCreator != nil {
+		return 0, errGetTopicCreator
+	}
+
+	go utilities.CreateNotif(c, topicCreatorId, "Pertanyaan", "Pertanyaan telah ditandai sebagai terjawab")
+	go email.SendEmailNotification(*topicCreator, "Update Status pada pertanyaan anda", "Pertanyaan anda berhasil terjawab")
+
+	internalBursaUser := email.GetAllUserInternalBursa(c)
+	var internalBursaUserId []string
+	for _, user := range internalBursaUser {
+		internalBursaUserId = append(internalBursaUserId, user.Id)
+	}
+	go utilities.CreateGroupNotif(c, internalBursaUserId, "Pertanyaan", "Pertanyaan telah ditandai sebagai terjawab")
+
+	for _, user := range internalBursaUser {
+		go email.SendEmailNotification(user, "Aktivitas Baru Di Menu Pertanyaan", fmt.Sprintf("user %s menandai pertanyaan sebagai sudah terjawab", updater.(string)))
+	}
+
+	return updateStatRes, nil
 }
 
 func (m *usecase) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *gin.Context, isDraft bool) (int64, error) {
 	notifCreatorId, _ := c.Get("user_id")
 	notifCreatorUserName, _ := c.Get("name_user")
 	notifCreatorEmail, _ := c.Get("email")
+
+	createTopic, errCreateTopic := m.tpRepo.CreateTopicWithMessage(topic, c, isDraft)
+	if errCreateTopic != nil {
+		return 0, errCreateTopic
+	}
 
 	go utilities.CreateNotif(c, notifCreatorId.(string), "Pertanyaan", "Pertanyaan Berhasil Dibuat")
 	go email.SendEmailNotification(model.UsersIdWithEmail{Id: notifCreatorId.(string), Username: notifCreatorUserName.(string), Email: notifCreatorEmail.(string)}, "Pertanyaan Berhasil Dibuat", "Pertanyaan Berhasil Dibuat")
@@ -104,11 +135,36 @@ func (m *usecase) CreateTopicWithMessage(topic model.CreateTopicWithMessage, c *
 		go email.SendEmailNotification(user, "Pertanyaan Berhasil Dibuat", fmt.Sprintf("user %s menambahkan pertanyaan baru", notifCreatorUserName.(string)))
 	}
 
-	return m.tpRepo.CreateTopicWithMessage(topic, c, isDraft)
+	return createTopic, nil
 }
 
 func (m *usecase) CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error) {
-	return m.tpRepo.CreateMessage(message, c)
+	createmsgRes, errCreatemsg := m.tpRepo.CreateMessage(message, c)
+	if errCreatemsg != nil {
+		return 0, errCreatemsg
+	}
+
+	topicCreatorId := m.tpRepo.GetCreator(c, message.TopicID)
+	topicCreator, errGetTopicCreator := email.GetUser(c, topicCreatorId)
+	if errGetTopicCreator != nil {
+		return 0, errGetTopicCreator
+	}
+
+	go utilities.CreateNotif(c, topicCreatorId, "Pertanyaan", "Aktivitas baru di pertanyaan anda")
+	go email.SendEmailNotification(*topicCreator, "Pertanyaan Anda Di Response", "Aktivitas baru di pertanyaan anda")
+
+	internalBursaUser := email.GetAllUserInternalBursa(c)
+	var internalBursaUserId []string
+	for _, user := range internalBursaUser {
+		internalBursaUserId = append(internalBursaUserId, user.Id)
+	}
+	go utilities.CreateGroupNotif(c, internalBursaUserId, "Pertanyaan", "aktivitas baru di menu pertanyaan")
+
+	for _, user := range internalBursaUser {
+		go email.SendEmailNotification(user, "Aktivitas Baru Di Menu Pertanyaan", fmt.Sprintf("user %s merespons pada menu pertanyaan ", topicCreator.Username))
+	}
+
+	return createmsgRes, nil
 }
 
 func (m *usecase) DeleteTopic(topicID string, c *gin.Context) (int64, error) {

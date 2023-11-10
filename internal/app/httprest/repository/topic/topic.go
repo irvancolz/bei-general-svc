@@ -24,6 +24,7 @@ type Repository interface {
 	CreateMessage(message model.CreateMessage, c *gin.Context) (int64, error)
 	DeleteTopic(topicID string, c *gin.Context) (int64, error)
 	ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.Context) (int64, error)
+	GetCreator(c *gin.Context, id string) string
 }
 
 type repository struct {
@@ -542,4 +543,17 @@ func (m *repository) ArchiveTopicToFAQ(topicFAQ model.ArchiveTopicToFAQ, c *gin.
 	rowsAffected, _ := result.RowsAffected()
 
 	return rowsAffected, nil
+}
+
+func (m *repository) GetCreator(c *gin.Context, id string) string {
+	var result string
+	query := `SELECT created_by FROM topics WHERE id = $1`
+	queryResult := m.DB.QueryRowx(query, id)
+
+	if errScan := queryResult.Scan(&result); errScan != nil {
+		log.Println("failed to read topics creator data :", errScan)
+		return ""
+	}
+
+	return result
 }

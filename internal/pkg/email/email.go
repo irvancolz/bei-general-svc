@@ -264,8 +264,7 @@ func GetUser(c *gin.Context, id string) (*model.UsersIdWithEmail, error) {
 	`
 	queryRes := dbConn.QueryRowx(query, id)
 
-	var users model.UsersIdWithEmail
-	if errScan := queryRes.StructScan(&users); errScan != nil {
+	if errScan := queryRes.StructScan(&result); errScan != nil {
 		log.Println("failed to read user data :", errScan)
 		return nil, errScan
 	}
