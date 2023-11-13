@@ -245,6 +245,48 @@ func GetAllUserInternalBursa(c *gin.Context) []model.UsersIdWithEmail {
 	return result
 }
 
+func GetUserAdminApp(c *gin.Context) ([]model.UsersIdWithEmail, error) {
+	var result []model.UsersIdWithEmail
+	dbConn, errInitDb := helper.InitDBConn("auth")
+
+	if errInitDb != nil {
+		log.Println(errInitDb)
+		return nil, errInitDb
+	}
+	defer dbConn.Close()
+
+	query := ` 
+	SELECT
+		u id,
+		u username,
+		u email
+	FROM users u JOIN roles r ON r.id::text = u.role_id 
+	WHERE r.role = 'Admin App.'
+	AND u.deleted_by IS NULL
+	`
+
+	queryRes, errQuery := dbConn.Queryx(query)
+	if errQuery != nil {
+		log.Println("failed to get user Admin app :", errQuery)
+		return nil, errQuery
+	}
+
+	defer queryRes.Close()
+
+	for queryRes.Next() {
+		var user model.UsersIdWithEmail
+
+		if errScan := queryRes.StructScan(&user); errScan != nil {
+			log.Println("failed to read user admin app :", errScan)
+			return nil, errScan
+		}
+
+		result = append(result, user)
+	}
+
+	return result, nil
+}
+
 func GetUser(c *gin.Context, id string) (*model.UsersIdWithEmail, error) {
 	result := model.UsersIdWithEmail{}
 	dbConn, errInitDb := helper.InitDBConn("auth")
