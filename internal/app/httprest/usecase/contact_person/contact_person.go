@@ -4,7 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/contact_person"
-	"be-idx-tsg/internal/app/utilities"
 	"errors"
 	"fmt"
 	"log"
@@ -148,22 +147,12 @@ func (u *usecase) EditDivision(c *gin.Context, props EditDivisionprops) (int64, 
 
 func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type string) ([]*model.InstitutionResponse, error) {
 
-	var latestCompanyList []model.ContactPersonSyncCompaniesResource
-	var errorGetCompanies error
-
 	if company_type == "" {
 		log.Println("failed to sync contact person companies : please specify the company type you want to sync with")
 		return nil, errors.New("failed to sync contact person companies : please specify the company type you want to sync with")
 	}
 
-	if strings.EqualFold(company_type, "AB") {
-		latestCompanyList, errorGetCompanies = utilities.GetLatestABCompanies(c)
-	} else if strings.EqualFold(company_type, "Participant") {
-		latestCompanyList, errorGetCompanies = utilities.GetLatestParticipantCompanies(c)
-	} else if strings.EqualFold(company_type, "PJSPPA") {
-		latestCompanyList, errorGetCompanies = utilities.GetLatestPJSPPACompanies(c)
-	}
-
+	latestCompanyList, errorGetCompanies := u.Repository.GetAllCompanyWithExtType(company_type)
 	if errorGetCompanies != nil {
 		return nil, errorGetCompanies
 	}

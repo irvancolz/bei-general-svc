@@ -1,6 +1,7 @@
 package contactperson
 
 import (
+	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"database/sql"
@@ -36,6 +37,7 @@ type ContactPersonRepositoryInterface interface {
 	CheckDivisionDeleteAvailability(division_id string) bool
 	CheckDivisionViewAvailability(division_id string) bool
 	GetCompanyType(company_id string) string
+	GetAllCompanyWithExtType(external_type string) ([]model.ContactPersonSyncCompaniesResource, error)
 }
 
 type repository struct {
@@ -153,6 +155,65 @@ func (r *repository) SynchronizeInstitutionProfile(data []model.ContactPersonSyn
 	}
 
 	return nil
+}
+
+func (r *repository) GetAllCompanyWithExtType(external_type string) ([]model.ContactPersonSyncCompaniesResource, error) {
+	var result []model.ContactPersonSyncCompaniesResource
+	DBconn, errCreateConn := helper.InitDBConn(external_type)
+	if errCreateConn != nil {
+		log.Println("failed to create db conn :", errCreateConn)
+		return nil, errCreateConn
+	}
+	defer DBconn.Close()
+
+	companyTable := func() string {
+		if strings.EqualFold(external_type, "du") {
+			return "dealer_utama"
+		}
+		if strings.EqualFold(external_type, "participant") {
+			return "participant"
+		}
+		if strings.EqualFold(external_type, "pjsppa") {
+			return "pjsppa"
+		}
+		return "anggota_bursa"
+	}()
+
+	rawQuery := `
+	SELECT 
+		code, 
+		name, 
+		operational_status AS status, 
+		CASE 
+			WHEN deleted_by IS NOT NULL OR deleted_by::text <> '' THEN true
+			ELSE false
+		END AS is_deleted
+	FROM %s;
+	`
+
+	query := fmt.Sprintf(rawQuery, companyTable)
+
+	rowRes, errQuery := DBconn.Queryx(query)
+	if errQuery != nil {
+		log.Println(query)
+		log.Println("failed to get company from with external type :", external_type, errQuery)
+		return nil, errQuery
+	}
+
+	defer rowRes.Close()
+
+	for rowRes.Next() {
+		var company model.ContactPersonSyncCompaniesResource
+
+		if errScan := rowRes.StructScan(&company); errScan != nil {
+			log.Println("failed to read company data :", errScan)
+			return nil, errScan
+		}
+
+		result = append(result, company)
+	}
+
+	return result, nil
 }
 
 func (r *repository) GetAllDivisionByCompany(company_id string) ([]*model.InstitutionDivisionResponse, error) {
