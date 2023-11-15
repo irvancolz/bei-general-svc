@@ -208,7 +208,9 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 	regarding,
 	created_by,
 	type,
-	form_value_id
+	form_value_id,
+	coalesce(form, ''),
+	coalesce(company_code, '')
    FROM announcements
 	` + filterQuery
 
@@ -240,6 +242,8 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			&userId,
 			&item.Type,
 			&anFormId,
+			&item.Company_Code,
+			&item.Form_Name,
 		)
 
 		announcement := model.Announcement{
@@ -249,6 +253,8 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			Type:             item.Type,
 			Creator:          userId,
 			Form_Value_Id:    anFormId.String,
+			Form_Name:        item.Form_Name,
+			Company_Code:     item.Company_Code,
 		}
 
 		announcement.Effective_Date = anEffectiveDate.Unix()
@@ -276,7 +282,9 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 		created_by,
 		type,
 		coalesce(form_value_id,''),
-		regarding
+		regarding,
+		coalesce(form, ''),
+		coalesce(company_code, '')
 		FROM announcements
 		WHERE id = $1 
 		AND deleted_by IS NULL
@@ -292,6 +300,8 @@ func (m *repository) GetByID(id string, c *gin.Context) (*model.Announcement, er
 		&item.Type,
 		&item.Form_Value_Id,
 		&item.Regarding,
+		&item.Form_Name,
+		&item.Company_Code,
 	); err != nil {
 		log.Println(query)
 		log.Println("[AQI-debug] [err] [repository] [Annoucement] [getQueryData] [GetByID] ", err)
@@ -328,9 +338,11 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		created_by,
 		is_deleted,
 		type,
-		form_value_id
+		form_value_id,
+		company_code,
+		form
 	)
-	VALUES ($1, $2, $3, $4, $5, false, $6, $7);`
+	VALUES ($1, $2, $3, $4, $5, false, $6, $7, $8, $9);`
 
 	selDB, err := m.DB.Exec(
 		query,
@@ -340,7 +352,9 @@ func (m *repository) Create(an model.CreateAnnouncement, c *gin.Context) (int64,
 		CreatedAt,
 		userId,
 		an.Type,
-		an.Form_Value_Id)
+		an.Form_Value_Id,
+		an.Company_Code,
+		an.Form_Name)
 	if err != nil {
 		return 0, err
 	}
@@ -369,7 +383,9 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		updated_at = $5, 
 		updated_by = $6,
 		type = $7,
-		form_value_id = $8
+		form_value_id = $8,
+		company_code = $9,
+		form = $10
 	WHERE id = $1 AND is_deleted = false;`
 	updated_at := time.Now().UTC().Format("2006-01-02 15:04:05")
 	selDB, err := m.DB.Exec(
@@ -382,6 +398,8 @@ func (m *repository) Update(an model.UpdateAnnouncement, c *gin.Context) (int64,
 		userId,
 		an.Type,
 		an.Form_Value_Id,
+		an.Company_Code,
+		an.Form_Name,
 	)
 	if err != nil {
 		return 0, err

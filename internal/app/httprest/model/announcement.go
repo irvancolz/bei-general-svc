@@ -7,6 +7,8 @@ type Announcement struct {
 	Information_Type string `json:"information_type"`
 	Effective_Date   int64  `json:"effective_date"`
 	Regarding        string `json:"regarding"`
+	Form_Name        string `json:"form_name"`
+	Company_Code     string `json:"company_code"`
 	// todo rm in the future
 	Type          string `json:"type"`
 	Form_Value_Id string `json:"form_value_id"`
@@ -18,9 +20,11 @@ type CreateAnnouncement struct {
 	Information_Type string    `json:"information_type" binding:"required,oneof='INTERNAL BURSA' 'AB' 'PARTICIPANT' 'PJSPPA' 'SEMUA' 'DU'"`
 	Effective_Date   time.Time `json:"effective_date" binding:"required"`
 	Regarding        string    `json:"regarding" binding:"required"`
+	Form_Name        string    `json:"form_name" binding:"required"`
+	Company_Code     string    `json:"company_code" binding:"required"`
+	Form_Value_Id    string    `json:"form_value_id" binding:"required"`
 	// todo rm in the future
-	Type          string `json:"type"`
-	Form_Value_Id string `json:"form_value_id"`
+	Type string `json:"type"`
 }
 
 type UpdateAnnouncement struct {
@@ -28,7 +32,9 @@ type UpdateAnnouncement struct {
 	Information_Type string    `json:"information_type" binding:"required,oneof='INTERNAL BURSA' 'AB' 'PARTICIPANT' 'PJSPPA' 'SEMUA' 'DU'"`
 	Effective_Date   time.Time `json:"effective_date" binding:"required"`
 	Regarding        string    `json:"regarding" binding:"required"`
+	Form_Name        string    `json:"form_name" binding:"required"`
+	Company_Code     string    `json:"company_code" binding:"required"`
+	Form_Value_Id    string    `json:"form_value_id" binding:"required"`
 	// todo rm in the future
-	Type          string `json:"type"`
-	Form_Value_Id string `json:"form_value_id"`
+	Type string `json:"type"`
 }
