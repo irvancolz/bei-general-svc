@@ -61,11 +61,9 @@ func (m *repository) CreateLogSystem(logSystem model.CreateLogSystem, c *gin.Con
 	t, _ := helper.TimeIn(time.Now(), "Asia/Jakarta")
 	logSystem.CreatedAt = t.Format("2006-01-02 15:04:05")
 
-	userId, _ := c.Get("user_id")
-	logSystem.CreatedBy = userId.(string)
+	logSystem.CreatedBy = c.GetString("user_id")
 
-	name, _ := c.Get("name")
-	logSystem.UserName = name.(string)
+	logSystem.UserName = c.GetString("name_user")
 
 	logSystem.Browser = c.Request.Header.Get("User-Agent")
 
