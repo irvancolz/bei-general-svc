@@ -4,7 +4,10 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/unggah-berkas"
 	"be-idx-tsg/internal/app/httprest/usecase/upload"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +40,7 @@ func NewUsecase() UnggahBerkasUsecaseInterface {
 
 func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, error) {
 	userName, _ := c.Get("name_user")
+	userId, _ := c.Get("user_id")
 	companyName, _ := c.Get("company_name")
 	companyCode, _ := c.Get("company_code")
 	companyId, _ := c.Get("company_id")
@@ -73,7 +77,33 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 
 	go uploadReportToDb(c, props.File_Path, props.Type, referenceNumber)
 
-	return u.Repo.UploadNew(createNewArgs)
+	uploadRes, errUpload := u.Repo.UploadNew(createNewArgs)
+	if errUpload != nil {
+		return 0, errUpload
+	}
+
+	moduleName := func() string {
+		if strings.EqualFold(props.Type, "bulanan") {
+			return "Laporan Rekapitulasi Aktivitas Transaksi Partisipan"
+		}
+		if strings.EqualFold(props.Type, "pjsppa") {
+			return "Laporan Rekapitulasi Aktivitas Transaksi PJSPPA"
+		}
+		if strings.EqualFold(props.Type, "catatan") {
+			return "Laporan Rekapitulasi Catatan"
+		}
+		return "Laporan Historis Kunjungan Partisipan"
+	}()
+
+	notifMsg := "Laporan Baru Telah Berhasil Di Upload"
+	emailMsg := fmt.Sprintf("%s telah melakukan Upload data pada Modul Unggah Data transaksi terkait %s", userName.(string), moduleName)
+	notifType := "Unggah Data"
+
+	utilities.CreateNotif(c, userId.(string), notifType, "Laporan Berhasil Diupload")
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
+	return uploadRes, nil
 }
 
 func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, error) {

@@ -3,6 +3,7 @@ package utilities
 import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
+	"be-idx-tsg/internal/pkg/email"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -239,6 +240,21 @@ type CreateNewGroupNotifiCationsProps struct {
 	Data    NotificationsDataJson `json:"data"`
 	Link    string                `json:"link"`
 	Type    string                `json:"type"`
+}
+
+func CreateNotifForAdminApp(c *gin.Context, notifType, message string) {
+	var userAdminAppId []string
+	userAdminApp, errGetAdminApp := email.GetUserAdminApp(c)
+	if errGetAdminApp != nil {
+		log.Println("failed to get notif recipient :", errGetAdminApp)
+		return
+	}
+
+	for _, user := range userAdminApp {
+		userAdminAppId = append(userAdminAppId, user.Id)
+	}
+
+	CreateGroupNotif(c, userAdminAppId, notifType, message)
 }
 
 func CreateNotif(c *gin.Context, recipient, types, message string) {
