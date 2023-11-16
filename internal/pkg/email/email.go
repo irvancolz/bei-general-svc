@@ -161,10 +161,10 @@ func (c EmailConfig) SendEmailWithTemplate(wg *sync.WaitGroup, data interface{},
 
 	email := gomail.NewDialer(smtpHost, port, smtpUser, smtpPass)
 	email.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	result := email.DialAndSend(message)
+	errResult := email.DialAndSend(message)
 
-	if result != nil {
-		log.Println("failed to send email : ", result)
+	if errResult != nil {
+		log.Println("failed to send email : ", errResult)
 		return
 	}
 }
@@ -196,6 +196,18 @@ func generateTemplatesfromHTML(data interface{}, html string) (*bytes.Buffer, er
 	return &result, nil
 }
 
+func SendEmailForUserAdminApp(c *gin.Context, subject, message string) {
+	userAdminApp, errGetAdminApp := GetUserAdminApp(c)
+	if errGetAdminApp != nil {
+		log.Println("failed to get notif recipient :", errGetAdminApp)
+		return
+	}
+
+	for _, user := range userAdminApp {
+		go SendEmailNotification(user, subject, message)
+	}
+}
+
 func SendEmailNotification(receiver model.UsersIdWithEmail, subject, message string) {
 	emailConfig := EmailConfig{
 		Receiver: receiver.Email,
@@ -206,6 +218,7 @@ func SendEmailNotification(receiver model.UsersIdWithEmail, subject, message str
 		Message string
 		Name    string
 	}{Message: message, Name: receiver.Username}, "dummy-general-notif.html")
+	wg.Wait()
 }
 
 func GetAllUserInternalBursa(c *gin.Context) []model.UsersIdWithEmail {
@@ -257,9 +270,9 @@ func GetUserAdminApp(c *gin.Context) ([]model.UsersIdWithEmail, error) {
 
 	query := ` 
 	SELECT
-		u id,
-		u username,
-		u email
+		u.id,
+		u.username,
+		u.email
 	FROM users u JOIN roles r ON r.id::text = u.role_id 
 	WHERE r.role = 'Admin App.'
 	AND u.deleted_by IS NULL
