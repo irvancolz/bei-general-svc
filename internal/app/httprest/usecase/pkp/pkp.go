@@ -54,8 +54,9 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"topic",
 		"answersby",
 		"filename",
-		"createby",
 		"additionalinfo",
+		"createdat",
+		"createby",
 	}
 	columnHeaders := []string{
 		"No",
@@ -69,8 +70,9 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		"Topik",
 		"Personel Follow Up",
 		"Lampiran",
-		"Dibuat Oleh",
 		"Sumber Informasi Tambahan",
+		"Waktu Buat",
+		"Dibuat Oleh",
 	}
 
 	var tablesColumns [][]string
@@ -86,7 +88,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 		exportedRows = append(exportedRows, strconv.Itoa(i+1))
 		exportedRows = append(exportedRows, helper.MapToArray(item, exportedFields)...)
 		for i, content := range exportedRows {
-			if helper.IsContains([]int{4, 6}, i) {
+			if helper.IsContains([]int{4, 6, 12}, i) {
 				unixTime, _ := strconv.Atoi(content)
 				dateTime := time.Unix(int64(unixTime), 0)
 				dateToFormat := helper.GetWIBLocalTime(&dateTime)
