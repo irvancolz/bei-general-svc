@@ -4,6 +4,9 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	pkp "be-idx-tsg/internal/app/httprest/repository/pkp"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -117,13 +120,49 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 }
 
 func (uc *usecase) CreatePKuser(pkp model.CreatePKuser, c *gin.Context) (int64, error) {
-	return uc.pkpRepo.CreatePKuser(pkp, c)
+	data, err := uc.pkpRepo.CreatePKuser(pkp, c)
+	if err != nil {
+		return 0, err
+	}
+
+	notifMsg := "PKP Baru Telah Berhasil Dibuat"
+	emailMsg := fmt.Sprintf("%s telah melakukan penambahan data pada Modul PKP", c.GetString("name_user"))
+	notifType := "PKP"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
+	return data, nil
 }
 
 func (uc *usecase) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, error) {
-	return uc.pkpRepo.UpdatePKuser(pkp, c)
+	data, err := uc.pkpRepo.UpdatePKuser(pkp, c)
+	if err != nil {
+		return 0, err
+	}
+
+	notifMsg := "PKP Telah Berhasil Diubah"
+	emailMsg := fmt.Sprintf("%s telah melakukan perubahan data pada Modul PKP", c.GetString("name_user"))
+	notifType := "PKP"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
+	return data, nil
 }
 
 func (uc *usecase) Delete(id string, c *gin.Context) (int64, error) {
-	return uc.pkpRepo.Delete(id, c)
+	data, err := uc.pkpRepo.Delete(id, c)
+	if err != nil {
+		return 0, err
+	}
+
+	notifMsg := "PKP Telah Berhasil Dihapus"
+	emailMsg := fmt.Sprintf("%s telah melakukan penghapusan data pada Modul PKP", c.GetString("name_user"))
+	notifType := "PKP"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
+	return data, nil
 }
