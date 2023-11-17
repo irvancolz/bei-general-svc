@@ -4,7 +4,11 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	an "be-idx-tsg/internal/app/httprest/repository/announcement"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -94,7 +98,30 @@ func (m *usecase) GetAllAnnouncement(c *gin.Context) (*helper.PaginationResponse
 	return &paginatedData, nil
 }
 func (m *usecase) Create(an model.CreateAnnouncement, c *gin.Context) (int64, error) {
-	return m.anRepo.Create(an, c)
+	data, err := m.anRepo.Create(an, c)
+	if err != nil {
+		return 0, err
+	}
+
+	notifMsg := "Pengumuman Baru Telah Berhasil Dibuat"
+	emailMsg := fmt.Sprintf("%s telah melakukan penambahan data pada Modul Pengumuman", c.GetString("name_user"))
+	notifType := "PKP"
+
+	utilities.CreateNotifForInternalBursa(c, notifType, notifMsg)
+	email.SendEmailForUserInternalBursa(c, notifMsg, emailMsg)
+
+	if strings.EqualFold(an.Information_Type, "AB") {
+		utilities.CreateNotifForExternal(c, notifType, notifMsg, "AB")
+		email.SendEmailForUserExternal(c, notifMsg, emailMsg, "AB")
+	} else if strings.EqualFold(an.Information_Type, "PARTICIPANT") || strings.EqualFold(an.Information_Type, "DU") {
+		utilities.CreateNotifForExternal(c, notifType, notifMsg, "PARTICIPANT")
+		email.SendEmailForUserExternal(c, notifMsg, emailMsg, "PARTICIPANT")
+	} else if strings.EqualFold(an.Information_Type, "PJSPPA") {
+		utilities.CreateNotifForExternal(c, notifType, notifMsg, "PJSPPA")
+		email.SendEmailForUserExternal(c, notifMsg, emailMsg, "PJSPPA")
+	}
+
+	return data, nil
 }
 func (m *usecase) Update(an model.UpdateAnnouncement, c *gin.Context) (int64, error) {
 	return m.anRepo.Update(an, c)

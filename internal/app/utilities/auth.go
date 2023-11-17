@@ -257,6 +257,28 @@ func CreateNotifForAdminApp(c *gin.Context, notifType, message string) {
 	CreateGroupNotif(c, userAdminAppId, notifType, message)
 }
 
+func CreateNotifForInternalBursa(c *gin.Context, notifType, message string) {
+	var userInternalBursaId []string
+	userInternalBursa := email.GetAllUserInternalBursa(c)
+
+	for _, user := range userInternalBursa {
+		userInternalBursaId = append(userInternalBursaId, user.Id)
+	}
+
+	CreateGroupNotif(c, userInternalBursaId, notifType, message)
+}
+
+func CreateNotifForExternal(c *gin.Context, notifType, message, externalType string) {
+	var userInternalBursaId []string
+	userInternalBursa := email.GetAllUserInternalBursa(c)
+
+	for _, user := range userInternalBursa {
+		userInternalBursaId = append(userInternalBursaId, user.Id)
+	}
+
+	CreateGroupNotif(c, userInternalBursaId, notifType, message)
+}
+
 func CreateNotif(c *gin.Context, recipient, types, message string) {
 	notifConfig := CreateNewNotifiCationsProps{
 		User_id: recipient,
