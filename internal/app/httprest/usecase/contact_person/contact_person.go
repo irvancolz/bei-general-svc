@@ -4,6 +4,8 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/contact_person"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
 	"errors"
 	"fmt"
 	"log"
@@ -121,6 +123,14 @@ func (u *usecase) AddDivision(c *gin.Context, Name string) (int64, error) {
 	if error_result != nil {
 		return 0, error_result
 	}
+
+	notifMsg := "Fungsi Baru Telah Berhasil Dibuat"
+	emailMsg := fmt.Sprintf("%s telah melakukan penambahan data pada Modul Fungsi", c.GetString("name_user"))
+	notifType := "Fungsi"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
 	return result, nil
 }
 
@@ -142,6 +152,14 @@ func (u *usecase) EditDivision(c *gin.Context, props EditDivisionprops) (int64, 
 		Creator:     user_id.(string),
 		Created_at:  time.Now(),
 	}
+
+	notifMsg := "Fungsi Telah Berhasil Diubah"
+	emailMsg := fmt.Sprintf("%s telah melakukan perubahan data pada Modul Fungsi", c.GetString("name_user"))
+	notifType := "Fungsi"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
 	return u.Repository.EditDivision(c, editDivArgs)
 }
 
@@ -321,6 +339,14 @@ func (u *usecase) DeleteDivisionByID(c *gin.Context, division_id string) (int64,
 		Deleted_by: user_id.(string),
 		Deleted_at: time.Now(),
 	}
+
+	notifMsg := "Fungsi Telah Berhasil Dihapus"
+	emailMsg := fmt.Sprintf("%s telah melakukan penghapusan data pada Modul Fungsi", c.GetString("name_user"))
+	notifType := "Fungsi"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
 	return u.Repository.DeleteDivisionByID(deleteDivArgs)
 }
 
