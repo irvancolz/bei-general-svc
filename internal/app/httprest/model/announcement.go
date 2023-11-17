@@ -9,6 +9,7 @@ type Announcement struct {
 	Regarding        string `json:"regarding"`
 	Form_Name        string `json:"form_name"`
 	Company_Code     string `json:"company_code"`
+	Company_Name     string `json:"company_name"`
 	// todo rm in the future
 	Type          string `json:"type"`
 	Form_Value_Id string `json:"form_value_id"`
@@ -22,6 +23,7 @@ type CreateAnnouncement struct {
 	Regarding        string    `json:"regarding" binding:"required"`
 	Form_Name        string    `json:"form_name" binding:"required"`
 	Company_Code     string    `json:"company_code" binding:"required"`
+	Company_Name     string    `json:"company_name" binding:"required"`
 	Form_Value_Id    string    `json:"form_value_id" binding:"required"`
 	// todo rm in the future
 	Type string `json:"type"`
@@ -34,6 +36,7 @@ type UpdateAnnouncement struct {
 	Regarding        string    `json:"regarding" binding:"required"`
 	Form_Name        string    `json:"form_name" binding:"required"`
 	Company_Code     string    `json:"company_code" binding:"required"`
+	Company_Name     string    `json:"company_name" binding:"required"`
 	Form_Value_Id    string    `json:"form_value_id" binding:"required"`
 	// todo rm in the future
 	Type string `json:"type"`
