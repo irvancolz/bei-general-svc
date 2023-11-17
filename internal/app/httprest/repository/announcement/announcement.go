@@ -242,8 +242,8 @@ func (m *repository) GetAllAnnouncement(c *gin.Context) ([]model.Announcement, e
 			&userId,
 			&item.Type,
 			&anFormId,
-			&item.Company_Code,
 			&item.Form_Name,
+			&item.Company_Code,
 		)
 
 		announcement := model.Announcement{
