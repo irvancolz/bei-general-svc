@@ -208,6 +208,22 @@ func SendEmailForUserAdminApp(c *gin.Context, subject, message string) {
 	}
 }
 
+func SendEmailForUserInternalBursa(c *gin.Context, subject, message string) {
+	userInternalBursa := GetAllUserInternalBursa(c)
+
+	for _, user := range userInternalBursa {
+		go SendEmailNotification(user, subject, message)
+	}
+}
+
+func SendEmailForUserExternal(c *gin.Context, subject, message, externalType string) {
+	userInternalBursa := GetAllUserInternalBursa(c)
+
+	for _, user := range userInternalBursa {
+		go SendEmailNotification(user, subject, message)
+	}
+}
+
 func SendEmailNotification(receiver model.UsersIdWithEmail, subject, message string) {
 	emailConfig := EmailConfig{
 		Receiver: receiver.Email,
@@ -240,6 +256,44 @@ func GetAllUserInternalBursa(c *gin.Context) []model.UsersIdWithEmail {
 		AND deleted_by IS NULL
 	`
 	queryRes, errQuery := dbConn.Queryx(query)
+	if errQuery != nil {
+		log.Println("failed to get user internal bursa :", errQuery)
+		return result
+	}
+	defer queryRes.Close()
+
+	for queryRes.Next() {
+		var users model.UsersIdWithEmail
+		if errScan := queryRes.StructScan(&users); errScan != nil {
+			log.Println("failed to read user data :", errScan)
+			return []model.UsersIdWithEmail{}
+		}
+		result = append(result, users)
+	}
+
+	return result
+}
+
+func GetAllUserExternal(c *gin.Context, externalType string) []model.UsersIdWithEmail {
+	result := []model.UsersIdWithEmail{}
+	dbConn, errInitDb := helper.InitDBConn("auth")
+	if errInitDb != nil {
+		log.Println(errInitDb)
+		return result
+	}
+	defer dbConn.Close()
+
+	query := ` 
+		SELECT
+			id,
+			username,
+			email
+		FROM users WHERE 
+		type = 'External'
+		AND external_type = $1
+		AND deleted_by IS NULL
+	`
+	queryRes, errQuery := dbConn.Queryx(query, externalType)
 	if errQuery != nil {
 		log.Println("failed to get user internal bursa :", errQuery)
 		return result
