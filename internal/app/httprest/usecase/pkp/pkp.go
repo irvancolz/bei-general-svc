@@ -8,6 +8,7 @@ import (
 	"be-idx-tsg/internal/pkg/email"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -93,6 +94,9 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 				dateTime := time.Unix(int64(unixTime), 0)
 				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				exportedRows[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthShortNameInIndo) + " (" + helper.GetTimeAndMinuteOnly(dateToFormat) + ")"
+			}
+			if helper.IsContains([]int{10}, i) {
+				exportedRows[i] = strings.Join(strings.Split(content, "_")[2:], "_")
 			}
 		}
 
