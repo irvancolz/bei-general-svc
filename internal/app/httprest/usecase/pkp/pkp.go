@@ -78,7 +78,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	columnWidth := []float64{20, 50, 40, 40, 30, 40, 30, 40, 40, 50, 40, 30, 40, 30}
+	columnWidth := []float64{20, 50, 40, 40, 30, 40, 30, 40, 40, 50, 40, 30, 40, 40}
 	tableHeaders := helper.GenerateTableHeaders(columnHeaders, columnWidth)
 
 	var exportedData [][]string
@@ -110,7 +110,7 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 			Papperheight: 300,
 			HeaderRows:   tableHeaders,
 		},
-		ColumnWidth: []int{4, 25, 20, 25, 30, 25, 25, 25, 25, 20, 30, 15, 20, 15},
+		ColumnWidth: []int{4, 25, 20, 25, 30, 25, 25, 25, 25, 20, 30, 15, 20, 20},
 	}
 	errorExport := helper.ExportTableToFile(c, exportTableProps)
 	if errorExport != nil {
