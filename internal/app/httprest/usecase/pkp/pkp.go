@@ -96,7 +96,10 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 				exportedRows[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthShortNameInIndo) + " (" + helper.GetTimeAndMinuteOnly(dateToFormat) + ")"
 			}
 			if helper.IsContains([]int{10}, i) {
-				exportedRows[i] = strings.Join(strings.Split(content, "_")[2:], "_")
+				attachmentPath := strings.Split(content, "_")
+				if len(attachmentPath) > 2 {
+					exportedRows[i] = strings.Join(attachmentPath[2:], "_")
+				}
 			}
 		}
 
