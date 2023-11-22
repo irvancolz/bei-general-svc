@@ -266,3 +266,41 @@ func HandleDataPagination(c *gin.Context, data []map[string]interface{}, filterP
 
 	return result
 }
+
+func HandleDataPaginationFromDB(c *gin.Context, data []map[string]interface{}, filterParameter map[string][]string, totalData int) PaginationResponse {
+	var result PaginationResponse
+
+	pageCount, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if pageCount == 0 {
+		pageCount = 1
+	}
+	pageLimit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	if pageLimit == 0 {
+		pageLimit = 5
+	}
+	pageTotal := float64(totalData) / float64(pageLimit)
+
+	result.FilterParameter = filterParameter
+	result.TotalPage = int(math.Ceil(pageTotal))
+	result.Limit = pageLimit
+	result.CurrentPage = pageCount
+	result.Next = true
+	result.Previous = true
+	result.TotalData = totalData
+
+	if pageCount <= 1 {
+		result.Previous = false
+	}
+
+	if pageCount*pageLimit > totalData {
+		result.Next = false
+	}
+
+	result.Data = data
+
+	if totalData <= 0 {
+		result.Data = make([]map[string]interface{}, 0)
+	}
+
+	return result
+}

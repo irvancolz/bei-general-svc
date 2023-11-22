@@ -174,8 +174,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 		},
 	}
 
-	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry) + orderQuery
-
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
 	result_rows, error_rows := r.DB.Queryx(query)
 	if error_rows != nil {
 		log.Println(query)

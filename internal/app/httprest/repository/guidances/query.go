@@ -36,7 +36,8 @@ const (
 	updated_at
 	FROM public.guidance_file_and_regulation
 	WHERE deleted_at IS NULL
-	AND deleted_by IS NUll`
+	AND deleted_by IS NULL
+	ORDER BY created_at DESC`
 	querryUpdate = `UPDATE public.guidance_file_and_regulation 
 	SET category  = $2,
 	name = $3,
