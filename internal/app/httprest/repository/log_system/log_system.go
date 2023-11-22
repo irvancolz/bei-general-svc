@@ -108,9 +108,9 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 			tag := reflect.TypeOf(listFilter).Field(i).Tag.Get("db")
 
 			if tag == "ip" || tag == "action" || tag == "detail" {
-				filter = reflect.TypeOf(listFilter).Field(i).Tag.Get("db") + " ILIKE '%" + fieldValue + "%'"
+				filter = tag + " ILIKE '%" + fieldValue + "%'"
 			} else {
-				filter = reflect.TypeOf(listFilter).Field(i).Tag.Get("db") + " = '" + fieldValue + "'"
+				filter = tag + " = '" + fieldValue + "'"
 			}
 
 			filters = append(filters, filter)
