@@ -63,6 +63,7 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	page, _ := strconv.Atoi(c.Query("page"))
 	searches := c.QueryArray("search")
+	export := c.Query("export")
 	listFilter.Modul = c.Query("modul")
 	listFilter.SubModul = c.Query("submodul")
 	listFilter.Action = c.Query("action")
@@ -139,7 +140,7 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 
 	selectQuery += " ORDER BY ls.created_at DESC"
 
-	if limit != 0 && page != 0 {
+	if limit != 0 && page != 0 && len(export) == 0 {
 		selectQuery += " LIMIT " + strconv.Itoa(limit) + " OFFSET " + strconv.Itoa((page-1)*limit)
 	}
 
