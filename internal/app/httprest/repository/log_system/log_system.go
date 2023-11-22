@@ -82,7 +82,7 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 		string_agg(DISTINCT sub_modul::text, ';') AS sub_modul,
 		string_agg(DISTINCT detail::text, ';') AS detail,
 		string_agg(DISTINCT action::text, ';') AS action,
-		string_agg(DISTINCT user::text, ';') AS user,
+		string_agg(DISTINCT user::text, ';') AS user_name,
 		string_agg(DISTINCT ip::text, ';') AS ip
 	FROM 
 		log_systems ls `
