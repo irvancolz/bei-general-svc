@@ -10,7 +10,7 @@ import (
 )
 
 type Usecase interface {
-	GetAll(c *gin.Context) ([]model.LogSystem, error)
+	GetAll(c *gin.Context) (*helper.PaginationResponse, error)
 	CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (int64, error)
 	ExportLogSystem(c *gin.Context) error
 }
@@ -25,8 +25,63 @@ func DetailUseCase() Usecase {
 	}
 }
 
-func (m *usecase) GetAll(c *gin.Context) ([]model.LogSystem, error) {
-	return m.logSystemRepo.GetAll(c)
+func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
+	paginationData, err := m.logSystemRepo.GetAllWithFilterPagination(c)
+	if err != nil {
+		return nil, err
+	}
+
+	columnHeaders := []string{"Modul", "Sub Modul", "Aksi", "Detail", "User", "IP", "Waktu"}
+	columnWidth := []float64{35, 40, 30, 40, 45, 35, 40}
+
+	var columnWidthInt []int
+
+	for _, width := range columnWidth {
+		columnWidthInt = append(columnWidthInt, int(width))
+	}
+
+	var tablesColumns [][]string
+	tablesColumns = append(tablesColumns, columnHeaders)
+
+	exportedFields := []string{"modul", "sub_modul", "action", "detail", "username", "ip", "created_at"}
+	var exportedData [][]string
+
+	for _, content := range paginationData.Data {
+		var item []string
+		item = append(item, helper.MapToArray(content, exportedFields)...)
+
+		for i, content := range item {
+			if i == 6 {
+				date, _ := time.Parse("2006-01-02 15:04:05", content[0:19])
+
+				item[i] = date.Format("2 Jan 2006 - 15:04")
+			}
+		}
+
+		exportedData = append(exportedData, item)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename: "Log-System",
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Log-System"},
+		},
+		PdfConfig: &helper.PdfTableOptions{
+			PapperWidth:  400,
+			Papperheight: 210,
+			HeaderRows:   helper.GenerateTableHeaders(columnHeaders, columnWidth),
+		},
+		Data:        exportedData,
+		Headers:     tablesColumns,
+		ColumnWidth: columnWidthInt,
+	}
+
+	errorExport := helper.ExportTableToFile(c, exportConfig)
+	if errorExport != nil {
+		return nil, errorExport
+	}
+
+	return paginationData, nil
 }
 
 func (m *usecase) CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (int64, error) {
