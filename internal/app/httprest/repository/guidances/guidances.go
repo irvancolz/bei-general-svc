@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -175,6 +174,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 	}
 
 	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
+
 	result_rows, error_rows := r.DB.Queryx(query)
 	if error_rows != nil {
 		log.Println(query)
@@ -216,9 +216,9 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 		results = append(results, result)
 	}
 
-	sort.SliceStable(results, func(current, before int) bool {
-		return results[current].Order < results[before].Order
-	})
+	// sort.SliceStable(results, func(current, before int) bool {
+	// 	return results[current].Order < results[before].Order
+	// })
 
 	return results, nil
 }
