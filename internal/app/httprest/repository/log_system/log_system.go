@@ -65,10 +65,10 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 	searches := c.QueryArray("search")
 	export := c.Query("export")
 	listFilter.Modul = c.Query("modul")
-	listFilter.SubModul = c.Query("submodul")
+	listFilter.SubModul = c.Query("sub_modul")
 	listFilter.Action = c.Query("action")
 	listFilter.Detail = c.Query("detail")
-	listFilter.User = c.Query("user")
+	listFilter.User = c.Query("user_name")
 	listFilter.IP = c.Query("ip")
 	createdAtEnd := c.Query("created_at_end")
 	createdAtFrom := c.Query("created_at_from")
@@ -103,7 +103,15 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 		fieldValue := reflect.ValueOf(listFilter).Field(i).String()
 
 		if len(fieldValue) > 0 {
-			filter := reflect.TypeOf(listFilter).Field(i).Tag.Get("db") + " = '" + fieldValue + "'"
+			var filter string
+
+			tag := reflect.TypeOf(listFilter).Field(i).Tag.Get("db")
+
+			if tag == "ip" || tag == "action" || tag == "detail" {
+				filter = reflect.TypeOf(listFilter).Field(i).Tag.Get("db") + " ILIKE '%" + fieldValue + "%'"
+			} else {
+				filter = reflect.TypeOf(listFilter).Field(i).Tag.Get("db") + " = '" + fieldValue + "'"
+			}
 
 			filters = append(filters, filter)
 		}

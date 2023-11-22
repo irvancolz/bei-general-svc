@@ -44,7 +44,7 @@ type LogSystemFilter struct {
 	SubModul string `db:"sub_modul"`
 	Detail   string `db:"detail"`
 	Action   string `db:"action"`
-	User     string `db:"user"`
+	User     string `db:"user_name"`
 	IP       string `db:"ip"`
 }
 
