@@ -125,6 +125,8 @@ func (uc *usecase) GetAllPKuser(c *gin.Context) (*helper.PaginationResponse, err
 	}
 
 	paginatedData := helper.HandleDataPagination(c, sortedData, filterParameter)
+	followUpPersonel := utilities.GetFollowUpPersonel(c)
+	paginatedData.FilterParameter["answersby"] = followUpPersonel
 	return &paginatedData, nil
 }
 
