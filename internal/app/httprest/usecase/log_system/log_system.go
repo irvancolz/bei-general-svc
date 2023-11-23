@@ -4,6 +4,7 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/repository/log_system"
+	"github.com/lib/pq"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,9 @@ func DetailUseCase() Usecase {
 
 func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 	paginationData, err := m.logSystemRepo.GetAllWithFilterPagination(c)
-	if err != nil {
+	if _, ok := err.(*pq.Error); ok {
+		return nil, nil
+	} else {
 		return nil, err
 	}
 
