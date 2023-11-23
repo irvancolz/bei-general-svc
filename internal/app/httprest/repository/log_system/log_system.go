@@ -142,8 +142,8 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 		from := helper.ConvertUnixStrToDateString(createdAtFrom, "2006-01-02 15:04:05")
 		end := helper.ConvertUnixStrToDateString(createdAtEnd, "2006-01-02 15:04:05")
 
-		selectQuery += " created_at >= '" + from + "' AND created_at <= '" + end + "' "
-		countQuery += " created_at >= '" + from + "' AND created_at <= '" + end + "' "
+		selectQuery += " ls.created_at >= '" + from + "' AND ls.created_at <= '" + end + "' "
+		countQuery += " ls.created_at >= '" + from + "' AND ls.created_at <= '" + end + "' "
 	}
 
 	selectQuery += " ORDER BY ls.created_at DESC"
