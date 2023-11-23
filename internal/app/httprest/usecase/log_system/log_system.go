@@ -30,8 +30,6 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 	paginationData, err := m.logSystemRepo.GetAllWithFilterPagination(c)
 	if _, ok := err.(*pq.Error); ok {
 		return nil, nil
-	} else {
-		return nil, err
 	}
 
 	columnHeaders := []string{"Modul", "Sub Modul", "Aksi", "Detail", "User", "IP", "Waktu"}
