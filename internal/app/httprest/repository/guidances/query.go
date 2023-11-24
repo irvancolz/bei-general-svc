@@ -17,6 +17,7 @@ const (
 		created_by,
 		created_at
 	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`
+
 	getAllDataQuerry = `SELECT 
 	id, 
 	category, 
@@ -37,7 +38,8 @@ const (
 	FROM public.guidance_file_and_regulation
 	WHERE deleted_at IS NULL
 	AND deleted_by IS NULL
-	ORDER BY created_at DESC`
+	ORDER BY updated_at, created_at DESC`
+
 	querryUpdate = `UPDATE public.guidance_file_and_regulation 
 	SET category  = $2,
 	name = $3,
