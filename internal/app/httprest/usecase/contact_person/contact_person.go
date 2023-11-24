@@ -34,6 +34,7 @@ type ContactPersonUsecaseInterface interface {
 	DeleteMemberByID(c *gin.Context, member_id string) (int64, error)
 	DeleteDivisionByID(c *gin.Context, division_id string) (int64, error)
 	ExportMember(c *gin.Context, company_type, company_id, division_id string) error
+	GetAllMembersEmail(c *gin.Context) (*helper.PaginationResponse, error)
 }
 
 type usecase struct {
@@ -519,4 +520,71 @@ func (u *usecase) ExportMember(c *gin.Context, company_type, company_id, divisio
 	}
 
 	return nil
+}
+
+func (m *usecase) GetAllMembersEmail(c *gin.Context) (*helper.PaginationResponse, error) {
+	membersEmail, errGetEmail := m.Repository.GetAllMembersEmail(c)
+	if errGetEmail != nil {
+		return nil, errGetEmail
+	}
+	dataToFilter := []interface{}{}
+
+	for _, item := range membersEmail {
+		dataToFilter = append(dataToFilter, item)
+	}
+
+	filteredData, filterParams := helper.HandleDataFiltering(c, dataToFilter, []string{})
+	column := []string{
+		"No",
+		"Tipe Perusahaan",
+		"Kode Perusahaan",
+		"Nama Perusahaan",
+		"Fungsi",
+		"Nama",
+		"Email",
+	}
+	colWidth := []float64{20, 40, 40, 70, 50, 60, 60}
+
+	pdfConfig := helper.PdfTableOptions{
+		HeaderTitle:  "Database Email",
+		HeaderRows:   helper.GenerateTableHeaders(column, colWidth),
+		PapperWidth:  400,
+		Papperheight: 300,
+	}
+
+	columnOrder := []string{
+		"companyName",
+		"companyCode",
+		"companyName",
+		"division",
+		"name",
+		"email",
+	}
+	dataToExported := [][]string{}
+
+	for i, item := range filteredData {
+		var data []string
+		data = append(data, strconv.Itoa(i+1))
+		dataInArr := helper.MapToArray(item, columnOrder)
+		data = append(data, dataInArr...)
+		dataToExported = append(dataToExported, data)
+	}
+
+	exportConfig := helper.ExportTableToFileProps{
+		Filename:    "contact_person_member_email",
+		PdfConfig:   &pdfConfig,
+		Data:        dataToExported,
+		Headers:     [][]string{column},
+		ColumnWidth: []int{5, 10, 10, 30, 15, 20, 20},
+		ExcelConfig: &helper.ExportToExcelConfig{
+			HeaderText: []string{"Database Email"},
+		},
+	}
+	errExport := helper.ExportTableToFile(c, exportConfig)
+	if errExport != nil {
+		return nil, errExport
+	}
+
+	paginatedRes := helper.HandleDataPagination(c, filteredData, filterParams)
+	return &paginatedRes, nil
 }

@@ -283,4 +283,18 @@ const (
 	FROM institutions
 	WHERE id = $1	
 	`
+	getMembersEmailQuery = `
+	SELECT 
+		i.type companyType,
+		i.code companyCode,
+		i.name companyName,
+		d.name division,
+		m.name,
+		m.email
+	FROM institution_members m
+	JOIN institutions i ON m.institution_id = i.id
+	JOIN institution_division d ON m.division_id = d.id
+	WHERE m.deleted_by IS NULL
+	AND i.is_deleted = 'false'
+	AND d.deleted_by IS NULL`
 )

@@ -26,6 +26,7 @@ type ContactPersonHandlerInterface interface {
 	GetMemberByCompanyType(c *gin.Context)
 	SearchCompany(c *gin.Context)
 	ExportMember(c *gin.Context)
+	GetAllMemberEmail(c *gin.Context)
 }
 
 type handler struct {
@@ -36,6 +37,19 @@ func NewHandler() ContactPersonHandlerInterface {
 	return &handler{
 		Usecase: usecase.NewUsecase(),
 	}
+}
+
+func (h *handler) GetAllMemberEmail(c *gin.Context) {
+	result, errResult := h.Usecase.GetAllMembersEmail(c)
+	if errResult != nil {
+		model.GenerateReadErrorResponse(c, errResult)
+		return
+	}
+	if !c.Writer.Written() {
+
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, result))
+	}
+
 }
 
 func (h *handler) SynchronizeInstitutionProfile(c *gin.Context) {
