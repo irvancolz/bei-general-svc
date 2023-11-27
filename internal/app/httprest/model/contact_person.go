@@ -164,3 +164,12 @@ type ContactPersonSyncCompaniesResource struct {
 	Status     string `json:"status"`
 	Is_deleted bool   `json:"is_deleted"`
 }
+
+type ContactPersonMemberEmail struct {
+	CompanyCode string `json:"company_code"`
+	CompanyName string `json:"company_name"`
+	CompanyType string `json:"company_type"`
+	Division    string `json:"division"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+}

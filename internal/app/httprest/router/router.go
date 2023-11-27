@@ -190,6 +190,7 @@ func Routes() *gin.Engine {
 		contactPersonRoute.GET("/search-all-company", contact_person.SearchCompany)
 		contactPersonRoute.PUT("/syncronize-contact-person-company", contact_person.SynchronizeInstitutionProfile)
 		contactPersonRoute.GET("/export-contact-person-company-members", contact_person.ExportMember)
+		contactPersonRoute.GET("/get-company-members-email", contact_person.GetAllMemberEmail)
 	}
 
 	logSystemRoute := v3noauth.Group("").Use(globalRepo.Authentication(nil))

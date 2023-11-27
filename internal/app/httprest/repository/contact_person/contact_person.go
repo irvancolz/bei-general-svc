@@ -21,6 +21,7 @@ type ContactPersonRepositoryInterface interface {
 	GetAllCompany(keyword string) ([]*model.InstitutionResponse, error)
 	GetCompanyDetail(id string) (*model.InstitutionResponse, error)
 	GetAllDivision() ([]model.DivisionNameResponse, error)
+	GetAllMembersEmail(c *gin.Context) ([]model.ContactPersonMemberEmail, error)
 	GetAllDivisionByCompany(company_id string) ([]*model.InstitutionDivisionResponse, error)
 	AddDivision(c *gin.Context, props AddDivisionprops) (int64, error)
 	EditDivision(c *gin.Context, props EditDivisionprops) (int64, error)
@@ -48,6 +49,43 @@ func NewRepository() ContactPersonRepositoryInterface {
 	return &repository{
 		DB: database.Init().MySql,
 	}
+}
+
+func (r *repository) GetAllMembersEmail(c *gin.Context) ([]model.ContactPersonMemberEmail, error) {
+	result := []model.ContactPersonMemberEmail{}
+
+	searchConfig := helper.SearchQueryGenerator{
+		ColumnScanned: []string{
+			"i.type",
+			"i.code",
+			"i.name",
+			"d.name",
+			"m.name",
+			"m.email",
+		},
+		TableName: "institution_members m",
+	}
+
+	getAllConfig := searchConfig.GenerateGetAllDataQuerry(c, getMembersEmailQuery)
+	queryRes, errQuery := r.DB.Queryx(getAllConfig)
+	if errQuery != nil {
+		log.Println("failed to get members email from db :", errQuery)
+		return nil, errQuery
+	}
+
+	defer queryRes.Close()
+	for queryRes.Next() {
+		var members model.ContactPersonMemberEmail
+
+		if errScan := queryRes.StructScan(&members); errScan != nil {
+			log.Println("failed to read members email from result :", errScan)
+			return nil, errScan
+		}
+
+		result = append(result, members)
+	}
+
+	return result, nil
 }
 
 func (r *repository) GetAllDivision() ([]model.DivisionNameResponse, error) {
