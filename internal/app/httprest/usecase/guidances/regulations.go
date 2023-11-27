@@ -4,6 +4,9 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
+	"fmt"
 	"strings"
 	"time"
 
@@ -50,6 +53,10 @@ func (r *guidancesUsecase) CreateNewRegulations(c *gin.Context, props CreateNewR
 	if error_result != nil {
 		return 0, error_result
 	}
+
+	utilities.CreateNotifForAdminApp(c, "management berkas", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
+	email.SendEmailForUserAdminApp(c, "Penambahan Berkas Baru", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
+
 	return result, nil
 }
 
