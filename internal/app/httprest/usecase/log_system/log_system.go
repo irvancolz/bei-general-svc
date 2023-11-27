@@ -4,8 +4,9 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/repository/log_system"
-	"github.com/lib/pq"
 	"time"
+
+	"github.com/lib/pq"
 
 	"github.com/gin-gonic/gin"
 )
@@ -114,7 +115,7 @@ func (m *usecase) ExportLogSystem(c *gin.Context) error {
 	var tablesColumns [][]string
 	tablesColumns = append(tablesColumns, columnHeaders)
 
-	exportedFields := []string{"modul", "submodul", "action", "detail", "username", "ip", "createdat"}
+	exportedFields := []string{"modul", "sub_modul", "action", "detail", "username", "ip", "createdat"}
 	var exportedData [][]string
 
 	for _, content := range filteredData {
