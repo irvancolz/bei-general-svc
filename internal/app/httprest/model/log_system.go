@@ -44,12 +44,12 @@ type LogSystemExport struct {
 }
 
 type LogSystemFilter struct {
-	Modul    NullString `db:"modul"`
-	SubModul NullString `db:"sub_modul"`
-	Detail   NullString `db:"detail"`
-	Action   NullString `db:"action"`
-	User     NullString `db:"user_name"`
-	IP       NullString `db:"ip"`
+	Modul     NullString `db:"modul"`
+	Sub_Modul NullString `db:"sub_modul"`
+	Detail    NullString `db:"detail"`
+	Action    NullString `db:"action"`
+	User      NullString `db:"user_name"`
+	IP        NullString `db:"ip"`
 }
 
 func IsAllowedAction(action string) bool {

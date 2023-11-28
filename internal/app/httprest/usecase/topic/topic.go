@@ -172,7 +172,25 @@ func (m *usecase) DeleteTopic(topicID string, c *gin.Context) (int64, error) {
 }
 
 func (m *usecase) ArchiveTopicToFAQ(topic model.ArchiveTopicToFAQ, c *gin.Context) (int64, error) {
-	return m.tpRepo.ArchiveTopicToFAQ(topic, c)
+	data, err := m.tpRepo.ArchiveTopicToFAQ(topic, c)
+	if err != nil {
+		return 0, err
+	}
+
+	internalBursaUser := email.GetAllUserInternalBursa(c)
+	var internalBursaUserId []string
+	for _, user := range internalBursaUser {
+		internalBursaUserId = append(internalBursaUserId, user.Id)
+	}
+	go utilities.CreateGroupNotif(c, internalBursaUserId, "FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
+
+	for _, user := range internalBursaUser {
+		go email.SendEmailNotification(user, "Aktivitas Baru Di Menu FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
+	}
+
+	return data, nil
+
+	return data, nil
 }
 
 func (m *usecase) ExportTopic(c *gin.Context) error {
