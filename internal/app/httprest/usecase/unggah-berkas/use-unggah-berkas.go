@@ -143,6 +143,14 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				item[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo) + " - " + helper.GetTimeAndMinuteOnly(dateToFormat)
 			}
+			if i == 4 {
+				if strings.EqualFold(item[i], "true") {
+					item[i] = "Sudah Upload"
+				} else {
+					item[i] = "Belum Upload"
+
+				}
+			}
 		}
 
 		exportedData = append(exportedData, item)
