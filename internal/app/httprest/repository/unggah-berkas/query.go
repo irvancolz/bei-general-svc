@@ -34,7 +34,7 @@ const (
 	WHERE deleted_at IS NULL
 		AND deleted_by IS NUll
 		AND is_uploaded = true
-	ORDER BY created_at DESC`
+	`
 	deleteUploadedFilesQuery = `
 	UPDATE uploaded_files
 	SET deleted_at  = $3,

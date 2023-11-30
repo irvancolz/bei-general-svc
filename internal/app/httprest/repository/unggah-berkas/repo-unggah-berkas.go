@@ -97,7 +97,7 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 		},
 	}
 
-	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getUploadedFilesQuery)
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getUploadedFilesQuery) + `ORDER BY created_at DESC`
 	rowResults, errorRows := r.DB.Queryx(query)
 	if errorRows != nil {
 		log.Println(query)
