@@ -245,6 +245,9 @@ func (u usecase) DownloadFromLocal(c *gin.Context) error {
 		if strings.EqualFold(reportType, "lhkp") {
 			return "static/Laporan Historis Kunjungan Partisipan.xlsx"
 		}
+		if strings.EqualFold(reportType, "notepar") {
+			return "static/Laporan Rekapitulasi Catatan.xlsx"
+		}
 		return ""
 
 	}()
