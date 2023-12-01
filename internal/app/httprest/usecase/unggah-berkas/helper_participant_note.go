@@ -39,6 +39,7 @@ func uploadParticipantNoteToDb(c *gin.Context, referenceNumber, svcName string, 
 
 			DbConn.Create(&catatanParticipantList)
 			if DbConn.Error != nil {
+				log.Println(DbConn.Error)
 				removeFile()
 			}
 		}
