@@ -239,6 +239,9 @@ func (u usecase) DownloadFromLocal(c *gin.Context) error {
 		if strings.EqualFold(reportType, "lraktp") {
 			return "static/Laporan Rekapitulasi Aktivitas Transaksi Partisipan.xlsx"
 		}
+		if strings.EqualFold(reportType, "ltbab") {
+			return "Laporan Transaksi Bulanan Anggota Bursa.xlsx"
+		}
 		if strings.EqualFold(reportType, "lraktpjsppa") {
 			return "static/Laporan Rekapitulasi Aktivitas Transaksi PJSPPA.xlsx"
 		}
