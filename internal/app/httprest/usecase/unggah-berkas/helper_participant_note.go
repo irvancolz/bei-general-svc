@@ -17,7 +17,6 @@ func uploadParticipantNoteToDb(c *gin.Context, referenceNumber, svcName string, 
 	}
 
 	if uploadedData != nil {
-		log.Println(uploadedData)
 		if len(uploadedData) > 2 {
 			catatanParticipantList := []databasemodel.Notes{}
 			for i := 3; i < len(uploadedData); i++ {
@@ -40,6 +39,7 @@ func uploadParticipantNoteToDb(c *gin.Context, referenceNumber, svcName string, 
 
 			DbConn.Create(&catatanParticipantList)
 			if DbConn.Error != nil {
+				log.Println(DbConn.Error)
 				removeFile()
 			}
 		}
