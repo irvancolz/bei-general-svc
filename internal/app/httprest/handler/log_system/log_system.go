@@ -31,7 +31,9 @@ func (m *handler) GetAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+	if !c.Writer.Written() {
+		c.JSON(httpresponse.Format(httpresponse.READSUCCESS_200, nil, data))
+	}
 }
 
 func (m *handler) CreateLogSystem(c *gin.Context) {
