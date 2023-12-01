@@ -146,8 +146,6 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 		countQuery += " ls.created_at >= '" + from + "' AND ls.created_at <= '" + end + "' "
 	}
 
-	log.Println(selectQuery)
-
 	selectQuery += " ORDER BY ls.created_at DESC"
 
 	if limit != 0 && page != 0 && len(export) == 0 {
