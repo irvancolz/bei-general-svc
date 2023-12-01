@@ -80,6 +80,10 @@ func getDbSvcName(reportType string) string {
 	if strings.EqualFold(reportType, "pjsppa") {
 		return "pjsppa"
 	}
+	if strings.EqualFold(reportType, "bulanan ab") {
+		return "ab"
+	}
+
 	return "participant"
 }
 
@@ -100,6 +104,9 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	headerHeight := func() int {
 		if strings.EqualFold("bulanan", reportType) {
 			return 3
+		}
+		if strings.EqualFold("bulanan ab", reportType) {
+			return 1
 		}
 		if strings.EqualFold("pjsppa", reportType) {
 			return 2
@@ -163,6 +170,20 @@ func generateUploadReportQuery(reportType string) string {
 				$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
 			)`
 	}
+	if strings.EqualFold(reportType, "bulanan ab") {
+		return `INSERT
+		INTO monthly_report (
+			company_code,
+			report_date,
+			company_name,
+			total_b,
+			total_j,
+			no_ref,
+			created_by,
+			created_at ) VALUES (
+				$1,$2,$3,$4,$5,$6,$7,$8
+			)`
+	}
 	if strings.EqualFold(reportType, "pjsppa") {
 		return `INSERT INTO activity_transaction_report(
 			pjsppa_code,
@@ -222,6 +243,9 @@ func generateSliceFormatter(reportType string) []string {
 	if strings.EqualFold(reportType, "bulanan") {
 		return []string{"number", "string", "string", "string", "number", "number", "number", "number", "number", "number", "number"}
 	}
+	if strings.EqualFold(reportType, "bulanan ab") {
+		return []string{"s", "s", "s", "number", "number"}
+	}
 	if strings.EqualFold(reportType, "pjsppa") {
 		return []string{"s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s", "s"}
 	}
@@ -241,6 +265,9 @@ func sendRecordToDB(stmt *sqlx.Stmt, reportType string, row []interface{}) error
 		insertQueryResult, errorInsert = stmt.Exec(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
 	} else if strings.EqualFold(reportType, "pjsppa") {
 		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16], row[17], row[18], row[19], row[20], row[21], row[22], row[23], row[24], row[25], row[26], row[27], row[28], row[29], row[30], row[31], row[32], row[33])
+	} else if strings.EqualFold(reportType, "bulanan ab") {
+		// insert All in report
+		insertQueryResult, errorInsert = stmt.Exec(row...)
 	} else {
 		//  kunjungan order index 3 - 15
 		insertQueryResult, errorInsert = stmt.Exec(row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
@@ -263,6 +290,9 @@ func buildNoReference(reportType string, timeProvider time.Time, order int) stri
 	reportName := func() string {
 		if strings.EqualFold(reportType, "bulanan") {
 			return "RATPAR"
+		}
+		if strings.EqualFold(reportType, "bulanan ab") {
+			return "RTBAB"
 		}
 		if strings.EqualFold(reportType, "pjsppa") {
 			return "RATPJ"

@@ -240,7 +240,7 @@ func (u usecase) DownloadFromLocal(c *gin.Context) error {
 			return "static/Laporan Rekapitulasi Aktivitas Transaksi Partisipan.xlsx"
 		}
 		if strings.EqualFold(reportType, "ltbab") {
-			return "Laporan Transaksi Bulanan Anggota Bursa.xlsx"
+			return "static/Laporan Transaksi Bulanan Anggota Bursa.xlsx"
 		}
 		if strings.EqualFold(reportType, "lraktpjsppa") {
 			return "static/Laporan Rekapitulasi Aktivitas Transaksi PJSPPA.xlsx"

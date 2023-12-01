@@ -42,7 +42,7 @@ func (r *repository) CheckFileAvaliability(id string) bool {
 }
 
 type UploadNewFilesProps struct {
-	Type         string `validate:"oneof:catatan kunjungan bulanan pjsppa"`
+	Type         string `validate:"oneof:'catatan' 'kunjungan' 'bulanan' 'pjsppa' 'bulanan ab'"`
 	Company_code string
 	Company_name string
 	Company_id   string

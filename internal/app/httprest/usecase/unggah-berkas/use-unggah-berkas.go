@@ -26,7 +26,7 @@ type usecase struct {
 }
 
 type UploadNewFilesProps struct {
-	Type      string `json:"type" binding:"oneof=catatan kunjungan bulanan pjsppa,required"`
+	Type      string `json:"type" binding:"oneof='catatan' 'kunjungan' 'bulanan' 'pjsppa' 'bulanan ab',required"`
 	File_Name string `json:"file_name"`
 	File_Path string `json:"file_path"`
 	File_Size int64  `json:"file_size"`
