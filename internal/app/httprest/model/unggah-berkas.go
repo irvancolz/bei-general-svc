@@ -12,6 +12,7 @@ type UploadedFilesMenuResponse struct {
 	File_Name    string `json:"file_name"`
 	File_Path    string `json:"file_path"`
 	File_Size    int64  `json:"file_size"`
+	Periode      int64  `json:"periode"`
 	Created_By   string `json:"created_by"`
 	Created_At   int64  `json:"created_at"`
 	Updated_By   string `json:"updated_by"`
@@ -32,4 +33,5 @@ type UploadedFilesMenuResultSet struct {
 	Created_At   int64          `json:"created_at"`
 	Updated_By   sql.NullString `json:"updated_by"`
 	Updated_At   sql.NullInt64  `json:"updated-at"`
+	Periode      sql.NullInt64  `json:"periode"`
 }

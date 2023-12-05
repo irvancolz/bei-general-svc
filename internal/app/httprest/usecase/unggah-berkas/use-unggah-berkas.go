@@ -30,6 +30,7 @@ type UploadNewFilesProps struct {
 	File_Name string `json:"file_name"`
 	File_Path string `json:"file_path"`
 	File_Size int64  `json:"file_size"`
+	Periode   int64  `json:"periode" binding:"required"`
 }
 
 func NewUsecase() UnggahBerkasUsecaseInterface {
@@ -64,6 +65,7 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 		File_Name:   props.File_Name,
 		File_Path:   props.File_Path,
 		File_Size:   props.File_Size,
+		Periode:     props.Periode,
 		Is_Uploaded: true,
 		Created_by:  userName.(string),
 		Created_at:  time.Now().Unix(),
@@ -116,10 +118,10 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 	for _, item := range dataStruct {
 		dataToConverted = append(dataToConverted, item)
 	}
-	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at"})
+	filteredData, filterParameter := helper.HandleDataFiltering(c, dataToConverted, []string{"created_at", "updated_at", "periode"})
 
-	collumnName := []string{"Jenis Lampiran", "Kode", "Nama", "Tanggal", "Status"}
-	columnWidthFloat := []float64{50, 20, 50, 40, 30}
+	collumnName := []string{"Periode", "Diupload Oleh", "Tanggal Upload", "Ukuran"}
+	columnWidthFloat := []float64{40, 50, 60, 40}
 	var columnWidthInt []int
 
 	var txtFileHeaders [][]string
@@ -129,7 +131,7 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 		columnWidthInt = append(columnWidthInt, int(width))
 	}
 
-	dataOrder := []string{"type", "company_code", "company_name", "created_at", "is_uploaded"}
+	dataOrder := []string{"periode", "created_by", "created_at", "file_size"}
 	var exportedData [][]string
 
 	for _, content := range filteredData {
@@ -137,19 +139,22 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 		item = append(item, helper.MapToArray(content, dataOrder)...)
 
 		for i, content := range item {
-			if helper.IsContains([]int{3}, i) {
+			if i == 2 {
 				unixTime, _ := strconv.Atoi(content)
 				dateTime := time.Unix(int64(unixTime), 0)
 				dateToFormat := helper.GetWIBLocalTime(&dateTime)
 				item[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo) + " - " + helper.GetTimeAndMinuteOnly(dateToFormat)
 			}
-			if i == 4 {
-				if strings.EqualFold(item[i], "true") {
-					item[i] = "Sudah Upload"
-				} else {
-					item[i] = "Belum Upload"
-
-				}
+			if i == 0 {
+				unixTime, _ := strconv.Atoi(content)
+				dateTime := time.Unix(int64(unixTime), 0)
+				dateToFormat := helper.GetWIBLocalTime(&dateTime)
+				item[i] = helper.ConvertTimeToHumanDateOnly(dateToFormat, helper.MonthFullNameInIndo)
+			}
+			if i == len(item)-1 {
+				fileSizeInInt, _ := strconv.Atoi(content)
+				filesSizeInMb := fileSizeInInt / 1000
+				item[i] = fmt.Sprintf("%v MB", filesSizeInMb)
 			}
 		}
 
