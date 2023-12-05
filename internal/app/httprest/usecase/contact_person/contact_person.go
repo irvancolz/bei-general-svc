@@ -130,6 +130,8 @@ func (u *usecase) AddDivision(c *gin.Context, Name string) (int64, error) {
 	notifType := "Fungsi"
 
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
 
 	return result, nil
@@ -160,6 +162,8 @@ func (u *usecase) EditDivision(c *gin.Context, props EditDivisionprops) (int64, 
 
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 
 	return u.Repository.EditDivision(c, editDivArgs)
 }
@@ -347,6 +351,8 @@ func (u *usecase) DeleteDivisionByID(c *gin.Context, division_id string) (int64,
 
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 
 	return u.Repository.DeleteDivisionByID(deleteDivArgs)
 }
