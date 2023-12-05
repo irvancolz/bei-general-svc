@@ -30,7 +30,7 @@ type UploadNewFilesProps struct {
 	File_Name string `json:"file_name"`
 	File_Path string `json:"file_path"`
 	File_Size int64  `json:"file_size"`
-	Periode   int64  `json:"periode"`
+	Periode   int64  `json:"periode" binding:"required"`
 }
 
 func NewUsecase() UnggahBerkasUsecaseInterface {
