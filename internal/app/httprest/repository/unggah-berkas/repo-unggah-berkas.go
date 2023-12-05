@@ -50,6 +50,7 @@ type UploadNewFilesProps struct {
 	File_Name    string
 	File_Path    string
 	File_Size    int64
+	Periode      int64
 	Created_by   string
 	Created_at   int64
 }
@@ -64,6 +65,7 @@ func (r *repository) UploadNew(props UploadNewFilesProps) (int64, error) {
 		props.File_Name,
 		props.File_Path,
 		props.File_Size,
+		props.Periode,
 		props.Created_by,
 		props.Created_at)
 	if errorExec != nil {
@@ -128,6 +130,7 @@ func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenu
 			File_Size:  mock.File_Size.Int64,
 			File_Path:  mock.File_Path.String,
 			File_Name:  mock.File_Name.String,
+			Periode:    mock.Periode.Int64,
 		}
 		results = append(results, result)
 	}
