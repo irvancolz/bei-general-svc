@@ -257,6 +257,21 @@ func CreateNotifForAdminApp(c *gin.Context, notifType, message string) {
 	CreateGroupNotif(c, userAdminAppId, notifType, message)
 }
 
+func CreateNotifForUserAng(c *gin.Context, notifType, message string) {
+	var userAngId []string
+	userAng, errGetUsesrAng := email.GetUserANG(c)
+	if errGetUsesrAng != nil {
+		log.Println("failed to get notif recipient :", errGetUsesrAng)
+		return
+	}
+
+	for _, user := range userAng {
+		userAngId = append(userAngId, user.Id)
+	}
+
+	CreateGroupNotif(c, userAngId, notifType, message)
+}
+
 func CreateNotifForInternalBursa(c *gin.Context, notifType, message string) {
 	var userInternalBursaId []string
 	userInternalBursa := email.GetAllUserInternalBursa(c)

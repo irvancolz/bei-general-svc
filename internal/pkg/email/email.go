@@ -208,6 +208,18 @@ func SendEmailForUserAdminApp(c *gin.Context, subject, message string) {
 	}
 }
 
+func SendEmailForUserAng(c *gin.Context, subject, message string) {
+	userAdminAng, errGetAdminAng := GetUserANG(c)
+	if errGetAdminAng != nil {
+		log.Println("failed to get notif recipient :", errGetAdminAng)
+		return
+	}
+
+	for _, user := range userAdminAng {
+		go SendEmailNotification(user, subject, message)
+	}
+}
+
 func SendEmailForUserInternalBursa(c *gin.Context, subject, message string) {
 	userInternalBursa := GetAllUserInternalBursa(c)
 
@@ -345,6 +357,48 @@ func GetUserAdminApp(c *gin.Context) ([]model.UsersIdWithEmail, error) {
 
 		if errScan := queryRes.StructScan(&user); errScan != nil {
 			log.Println("failed to read user admin app :", errScan)
+			return nil, errScan
+		}
+
+		result = append(result, user)
+	}
+
+	return result, nil
+}
+
+func GetUserANG(c *gin.Context) ([]model.UsersIdWithEmail, error) {
+	var result []model.UsersIdWithEmail
+	dbConn, errInitDb := helper.InitDBConn("auth")
+
+	if errInitDb != nil {
+		log.Println(errInitDb)
+		return nil, errInitDb
+	}
+	defer dbConn.Close()
+
+	query := ` 
+	SELECT
+		u.id,
+		u.username,
+		u.email
+	FROM users u JOIN roles r ON r.id::text = u.role_id 
+	WHERE r.role = 'User ANG'
+	AND u.deleted_by IS NULL
+	`
+
+	queryRes, errQuery := dbConn.Queryx(query)
+	if errQuery != nil {
+		log.Println("failed to get user Admin ang :", errQuery)
+		return nil, errQuery
+	}
+
+	defer queryRes.Close()
+
+	for queryRes.Next() {
+		var user model.UsersIdWithEmail
+
+		if errScan := queryRes.StructScan(&user); errScan != nil {
+			log.Println("failed to read user admin ang :", errScan)
 			return nil, errScan
 		}
 

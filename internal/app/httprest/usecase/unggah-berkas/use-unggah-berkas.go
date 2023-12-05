@@ -104,6 +104,8 @@ func (u *usecase) UploadNew(c *gin.Context, props UploadNewFilesProps) (int64, e
 	utilities.CreateNotif(c, userId.(string), notifType, "Laporan Berhasil Diupload")
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 
 	return uploadRes, nil
 }
