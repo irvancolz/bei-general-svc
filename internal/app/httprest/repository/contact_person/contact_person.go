@@ -53,6 +53,7 @@ func NewRepository() ContactPersonRepositoryInterface {
 
 func (r *repository) GetAllMembersEmail(c *gin.Context) ([]model.ContactPersonMemberEmail, error) {
 	result := []model.ContactPersonMemberEmail{}
+	queryParams := c.QueryArray("search")
 
 	searchConfig := helper.SearchQueryGenerator{
 		ColumnScanned: []string{
@@ -66,8 +67,13 @@ func (r *repository) GetAllMembersEmail(c *gin.Context) ([]model.ContactPersonMe
 		TableName: "institution_members m",
 	}
 
-	getAllConfig := searchConfig.GenerateGetAllDataQuerry(c, getMembersEmailQuery)
-	queryRes, errQuery := r.DB.Queryx(getAllConfig)
+	getAllQuery := func() string {
+		if len(queryParams) > 0 {
+			return getMembersEmailQuery + searchConfig.GenerateSearchQuery(queryParams, "i.id")
+		}
+		return getMembersEmailQuery
+	}()
+	queryRes, errQuery := r.DB.Queryx(getAllQuery)
 	if errQuery != nil {
 		log.Println("failed to get members email from db :", errQuery)
 		return nil, errQuery
