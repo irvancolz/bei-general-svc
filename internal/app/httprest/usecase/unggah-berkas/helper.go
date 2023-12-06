@@ -102,10 +102,10 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 	svcName := getDbSvcName(reportType)
 
 	headerHeight := func() int {
-		if strings.EqualFold("bulanan", reportType) {
+		if strings.EqualFold("bulanan", reportType) || strings.EqualFold("kunjungan", reportType) {
 			return 3
 		}
-		if strings.EqualFold("bulanan ab", reportType) {
+		if strings.EqualFold("bulanan ab", reportType) || strings.EqualFold("catatan", reportType) {
 			return 1
 		}
 		if strings.EqualFold("pjsppa", reportType) {
@@ -116,6 +116,7 @@ func uploadReportToDb(c *gin.Context, pathFile, reportType, referenceNumber stri
 
 	uploadReportQuery := generateUploadReportQuery(reportType)
 	sliceFormat := generateSliceFormatter(reportType)
+	// rm the headers
 	formattedData := formatDataToSlice(uploadedData[headerHeight:], sliceFormat)
 
 	if reportType == "catatan" && svcName == "participant" {
