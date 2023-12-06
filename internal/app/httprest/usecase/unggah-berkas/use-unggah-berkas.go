@@ -155,8 +155,8 @@ func (u *usecase) GetUploadedFiles(c *gin.Context) (*helper.PaginationResponse, 
 			}
 			if i == len(item)-1 {
 				fileSizeInInt, _ := strconv.Atoi(content)
-				filesSizeInMb := fileSizeInInt / 1000
-				item[i] = fmt.Sprintf("%v MB", filesSizeInMb)
+				filesSizeInMb := fileSizeInInt / 1000.00
+				item[i] = fmt.Sprintf("%v Kb", filesSizeInMb)
 			}
 		}
 
