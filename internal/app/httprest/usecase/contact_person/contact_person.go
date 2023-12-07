@@ -86,6 +86,15 @@ func (u *usecase) AddMember(c *gin.Context, props AddMemberProps) (int64, error)
 		return 0, error_result
 	}
 
+	notifMsg := "Member Baru Berhasil Ditambahkan"
+	emailMsg := fmt.Sprintf("%s telah menambahkan data member baru di contact person", c.GetString("name_user"))
+	notifType := "contact person"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
 	return result, nil
 }
 
@@ -107,6 +116,15 @@ func (u *usecase) EditMember(c *gin.Context, props EditMemberProps) (int64, erro
 	if error_result != nil {
 		return 0, error_result
 	}
+
+	notifMsg := "Member Telah Berhasil DiPerbaharui"
+	emailMsg := fmt.Sprintf("%s telah memperbaharui data member di contact person", c.GetString("name_user"))
+	notifType := "contact person"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
 
 	return result, nil
 }
@@ -189,6 +207,15 @@ func (u *usecase) SynchronizeInstitutionProfile(c *gin.Context, company_type str
 	if errorGetList != nil {
 		return nil, errorGetList
 	}
+
+	notifMsg := "Sinkronisasi Contact Person Berhasil"
+	emailMsg := fmt.Sprintf("%s telah melakukan sinkronisasi data company di contact person", c.GetString("name_user"))
+	notifType := "contact person"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
 
 	return latestCompaniesData, nil
 }
@@ -324,6 +351,16 @@ func (u *usecase) DeleteMemberByID(c *gin.Context, member_id string) (int64, err
 		Deleted_by: user_id.(string),
 		Deleted_at: time.Now(),
 	}
+
+	notifMsg := "Member Telah Berhasil Dihapus"
+	emailMsg := fmt.Sprintf("%s telah menghapus data member dari contact person", c.GetString("name_user"))
+	notifType := "contact person"
+
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
+	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+
 	return u.Repository.DeleteMemberByID(deleteMemberArgs)
 }
 
