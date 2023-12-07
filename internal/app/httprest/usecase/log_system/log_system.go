@@ -4,6 +4,8 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/app/httprest/repository/log_system"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
 	"time"
 
 	"github.com/lib/pq"
@@ -87,7 +89,15 @@ func (m *usecase) GetAll(c *gin.Context) (*helper.PaginationResponse, error) {
 }
 
 func (m *usecase) CreateLogSystem(log model.CreateLogSystem, c *gin.Context) (int64, error) {
-	return m.logSystemRepo.CreateLogSystem(log, c)
+	result, errCreateLog := m.logSystemRepo.CreateLogSystem(log, c)
+	if errCreateLog != nil {
+		return 0, errCreateLog
+	}
+
+	email.SendEmailForUserAdminApp(c, "Aktivitas baru di log system", "log sistem berhasil ditambahkan")
+	utilities.CreateNotifForAdminApp(c, "log system", "log sistem berhasil ditambahkan")
+
+	return result, nil
 }
 
 func (m *usecase) ExportLogSystem(c *gin.Context) error {

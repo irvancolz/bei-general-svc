@@ -40,16 +40,14 @@ func (m *usecase) CreateFAQ(faq model.CreateFAQ, c *gin.Context, isDraft bool) (
 	}
 
 	if !isDraft {
-		internalBursaUser := email.GetAllUserInternalBursa(c)
-		var internalBursaUserId []string
-		for _, user := range internalBursaUser {
-			internalBursaUserId = append(internalBursaUserId, user.Id)
-		}
-		go utilities.CreateGroupNotif(c, internalBursaUserId, "FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
+		emailSubject := "Aktivitas Baru Di Menu FAQ"
+		notifType := "FAQ"
+		notifMsg := fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user"))
 
-		for _, user := range internalBursaUser {
-			go email.SendEmailNotification(user, "Aktivitas Baru Di Menu FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
-		}
+		utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+		utilities.CreateNotifForInternalBursa(c, notifType, notifMsg)
+		email.SendEmailForUserAng(c, emailSubject, notifMsg)
+		email.SendEmailForUserInternalBursa(c, emailSubject, notifMsg)
 	}
 
 	return data, nil
@@ -61,16 +59,14 @@ func (m *usecase) DeleteFAQ(faqID string, c *gin.Context) (int64, error) {
 		return 0, err
 	}
 
-	internalBursaUser := email.GetAllUserInternalBursa(c)
-	var internalBursaUserId []string
-	for _, user := range internalBursaUser {
-		internalBursaUserId = append(internalBursaUserId, user.Id)
-	}
-	go utilities.CreateGroupNotif(c, internalBursaUserId, "FAQ", fmt.Sprintf("User %s menghapus FAQ", c.GetString("name_user")))
+	emailSubject := "Aktivitas Baru Di Menu FAQ"
+	notifType := "FAQ"
+	notifMsg := fmt.Sprintf("User %s menghapus FAQ", c.GetString("name_user"))
 
-	for _, user := range internalBursaUser {
-		go email.SendEmailNotification(user, "Aktivitas Baru Di Menu FAQ", fmt.Sprintf("User %s menghapus FAQ", c.GetString("name_user")))
-	}
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	utilities.CreateNotifForInternalBursa(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, emailSubject, notifMsg)
+	email.SendEmailForUserInternalBursa(c, emailSubject, notifMsg)
 
 	return data, nil
 }
@@ -82,16 +78,14 @@ func (m *usecase) UpdateStatusFAQ(faq model.UpdateFAQStatus, c *gin.Context) (in
 	}
 
 	if faq.Status == model.PublishedFAQ {
-		internalBursaUser := email.GetAllUserInternalBursa(c)
-		var internalBursaUserId []string
-		for _, user := range internalBursaUser {
-			internalBursaUserId = append(internalBursaUserId, user.Id)
-		}
-		go utilities.CreateGroupNotif(c, internalBursaUserId, "FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
+		emailSubject := "Aktivitas Baru Di Menu FAQ"
+		notifType := "FAQ"
+		notifMsg := fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user"))
 
-		for _, user := range internalBursaUser {
-			go email.SendEmailNotification(user, "Aktivitas Baru Di Menu FAQ", fmt.Sprintf("User %s menambahkan FAQ baru", c.GetString("name_user")))
-		}
+		utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+		utilities.CreateNotifForInternalBursa(c, notifType, notifMsg)
+		email.SendEmailForUserAng(c, emailSubject, notifMsg)
+		email.SendEmailForUserInternalBursa(c, emailSubject, notifMsg)
 	}
 
 	return data, nil
