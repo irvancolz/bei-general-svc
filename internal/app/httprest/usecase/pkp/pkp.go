@@ -157,7 +157,9 @@ func (uc *usecase) UpdatePKuser(pkp model.UpdatePKuser, c *gin.Context) (int64, 
 	notifType := "PKP"
 
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 
 	return data, nil
 }
@@ -174,6 +176,8 @@ func (uc *usecase) Delete(id string, c *gin.Context) (int64, error) {
 
 	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
 	email.SendEmailForUserAdminApp(c, notifMsg, emailMsg)
+	utilities.CreateNotifForUserAng(c, notifType, notifMsg)
+	email.SendEmailForUserAng(c, notifMsg, emailMsg)
 
 	return data, nil
 }
