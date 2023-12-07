@@ -4,8 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
-	"be-idx-tsg/internal/app/utilities"
-	"be-idx-tsg/internal/pkg/email"
 	"fmt"
 	"strings"
 	"time"
@@ -75,6 +73,7 @@ func (u *guidancesUsecase) UpdateExistingGuidances(c *gin.Context, props UpdateE
 	if error_result != nil {
 		return error_result
 	}
+	SendNotifUpdateProccess(c)
 	return nil
 }
 
@@ -108,9 +107,7 @@ func (u *guidancesUsecase) CreateNewGuidance(c *gin.Context, props CreateNewGuid
 		return 0, error_result
 	}
 
-	utilities.CreateNotifForAdminApp(c, "management berkas", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
-	email.SendEmailForUserAdminApp(c, "Penambahan Berkas Baru", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
-
+	SendNotifCreateProccess(c)
 	return result, nil
 }
 
@@ -198,6 +195,7 @@ func (u *guidancesUsecase) GetAllGuidanceBasedOnType(c *gin.Context, types strin
 
 func (u *guidancesUsecase) DeleteGuidances(c *gin.Context, id string) error {
 	user_id, _ := c.Get("name_user")
+
 	deleteGuidancesArgs := repo.DeleteExistingDataProps{
 		Deleted_at: time.Now(),
 		Deleted_by: user_id.(string),
@@ -207,5 +205,7 @@ func (u *guidancesUsecase) DeleteGuidances(c *gin.Context, id string) error {
 	if error_result != nil {
 		return error_result
 	}
+
+	SendNotifDeleteProccess(c)
 	return nil
 }

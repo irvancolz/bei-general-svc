@@ -3,6 +3,9 @@ package guidances
 import (
 	"be-idx-tsg/internal/app/helper"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
+	"be-idx-tsg/internal/app/utilities"
+	"be-idx-tsg/internal/pkg/email"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -113,4 +116,30 @@ func (u *guidancesUsecase) GetAllData(c *gin.Context) (*helper.PaginationRespons
 	paginatedData := helper.HandleDataPagination(c, filteredData, filterParameter)
 	return &paginatedData, nil
 
+}
+
+func SendNotifUpdateProccess(c *gin.Context) {
+	name_user, _ := c.Get("name_user")
+
+	notifType := "management berkas"
+	notifMsg := fmt.Sprintf("%s melakukan pembaharuan di menu manajemen berkas", name_user.(string))
+	emailSubject := "Pembaharuan Berkas"
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, emailSubject, notifMsg)
+}
+
+func SendNotifCreateProccess(c *gin.Context) {
+	name_user, _ := c.Get("name_user")
+	utilities.CreateNotifForAdminApp(c, "management berkas", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
+	email.SendEmailForUserAdminApp(c, "Penambahan Berkas Baru", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
+
+}
+
+func SendNotifDeleteProccess(c *gin.Context) {
+	name_user, _ := c.Get("name_user")
+	notifType := "management berkas"
+	notifMsg := fmt.Sprintf("%s melakukan Penghapusan Berkas di menu manajemen berkas", name_user.(string))
+	emailSubject := "Penghapusan Berkas"
+	utilities.CreateNotifForAdminApp(c, notifType, notifMsg)
+	email.SendEmailForUserAdminApp(c, emailSubject, notifMsg)
 }

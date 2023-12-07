@@ -4,9 +4,6 @@ import (
 	"be-idx-tsg/internal/app/helper"
 	"be-idx-tsg/internal/app/httprest/model"
 	repo "be-idx-tsg/internal/app/httprest/repository/guidances"
-	"be-idx-tsg/internal/app/utilities"
-	"be-idx-tsg/internal/pkg/email"
-	"fmt"
 	"strings"
 	"time"
 
@@ -88,6 +85,8 @@ func (u *guidancesUsecase) UpdateExistingFiles(c *gin.Context, props UpdateExsis
 	if error_result != nil {
 		return error_result
 	}
+
+	SendNotifUpdateProccess(c)
 	return nil
 }
 
@@ -120,7 +119,8 @@ func (u *guidancesUsecase) CreateNewFiles(c *gin.Context, props CreateNewGuidanc
 	if error_result != nil {
 		return 0, error_result
 	}
-	utilities.CreateNotifForAdminApp(c, "management berkas", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
-	email.SendEmailForUserAdminApp(c, "Penambahan Berkas Baru", fmt.Sprintf("%s menambahkan berkas baru", name_user.(string)))
+
+	SendNotifCreateProccess(c)
+
 	return result, nil
 }
