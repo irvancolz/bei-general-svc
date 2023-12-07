@@ -73,7 +73,7 @@ func (m *repository) GetAllWithFilterPagination(c *gin.Context) (*helper.Paginat
 	createdAtEnd := c.Query("created_at_end")
 	createdAtFrom := c.Query("created_at_from")
 
-	selectQuery := `SELECT ls.id, ls.modul, COALESCE(ls.sub_modul, '') AS sub_modul, ls.action, COALESCE(ls.detail, '') AS detail,  ls.user_name, ls.ip, ls.browser, ls.created_by, ls.created_at AS t_created_at FROM log_systems ls `
+	selectQuery := `SELECT ls.id, ls.modul, COALESCE(ls.sub_modul, '') AS sub_modul, ls.action, COALESCE(ls.detail, '') AS detail,  ls.user_name, ls.ip, ls.browser, ls.created_by, ls.created_at AS t_created_at FROM log_systems ls ORDER BY ls.created_at DESC`
 
 	countQuery := `SELECT COUNT(*) FROM log_systems ls `
 
