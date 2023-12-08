@@ -175,7 +175,7 @@ func (r *guidancesRepository) GetAllData(c *gin.Context) ([]model.GuidanceFileAn
 
 	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllDataQuerry)
 
-	result_rows, error_rows := r.DB.Queryx(query)
+	result_rows, error_rows := r.DB.Queryx(query + "ORDER BY updated_at, created_at DESC")
 	if error_rows != nil {
 		log.Println(query)
 		log.Println("failed to excecute script : ", error_rows)
