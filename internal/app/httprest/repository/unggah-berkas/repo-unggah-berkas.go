@@ -5,7 +5,9 @@ import (
 	"be-idx-tsg/internal/app/httprest/model"
 	"be-idx-tsg/internal/pkg/database"
 	"errors"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -88,18 +90,23 @@ func (r *repository) UploadNew(props UploadNewFilesProps) (int64, error) {
 }
 
 func (r *repository) GetUploadedFiles(c *gin.Context) ([]model.UploadedFilesMenuResponse, error) {
+	reportType := c.DefaultQuery("type", "")
 	var results []model.UploadedFilesMenuResponse
 	serchQueryConfig := helper.SearchQueryGenerator{
 		TableName: "uploaded_files",
 		ColumnScanned: []string{
-			"company_code",
-			"company_name",
-			"file_name",
-			"report_type",
+			"created_by",
 		},
 	}
 
-	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getUploadedFilesQuery) + `ORDER BY created_at DESC`
+	getAllRecordsQuery := func() string {
+		if strings.EqualFold(reportType, "") {
+			return getUploadedFilesQuery
+		}
+		return getUploadedFilesQuery + fmt.Sprintf("AND report_type ILIKE('%s')", reportType)
+	}()
+
+	query := serchQueryConfig.GenerateGetAllDataQuerry(c, getAllRecordsQuery) + `ORDER BY created_at DESC`
 	rowResults, errorRows := r.DB.Queryx(query)
 	if errorRows != nil {
 		log.Println(query)
