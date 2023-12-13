@@ -164,3 +164,10 @@ func TestGenerateTimeOnly(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestBinaryToAlpabhet(t *testing.T) {
+	t.Log(getExcelRepresentationRow(1))
+	t.Log(getExcelRepresentationRow(676))
+	t.Log(getExcelRepresentationRow(27))
+
+}

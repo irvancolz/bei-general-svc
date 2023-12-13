@@ -5,12 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/xuri/excelize/v2"
 )
+
+const BYTE_UPPER_ALPHABET_START_INDEX = 64
+const ALPHABET_TOTAL = 26
 
 type ExportToExcelConfig struct {
 	CollumnStart    string
@@ -195,7 +199,8 @@ func (c *ExportToExcelConfig) Addtable(excelFile *excelize.File) error {
 
 	for rowsIndex, rows := range data {
 		for columnIndex, value := range rows {
-			currentCol := string([]byte(collumnStart)[0] + byte(columnIndex))
+			colInByte := []byte(collumnStart)[0] + byte(columnIndex)
+			currentCol := getExcelRepresentationRow(int(colInByte) - BYTE_UPPER_ALPHABET_START_INDEX)
 			cellName := currentCol + strconv.Itoa(rowsIndex+tableStartRow) // A1, B1, dst.
 
 			if rowsIndex == 0 {
@@ -344,4 +349,27 @@ func ReadFileExcel(filenames string) [][]string {
 		return nil
 	}
 	return rows
+}
+
+func getExcelRepresentationRow(byteIdx int) string {
+
+	var result string
+
+	if byteIdx == 0 {
+		return ""
+	}
+
+	currentColIdx := byteIdx % ALPHABET_TOTAL
+
+	if byteIdx > 26 {
+		result = getExcelRepresentationRow(int(math.Floor(float64(byteIdx) / float64(ALPHABET_TOTAL))))
+	}
+
+	if currentColIdx == 0 {
+		result += "Z"
+	} else {
+		result += string([]byte{byte(currentColIdx + BYTE_UPPER_ALPHABET_START_INDEX)})
+	}
+
+	return result
 }
